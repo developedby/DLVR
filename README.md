@@ -2,4 +2,4 @@
 
 DLVR is a miniature driverless delivery system
 
-You can learn more about it at deliveryrobot.wordpress.com
+You can learn more about it at https://deliveryrobot.wordpress.com
