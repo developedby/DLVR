@@ -1,7 +1,7 @@
 #include "servo.hpp"
 #include <wiringPi.h>
 
-Servo::Servo(double pin) pwm_pin(pin)
+Servo::Servo(double pin) : pwm_pin(pin)
 {
     assert(pwm_pin == 1 || pwm_pin == 26 || pwm_pin == 23 || pwm_pin == 24);
     pinMode(pwm_pin, PWM_OUTPUT);

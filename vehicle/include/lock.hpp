@@ -14,4 +14,4 @@ class Lock
         void unlock();
 }
 
-#endif lock_h_
+#endif //lock_h_

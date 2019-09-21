@@ -1,4 +1,4 @@
-#include "lock.h"
+#include "lock.hpp"
 
 Lock::Lock(int servo_pin) : servo{servo_pin} {}
 
