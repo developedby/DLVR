@@ -10,14 +10,14 @@ int main (void)
     wiringPiSetup();
     Servo servo(servo_pin);
     
-    servo.goPos(servo.min_pos);
-    std::cout << "Posição minima" << std::endl;
-    delay(1000);
-    servo.goPos(servo.max_pos);
-    std::cout << "Posição máxima" << std::endl;
-    delay(1000);
-    std::cout << "Servo solto" << std::endl;
-    servo.release();
-    delay(5000);
+    while(1)
+    {
+        servo.goPos(0);
+        std::cout << "Posição minima" << std::endl;
+        delay(1000);
+        servo.goPos(1);
+        std::cout << "Posição máxima" << std::endl;
+        delay(1000);
+    }
     return 0;
 }

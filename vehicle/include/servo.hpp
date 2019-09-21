@@ -4,15 +4,16 @@
 class Servo
 {
     private:
-        Servo servo;
         int pwm_pin;
     public:
         int const min_pos = 30;
         int const max_pos = 130;
-        double const crnt_pos;
+        double crnt_pos;
         Servo(int const pin);
         void goPos(double const pos);
         void release();
-}
+};
+
+void * scheduleRelease(void * servo_);
 
 #endif //servo_h_
