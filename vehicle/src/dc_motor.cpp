@@ -8,7 +8,7 @@ DCMotor::DCMotor(int const pin_fwd_, int const pin_bkwd_, int const pin_pwm_, bo
 {
 	if (hw_pwm)
 	{
-		assert(pin_pwm == 1 || pin_pwm == 26 || pin_pwm == 23 || pin_pwm == 24);
+		assert(pin_pwm == 1 || pin_pwm == 26 || pin_pwm == 23);
 		pinMode(pin_pwm, PWM_OUTPUT);
 		pwmSetMode(PWM_MODE_MS);
 		pwmSetClock(384);  // 50kHz (tick de 20us)

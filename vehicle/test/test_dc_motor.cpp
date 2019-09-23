@@ -4,13 +4,13 @@
 
 int const pwm_pin1 = 1;
 bool const hw_pwm1 = true;
-int const fwd_pin1 = 0;
-int const bkwd_pin1 = 2;
+int const fwd_pin1 = 28;
+int const bkwd_pin1 = 29;
 
-int const pwm_pin2 = 12;
-bool const hw_pwm2 = false;
-int const fwd_pin2 = 13;
-int const bkwd_pin2 = 14;
+int const pwm_pin2 = 26;
+bool const hw_pwm2 = true;
+int const fwd_pin2 = 11;
+int const bkwd_pin2 = 0;
 
 int main (void)
 {
