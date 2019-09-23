@@ -14,7 +14,7 @@ int main (void)
     delay(1000);
     for (int i=0; i < 10; i++)
     {
-        cout << ultrasound.getDistance() << std::endl;
+        std::cout << ultrasound.getDistance() << std::endl;
         delay(1000);
     }
     return 0;

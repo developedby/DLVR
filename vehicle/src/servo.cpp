@@ -10,7 +10,7 @@ Servo::Servo(int const pin) : pwm_pin(pin)
     pwmSetMode(PWM_MODE_MS);
     pwmSetClock(384);  // 50kHz (tick de 20us)
     pwmSetRange(1000);  // Pulsos de 20us a 20ms
-    delay(100);
+    delay(500);
 }
 
 // Manda o servo pra uma posição e trava ele lá
