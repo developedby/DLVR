@@ -9,12 +9,14 @@ class Ultrasound
         double last_distance_cm;
         int max_poll_rate_ms = 100;
         void pollDistance();
-        void registerEcho();
         long trigger_time;
-        long last_poll
+        long last_poll;
     public:
         Ultrasound(int const pin_trigger_, int const pin_echo_);
         double getDistance();
-}
+        void registerEcho();
+};
+
+void callRegisterEcho();
 
 #endif //ultrasond_h_
