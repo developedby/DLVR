@@ -1,5 +1,6 @@
 #include "ultrasound.hpp"
 #include <wiringPi.h>
+#include <iostream>
 
 Ultrasound * the_ultrasound;
 
@@ -16,6 +17,7 @@ Ultrasound::Ultrasound(int const pin_trigger_, int const pin_echo_) : pin_trigge
 void Ultrasound::pollDistance()
 {
     last_poll = millis();
+    std::cout << "Trigger ";
     digitalWrite(pin_trigger, HIGH);
     delayMicroseconds(20);
     digitalWrite(pin_trigger, LOW);

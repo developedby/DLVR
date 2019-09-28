@@ -2,8 +2,8 @@
 #include <iostream>
 #include "ultrasound.hpp"
 
-int const trigger_pin = 0;
-int const echo_pin = 2;
+int const trigger_pin = 2;
+int const echo_pin = 3;
 
 int main (void)
 {
