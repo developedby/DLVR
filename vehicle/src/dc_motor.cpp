@@ -25,7 +25,7 @@ void DCMotor::spin(int const direction, double const duty_cycle)
 {
 	if (direction == 0)
 	{
-		std::cout << "Parado\n";
+		//std::cout << "Parado\n";
 		gpioPWM(pin_pwm, 1000);
 		gpioWrite(pin_fwd, 0);
 		gpioWrite(pin_bkwd, 0);
@@ -34,13 +34,13 @@ void DCMotor::spin(int const direction, double const duty_cycle)
 	{
 		if (direction > 0)
 		{
-			std::cout << "Frente\n";
+			//std::cout << "Frente\n";
 			gpioWrite(pin_fwd, 1);
 			gpioWrite(pin_bkwd, 0);
 		}
 		else if (direction < 0)
 		{
-			std::cout << "Tras\n";
+			//std::cout << "Tras\n";
 			gpioWrite(pin_fwd, 0);
 			gpioWrite(pin_bkwd, 1);
 		}

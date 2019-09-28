@@ -30,7 +30,7 @@ void Encoder::registerReading(int const level, uint32_t const tick)
 {
     readings_us[counter] = tick - last_reading;
     last_reading = tick;
-    std::cout << counter << " " << readings_us[counter] << std::endl;
+    //std::cout << counter << " " << readings_us[counter] << std::endl;
     if (counter >= num_readings-1)
         counter = 0;
     else
