@@ -1,43 +1,38 @@
 #include "ultrasound.hpp"
-#include <wiringPi.h>
 #include <iostream>
+#include <cstdint>
+#include <pigpio.h>
 
 Ultrasound * the_ultrasound;
 
 Ultrasound::Ultrasound(int const pin_trigger_, int const pin_echo_) : pin_trigger(pin_trigger_), pin_echo(pin_echo_)
 {
     the_ultrasound = this;
-    pinMode(pin_trigger, OUTPUT);
-    pinMode(pin_echo, INPUT);
-    digitalWrite(pin_trigger, LOW);
-    wiringPiISR(pin_echo, INT_EDGE_BOTH, &callRegisterEcho);
-    pollDistance();
+    gpioSetMode(pin_trigger, PI_OUTPUT);
+    gpioSetMode(pin_echo, PI_INPUT);
+    gpioWrite(pin_trigger, 0);
+    gpioSetAlertFunc(pin_echo, callRegisterEcho);
+    gpioSetTimerFunc(0, poll_rate_ms, callPollDistance);
 }
 
 void Ultrasound::pollDistance()
 {
-    last_poll = millis();
-    std::cout << "Trigger ";
-    digitalWrite(pin_trigger, HIGH);
-    delayMicroseconds(20);
-    digitalWrite(pin_trigger, LOW);
+    gpioTrigger(pin_trigger, 10, 1);
 }
 
-void Ultrasound::registerEcho()
+void Ultrasound::registerEcho(int const level, uint32_t const tick)
 {
-    static long start_time, end_time;
-    if (digitalRead(pin_echo) == HIGH)
+    uint32_t time_taken;
+    if (level == 1)
     {
-        start_time = micros();
+        start_time = tick;
+        //std::cout << "Ping" << std::endl;
     }
     else
     {
-        end_time = micros();
-        last_distance_cm = (end_time - start_time) * 0.00017;  // 340m/s * 100cm/m * 1/1000000s/us * 1/2 (ida e volta)
-        long time_since_poll = millis() - last_poll;
-        if (time_since_poll < max_poll_rate_ms)
-            delay(max_poll_rate_ms - time_since_poll);
-        pollDistance();
+        time_taken = tick - start_time;
+        last_distance_cm = (float)time_taken / 58.0;  // 340m/s * 100cm/m * 1/1000000s/us * 1/2 (ida e volta)
+        //std::cout << "Pong" << std::endl;
     }
 }
 
@@ -46,7 +41,13 @@ double Ultrasound::getDistance()
     return last_distance_cm;
 }
 
-void callRegisterEcho()
+
+void callPollDistance()
 {
-    the_ultrasound->registerEcho();
+    the_ultrasound->pollDistance();
+}
+
+void callRegisterEcho(int const gpio, int const level, uint32_t const tick)
+{
+    the_ultrasound->registerEcho(level, tick);
 }
