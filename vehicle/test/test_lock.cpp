@@ -1,21 +1,25 @@
-#include <wiringPi.h>
 #include <iostream>
+#include <pigpio.h>
 #include "lock.hpp"
 
-int const lock_pin = 1;
+int const lock_pin = 13;
 
 int main (void)
 {
     std::cout << "Travando..." << std::endl;
-    wiringPiSetup();
+    if (gpioInitialise() == PI_INIT_FAILED)
+    {
+        std::cout << "Erro ao inicializar!" << std::endl;
+        exit(PI_INIT_FAILED);
+    }
     Lock lock(lock_pin);
 
-    delay(1000);
+    gpioDelay(1000000);
     lock.lock();
     std::cout << "Travado" << std::endl;
-    delay(2000);
-    //std::cout << "Destravado" << std::endl;
-    //lock.unlock();
-    delay(1000);
+    gpioDelay(2000000);
+    std::cout << "Destravado" << std::endl;
+    lock.unlock();
+    gpioDelay(1000000);
     return 0;
 }
