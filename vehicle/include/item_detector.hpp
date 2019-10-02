@@ -4,10 +4,11 @@
 class ItemDetector
 {
     private:
-        int pin_read;
+        int pin_read1;
+        int pin_read2;
     public:
-        ItemDetector(int pin);
+        ItemDetector(int pin1, int pin2);
         bool hasItem();
-}
+};
 
 #endif //item_detector_h_
