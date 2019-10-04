@@ -2,3 +2,4 @@ libs/
 .vscode/
 build/
 *.ppm
+img/
