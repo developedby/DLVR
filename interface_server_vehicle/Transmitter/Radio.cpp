@@ -8,9 +8,8 @@ void Radio::radioSets()
 {
     begin();
     setRetries(DELAY_TRANS, RETRIES);
-    setChannel(CHANNEL);
-    setAddressWidth(W_ADDRESS);
-    setPayloadSize(W_DATA);
+    //setChannel(CHANNEL);
+    //setAddressWidth(W_ADDRESS);
+    //setPayloadSize(W_DATA);
     setDataRate(DATA_RATE);
 }
-
