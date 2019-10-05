@@ -23,7 +23,6 @@ int main (void)
     }
     Wheel l_wheel(l_enc_pin, l_motor_fwd_pin, l_motor_bkwd_pin, l_motor_pwm_pin);
     Wheel r_wheel(r_enc_pin, r_motor_fwd_pin, r_motor_bkwd_pin, r_motor_pwm_pin);
-    gpioDelay(2000000);
     
     float speed_l, speed_r;
     while (true)
@@ -36,7 +35,7 @@ int main (void)
             speed_r = r_wheel.getSpeed();
             std::cout << "Esquerda: " << speed_l << " mm/s" << std::endl;
             std::cout << "Direita: " << speed_r << " mm/s" << std::endl << std::endl;
-            gpioDelay(1000000);
+            gpioDelay(3000000);
         }
     }
     gpioTerminate();
