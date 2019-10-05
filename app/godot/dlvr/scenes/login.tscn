@@ -1,0 +1,88 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://scripts/login.gd" type="Script" id=1]
+[ext_resource path="res://resources/title_font.tres" type="DynamicFont" id=2]
+[ext_resource path="res://sprites/placeholder_city.jpg" type="Texture" id=3]
+[ext_resource path="res://resources/default_font.tres" type="DynamicFont" id=4]
+
+[node name="login" type="Control"]
+editor/display_folded = true
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 1 )
+
+[node name="Panel" type="Panel" parent="."]
+margin_right = 300.0
+margin_bottom = 533.0
+
+[node name="vbox" type="VBoxContainer" parent="."]
+margin_left = 9.0
+margin_top = 9.0
+margin_right = 291.0
+margin_bottom = 524.0
+size_flags_horizontal = 2
+size_flags_vertical = 2
+size_flags_stretch_ratio = 128.0
+
+[node name="title_label" type="Label" parent="vbox"]
+margin_right = 282.0
+margin_bottom = 55.0
+custom_fonts/font = ExtResource( 2 )
+text = "DLVR"
+align = 1
+valign = 1
+uppercase = true
+
+[node name="img_margin" type="MarginContainer" parent="vbox"]
+editor/display_folded = true
+margin_top = 59.0
+margin_right = 282.0
+margin_bottom = 259.0
+
+[node name="img" type="TextureRect" parent="vbox/img_margin"]
+margin_right = 282.0
+margin_bottom = 200.0
+rect_min_size = Vector2( 0, 200 )
+texture = ExtResource( 3 )
+expand = true
+stretch_mode = 6
+
+[node name="login_label" type="Label" parent="vbox"]
+margin_top = 263.0
+margin_right = 282.0
+margin_bottom = 289.0
+custom_fonts/font = ExtResource( 4 )
+text = "login"
+align = 1
+valign = 1
+
+[node name="email_margin" type="MarginContainer" parent="vbox"]
+editor/display_folded = true
+margin_top = 293.0
+margin_right = 282.0
+margin_bottom = 317.0
+rect_min_size = Vector2( 0, 20 )
+
+[node name="email" type="LineEdit" parent="vbox/email_margin"]
+margin_right = 282.0
+margin_bottom = 24.0
+placeholder_text = "email"
+
+[node name="password_margin" type="MarginContainer" parent="vbox"]
+editor/display_folded = true
+margin_top = 321.0
+margin_right = 282.0
+margin_bottom = 345.0
+rect_min_size = Vector2( 0, 20 )
+
+[node name="password" type="LineEdit" parent="vbox/password_margin"]
+margin_right = 282.0
+margin_bottom = 24.0
+secret = true
+placeholder_text = "password"
+
+[node name="sign_in" type="Button" parent="vbox"]
+margin_top = 349.0
+margin_right = 282.0
+margin_bottom = 369.0
+text = "Sign In"
