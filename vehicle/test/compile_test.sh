@@ -8,4 +8,9 @@
 #gcc -Wall -o ./build/test_item_detector ../src/item_detector.cpp test_item_detector.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -lraspicam -lrf24-bcm -I../include
 
 # Teste trava
-gcc -Wall -o ./build/test_lock ../src/servo.cpp ../src/lock.cpp test_lock.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -lraspicam -lrf24-bcm -I../include
+#gcc -Wall -o ./build/test_lock ../src/servo.cpp ../src/lock.cpp test_lock.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -lraspicam -lrf24-bcm -I../include
+
+# Teste camera opencv
+gcc -Wall -o ./build/test_camera_opencv test_camera_opencv.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -lraspicam -lraspicam_cv -lrf24-bcm \
+ -lopencv_core -lopencv_highgui -lopencv_imgcodecs \
+ -I../include -I/usr/local/include -I/usr/local/include/opencv4
