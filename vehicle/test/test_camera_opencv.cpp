@@ -13,23 +13,19 @@ int main ( int argc,char **argv ) {
 	int nCount=100;
 	//set camera params
 	Camera.set( cv::CAP_PROP_FORMAT, CV_8UC3 );
+	Camera.setRotation(3);
 	//Open camera
 	cout<<"Opening Camera..."<<endl;
 	if (!Camera.open()) {cerr<<"Error opening the camera"<<endl;return -1;}
 	//Start capture
-	cout<<"Capturing "<<nCount<<" frames ...."<<endl;
 	time ( &timer_begin );
-	for ( int i=0; i<nCount; i++ ) {
-		Camera.grab();
-		Camera.retrieve ( image);
-		if ( i%5==0 )  cout<<"\r captured "<<i<<" images"<<std::flush;
-	}
 	for ( int i=0; i<10; i++ ) {
 		Camera.grab();
 		Camera.retrieve (image);
 		stringstream ss;
 		ss << "raspicam_cv_image" << i << ".png";
 		cv::imwrite(ss.str(), image);
+		cout << "Tirando foto " << i << std::endl;
 		usleep(1000000);
 	}
 	cout<<"Stop camera..."<<endl;
