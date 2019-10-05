@@ -3,7 +3,7 @@ Comandos recebidos pelo servidor:
 2) Ignorar sinal, caso haja um problema com o semáfaro e ele não fica verde
 3) Abrir ou fechar a caixa
 4) Qr code de destino
-5) Informação específica (status do robô)
+5) Informação específica (status do robô) : movimentação, leitura dos sensores (dizendo o sensor), status gerais
 
 Comandos enviados ao servidor:
 1) Lista dos QR codes lidos até o momento
