@@ -7,7 +7,7 @@ Comandos recebidos pelo servidor:
 
 Comandos enviados ao servidor:
 1) Lista dos QR codes lidos até o momento
-2) Status de movimentação (Velocidade e ângulo)
+2) Movimentação (Velocidade e ângulo)
 3) Leitura dos sensores (Item na caixa, leitura dos encoders, leitura do ultrassom)
 4) Status gerais: Parado, Andando pra frente, andando pra trás, Desviando de obstáculo, Esperando semáfaro, Esperando Rota
 

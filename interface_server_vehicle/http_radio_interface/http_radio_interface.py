@@ -1,5 +1,6 @@
 import requests
 import serial
+import struct
 
 START_BYTE = 0Xaa
 url_request = ""
@@ -55,6 +56,9 @@ if sensor_to_read:
 if required_status:
     packet_to_vehicle.append(possible_status_to_vehicle[required_status])
 packet_to_vehicle.append(START_BYTE)
+packet_to_vehicle = bytes(packet_to_vehicle)
+#s.write(packet_to_vehicle)
+#packet_from_vehicle = s.read(100)
 
 #interpret packet from vehicle
 
@@ -62,15 +66,15 @@ if(packet_from_vehicle and packet_from_vehicle[0] == START_BYTE and packet_from_
                                         and packet_from_vehicle[1] == device_id):
     current_address = 2
     if sensor_to_read == "ultrasound":
-        sensor_read = packet_from_vehicle[current_address:(current_address+3)]
+        sensor_read = struct.pack('f', packet_from_vehicle[current_address:(current_address+3)])
         current_address += 4
     elif sensor_to_read != "ultrasound":
             sensor_read = packet_from_vehicle[current_address]
             current_address += 1
     if required_status == "movement":
-        movement["amplitude"] = packet_from_vehicle[current_address:(current_address+3)]
+        movement["amplitude"] = struct.pack('f', packet_from_vehicle[current_address:(current_address+3)])
         current_address += 4
-        movement["curvature"] = packet_from_vehicle[current_address:(current_address+3)]
+        movement["curvature"] = struct.pack('f',packet_from_vehicle[current_address:(current_address+3)])
         current_address += 4
         status = movement
     elif required_status == "status_robot":
