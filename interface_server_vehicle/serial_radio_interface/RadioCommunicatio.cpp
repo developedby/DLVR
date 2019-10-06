@@ -40,10 +40,10 @@ void RadioCommunication::sendToRadio(const void *data, uint8_t len)
     radio->stopListening();
     radio->write(data, len);
     radio->startListening();
-    while(!radio->isAckPayloadAvailable())
-    {
-        ;
-    }
+//    while(!radio->isAckPayloadAvailable())
+//    {
+//        ;
+//    }
     radio->writeAckPayload(1, &ack, 1);
     siz = 0;
 }

@@ -14,7 +14,7 @@ bool SerialCommunication::receiveFromSerial()
     int i;
     if(Serial.available())
     {
-        char first_byte = Serial.read();
+        unsigned char first_byte = Serial.read();
         if(first_byte == START_BYTE)
         {
             siz = Serial.readBytesUntil(START_BYTE, received_data, W_DATA+W_ADDRESS);

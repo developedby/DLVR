@@ -11,7 +11,8 @@ void Principal::start()
     uint8_t address[W_ADDRESS];
     uint8_t size_serial = 0;
     uint8_t size_radio = 0;
-	  while(radio->isChipConnected())
+	  //while(radio->isChipConnected())
+	  while(true)
 	  {
         if(serial->receiveFromSerial())
         {
