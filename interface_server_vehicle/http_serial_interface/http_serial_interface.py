@@ -35,11 +35,9 @@ possible_status_from_vehicle = {1 : "stopped", 2 : "moving forward", 3 :"moving 
 #packet serial
 packet_to_vehicle = []
 packet_from_vehicle = []
-radio_address = ""
 
 #build packet to vehicle
 packet_to_vehicle.append(START_BYTE)
-packet_to_vehicle.append(radio_address)
 packet_to_vehicle.append(device_id)
 packet_content = (1 if route else 0) << 3
 packet_content += (1 if command else 0) << 2
@@ -47,6 +45,7 @@ packet_content += (1 if sensor_to_read else 0) << 1
 packet_content += (1 if required_status else 0) << 0
 packet_to_vehicle.append(packet_content)
 if route:
+    packet_to_vehicle.append(START_BYTE)
     packet_to_vehicle.append(len(route))
     packet_to_vehicle.append(route)
     packet_to_vehicle.append(qr_code_destination)
