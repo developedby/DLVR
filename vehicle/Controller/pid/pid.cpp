@@ -30,7 +30,7 @@ float PID::push_error(float e) {
     
     aux = P + I + D;
     this->y = min(this->maxv, max(this->minv, aux));
-    
+
     return (this->y);
 }
 
@@ -45,3 +45,4 @@ float PID::push_setpoint(float sp) {
 float PID::peek_output() {
     return (this->y);
 }
+
