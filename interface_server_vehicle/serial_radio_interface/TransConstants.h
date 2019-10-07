@@ -28,12 +28,12 @@
 #define RETRIES 3 //numero de tentativas de envio para os receptores
 #define CHANNEL 33 //canal RF de comunicacao, 0-125 (2400+CHANNEL MHZ)
 #define W_ADDRESS 5 //quantidade de bytes do endereco
-#define W_DATA 14 //quantidade de bytes do pacote para envio - 3 velocidades 1 nome e 1 inicio
+#define W_DATA 45 //quantidade de bytes do pacote para envio - 3 velocidades 1 nome e 1 inicio
 #define DATA_RATE RF24_2MBPS //velocidade de transmissao de dados
 
 //chaves de comunicacao
-#define BEGIN 0x77 //chave que indica o inicio de um novo pacote contendo endereco e dados para os robos receptores
-#define KEY 0xa0 //chave que indica o inicio de um pacote efetivo de velocidades
+#define START_BYTE 0xAA //chave que indica o inicio de um novo pacote contendo endereco e dados para os robos receptores
+#define COORD_ADDRESS "DLVRC" //chave que indica o inicio de um pacote efetivo de velocidades
 
 
 #endif
