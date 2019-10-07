@@ -15,7 +15,7 @@ PID::PID(float Kp, float Ki, float Kd, float T, float min, float max) :
      Kp(Kp), Ki(Ki), Kd(Kd), T(T), integrate(0.0f), last_error(0.0f),
      y(0.0f), minv(min), maxv(max) {}
 
-float PID::tunning(float Kp, float Ki, float Kd) {
+void PID::tunning(float Kp, float Ki, float Kd) {
     this->Kp = Kp;
     this->Ki = Ki;
     this->Kd = Kd;

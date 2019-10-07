@@ -1,5 +1,5 @@
 # Teste encoder
-gcc -Wall -o ./build/test_encoder ../src/encoder.cpp test_encoder.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -lraspicam -lrf24-bcm -I../include
+#gcc -Wall -o ./build/test_encoder ../src/encoder.cpp test_encoder.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -lraspicam -lrf24-bcm -I../include
 
 # Teste roda
 #gcc -Wall -o ./build/test_wheel ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp test_wheel.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -lraspicam -lrf24-bcm -I../include

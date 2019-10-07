@@ -1,11 +1,14 @@
 import numpy as np
 import cv2
 
-path = "./imgs/teste_fitas/"
+path = "./img/teste_fitas/"
 img_in = "teste_fitas"
 extension = ".png"
 
 img = cv2.imread(path + img_in + extension)
+if img is None:
+	print("File not found")
+	exit()
 img = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
 
 cv2.namedWindow('params')
@@ -28,12 +31,12 @@ cv2.imshow('saturation', img[:, :, 2])
 #cv2.imwrite(path + img_in + " sat" + extension, img[:, :, 2])
 
 while True:
-	h_min = cv.getTrackbarPos('h min','params')
-	h_max = cv.getTrackbarPos('h max','params')
-	l_min = cv.getTrackbarPos('l min','params')
-	l_max = cv.getTrackbarPos('l max','params')
-	s_min = cv.getTrackbarPos('s min','params')
-	s_max = cv.getTrackbarPos('s max','params')
+	h_min = cv2.getTrackbarPos('h min','params')
+	h_max = cv2.getTrackbarPos('h max','params')
+	l_min = cv2.getTrackbarPos('l min','params')
+	l_max = cv2.getTrackbarPos('l max','params')
+	s_min = cv2.getTrackbarPos('s min','params')
+	s_max = cv2.getTrackbarPos('s max','params')
 	h_mask = cv2.inRange(img[:, :, 0], h_min, h_max)
 	l_mask = cv2.inRange(img[:, :, 1], l_min, l_max)
 	s_mask = cv2.inRange(img[:, :, 2], s_min, s_max)
@@ -43,7 +46,7 @@ while True:
 	out_img[:, :, 1] = cv2.copyTo(img[:, :, 1], mask)
 	out_img = cv2.cvtColor(out_img, cv2.COLOR_HLS2BGR)
 	cv2.imshow('masked image', out_img)
-	if (cv.waitKey(1) & 0xFF) == 27:
+	if (cv2.waitKey(1) & 0xFF) == 27:
 		break
 #cv2.imwrite(path + img_in + " mask_h" + extension, h_mask)
 #cv2.imwrite(path + img_in + " mask_l" + extension, l_mask)

@@ -15,7 +15,7 @@ class PID {
     public:
         PID(float Kp, float Ki, float Kd, float T);
         PID(float Kp, float Ki, float Kd, float T, float min, float max);
-        float tunning(float Kp, float Ki, float Kd);
+        void tunning(float Kp, float Ki, float Kd);
         float push_error(float e);
         float push_error(float r, float y);
         float push_setpoint(float sp);
