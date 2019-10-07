@@ -15,8 +15,6 @@ class Movement {
         float rr;
         int l_dir;
         int r_dir;
-        //static constexpr float l_dc_mmps = 0.003f;
-        //static constexpr float r_dc_mmps = 0.004f;
     
     public:
         Movement(float wheel_distance, float l_Kp, float l_Ki, float l_Kd, float r_Kp, float r_Ki, float r_Kd, float T,

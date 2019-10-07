@@ -1,49 +1,56 @@
 #include "pid.hpp"
 
-PID::PID(float Kp, float Ki, float Kd, float T) : 
-     Kp(Kp), Ki(Ki), Kd(Kd), T(T), integrate(0.0f), last_error(0.0f) {}
+#ifndef min
+    #define min(a, b) ((a < b)?a:b)
+#endif
+#ifndef max
+    #define max(a, b) ((a > b)?a:b)
+#endif
+ 
+PID::PID(float Kp, float Ki, float Kd, float T) :
+     Kp(Kp), Ki(Ki), Kd(Kd), T(T), integrate(0.0f), last_error(0.0f),
+     y(0.0f), minv(-HUGE_VALF), maxv(HUGE_VALF) {}
 
-PID::~PID() {}
+PID::PID(float Kp, float Ki, float Kd, float T, float min, float max) :
+     Kp(Kp), Ki(Ki), Kd(Kd), T(T), integrate(0.0f), last_error(0.0f),
+     y(0.0f), minv(min), maxv(max) {}
+
+float PID::tunning(float Kp, float Ki, float Kd) {
+    this->Kp = Kp;
+    this->Ki = Ki;
+    this->Kd = Kd;
+    this->integrate = 0.0f;
+    this->last_error = 0.0f;
+}
 
 float PID::push_error(float e) {
     float P, I, D, aux;
-    
-    
     // Proportional
     P = this->Kp * e;
     
-    // Integral
-    aux = this->integrate + e * this->T;
-    I = this->Ki * aux;
+    // Integrate
+    this->integrate += e * this->T * this->Ki;
+    I = this->integrate;
     
     // Derivative
-    D = this->Kd * (e - this->last_error)/this->T;
-    
-    // Store last error
+    D = this->Kd * ((e - this->last_error) / this->T);
     this->last_error = e;
     
-    // Output
-    this->y = (P + I + D) * 0.003f;
-    if(this->y < 0.2) {
-        this->y = 0.2;
-    }
-    else if(this-> y > 1.0) {
-        this->y = 1.0;
-    }
-    else {
-        this->integrate = aux;
-    }
-    return this->y;
-    
+    aux = P + I + D;
+    this->y = min(this->maxv, max(this->minv, aux));
+
+    return (this->y);
 }
 
-float PID::peek_output(void) {
-    return this->y;
+float PID::push_error(float r, float y) {
+    return this->push_error(r - y);
 }
 
-void PID::reset() {
-    this->last_error = 0.0f;
-    this->integrate = 0.0f;
+float PID::push_setpoint(float sp) {
+    return this->push_error(sp - this->y);
 }
 
+float PID::peek_output() {
+    return (this->y);
+}
 
