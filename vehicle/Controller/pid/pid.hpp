@@ -17,13 +17,12 @@ class PID {
     
     public:
     PID(float Kp, float Ki, float Kd, float T);
+    ~PID();
     float push_error(float e);
     float peek_output(void);
+    void reset();
     
-    
-    friend std::ostream& operator<<(std::ostream &strm, const PID &pid);
-}
+};
 
-std::ostream& operator<<(std::ostream &strm, const PID &pid);
 
 #endif
