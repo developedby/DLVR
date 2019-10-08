@@ -67,10 +67,10 @@ void sighandler_terminate(int sig) {
 
 int main(void) {
     signal(SIGINT, sighandler_terminate);
-    float l_Kp = 0.1, l_Ki = 10, l_Kd = 1;
-    float r_Kp = 0.1, r_Ki = 10, r_Kd = 1;
-    //float l_Kp = 0.0012, l_Ki = 0.02222, l_Kd = 0.0000162;
-    //float r_Kp = 0.0012, r_Ki = 0.02222, r_Kd = 0.0000162;
+    //float l_Kp = 0.1, l_Ki = 10, l_Kd = 1;
+    //float r_Kp = 0.1, r_Ki = 10, r_Kd = 1;
+    float l_Kp = 0.0012, l_Ki = 0.02222, l_Kd = 0.0000162;
+    float r_Kp = 0.0012, r_Ki = 0.02222, r_Kd = 0.0000162;
     if (gpioInitialise() == PI_INIT_FAILED)
     {
         std::cout << "Erro ao inicializar!" << std::endl;

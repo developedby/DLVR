@@ -8,7 +8,7 @@
 Movement::Movement(float wheel_distance, float l_Kp, float l_Ki, float l_Kd, float r_Kp, float r_Ki, float r_Kd, float T,
                    int const l_enc_pin, int const l_motor_fwd_pin, int const l_motor_bkwd_pin, int const l_motor_pwm_pin,
                    int const r_enc_pin, int const r_motor_fwd_pin, int const r_motor_bkwd_pin, int const r_motor_pwm_pin) :
-          wheel_distance(wheel_distance),
+          wheel_distance(wheel_distance), iwflag(false)
           left_pid(l_Kp, l_Ki, l_Kd, 0.0f, 1.0f),
           right_pid(r_Kp, r_Ki, r_Kd, 0.0f, 1.0f),
           left_wheel(l_enc_pin, l_motor_fwd_pin, l_motor_bkwd_pin, l_motor_pwm_pin),
@@ -17,8 +17,8 @@ Movement::Movement(float wheel_distance, float l_Kp, float l_Ki, float l_Kd, flo
 
 
 void Movement::turn(float degrees) {
-    lr = 10;
-    rr = 10;
+    lr = 800;
+    rr = 800;
     r_dir = 2*(degrees > 0) - 1;
     l_dir = -r_dir;
 }
@@ -41,7 +41,7 @@ void Movement::goCurve(int direction, float curvature) {
     
 }
 
-void Movement::tick() {
+void Movement::tick(void) {
     float aux;
     // Left
     aux = this->left_wheel.getSpeed();
@@ -56,6 +56,13 @@ void Movement::tick() {
     }
     float r_dc = this->right_pid.push_error(rr, aux);
     // Adjust
-    this->left_wheel.spin(l_dir, l_dc);
-    this->right_wheel.spin(r_dir, r_dc);
+    if(iwflag) {
+        this->right_wheel.spin(r_dir, r_dc);
+        this->left_wheel.spin(l_dir, l_dc);
+    }
+    else {
+        this->left_wheel.spin(l_dir, l_dc);
+        this->right_wheel.spin(r_dir, r_dc);
+    }
+    this->iwflag = !(this->iwflag);
 }
