@@ -32,5 +32,30 @@ void Vision::getColorMask(cv::Mat dst, int const h_min, int const h_max, int con
 
 void Vision::getRedTapeMask(cv::Mat dst)
 {
-	this->getColorMask(dst, 170, 180, 100, 160, 90, 200);
+	this->getColorMask(dst, 160, 180, 100, 240, 40, 140);
+}
+
+void Vision::getBlueTapeMask(cv::Mat dst)
+{
+	this->getColorMask(dst, 100, 120, 70, 150, 25, 170);
+}
+
+void Vision::getGreenTapeMask(cv::Mat dst)
+{
+	this->getColorMask(dst, 60, 80, 70, 150, 70, 120);
+}
+
+void Vision::getYellowTapeMask(cv::Mat dst)
+{
+	this->getColorMask(dst, 20, 40, 130, 190, 30, 170);
+}
+
+void Vision::getWhiteTapeMask(cv::Mat dst)
+{
+	this->getColorMask(dst, 20, 110, 120, 255, 0, 70);
+}
+
+void Vision::getGroundMask(cv::Mat dst)
+{
+	this->getColorMask(dst, 0, 180, 50, 120, 0, 30);
 }

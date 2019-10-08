@@ -16,7 +16,7 @@ class Encoder
         static int instances;
         int const pin_read;
         uint32_t last_measure;
-        uint32_t static const max_measure_interval = 3000000;
+        uint32_t static const max_measure_interval = 1000000;
         float space_weight[n_measures] = {};
         int counter = 0;
         void createSpatialWeights();
