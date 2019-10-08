@@ -39,7 +39,7 @@ float PIDZ::push_error(float e) {
         this->y[i - 1] = this->y[i];
     }
     this->y[1] = S;
-    this->output += S;
+    this->output = S;
     return this->output;
 }
 

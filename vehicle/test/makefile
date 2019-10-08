@@ -20,3 +20,5 @@
 
 # Teste pid
 #gcc -Wall -o ../test/build/test_control ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ./movement.cpp test_control.cpp ./pid/pid.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -lraspicam -lrf24-bcm -I../include -I./ -I./pid
+
+gcc -Wall -o ./pid_tunning ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ./pid_tunning.cpp ./pid/pid.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -lraspicam -lrf24-bcm -I../include -I./ -I./pid
