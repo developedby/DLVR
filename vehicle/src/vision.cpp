@@ -42,7 +42,7 @@ void Vision::getBlueTapeMask(cv::Mat dst)
 
 void Vision::getGreenTapeMask(cv::Mat dst)
 {
-	this->getColorMask(dst, 60, 80, 70, 150, 70, 120);
+	this->getColorMask(dst, 60, 90, 70, 150, 30, 120);
 }
 
 void Vision::getYellowTapeMask(cv::Mat dst)
