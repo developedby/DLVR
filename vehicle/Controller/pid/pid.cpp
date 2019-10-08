@@ -37,6 +37,9 @@ float PID::push_error(float e) {
     this->last_error = e;
     
     aux = P + I + D;
+    /**/
+    aux += this->y;
+    /**/
     this->y = min(this->maxv, max(this->minv, aux));
 
     return (this->y);

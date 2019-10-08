@@ -15,7 +15,7 @@ int const r_motor_bkwd_pin = 7;
 int const l_motor_pwm_pin = 12;
 
 int const SAMPLE_TIMER = 9;
-float const Ts_ms = 100;
+float const Ts_ms = 500;
 
 float r  = 800.0f;
 bool verbose = true;
