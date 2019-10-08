@@ -3,14 +3,16 @@
 
 class PIDZ {
     private:
-        float a[3];
+        float nn[3];
+        float dd[2];
         float x[3];
-        float y;
-        int insert;
+        float y[2];
+        float output;
+        float T;
     public:
         PIDZ(float Kp, float Ki, float Kd, float T);
         float push_error(float e);
         float peek_output(void);
-}
+};
 
 #endif

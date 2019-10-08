@@ -1,26 +1,48 @@
 #include "pidz.hpp"
+#include <iostream>
 
 PIDZ::PIDZ(float Kp, float Ki, float Kd, float T) {
-    this->a[2] = Kp + 2*Kd/T + Ki*T/2
-    this->a[1] = Ki*T - 4*Kd/T
-    this->a[0] = Ki*T/2 + 2*Kd/T - Kp
+    this->nn[2] = T*(Ki*T + 2*Kp) + 4*Kd;
+    this->nn[1] = 2*Ki*T*T - 8*Kd;
+    this->nn[0] = T*(Ki*T - 2*Kp) + 4*Kd;
+    
+    this->dd[1] =   0;
+    this->dd[0] =  -2*T;
+    
     for(int i = 0; i < 3; ++i) {
-        this->x[i] = 0.0f
+        this->x[i] = 0.0f;
     }
-    this->y = 0.0f;
-    this->insert = 0;
+    for(int i = 0; i < 2; ++i) {
+        this->y[i] = 0.0f;
+    }
+    
+    this->T = T;
+    this->output = 0;
 }
 
 float PIDZ::push_error(float e) {
-    this->x[(this->insert+1)%3] = e
-    this->y = 0;
-    for(int i = 0; i < 3; ++i) {
-        this->y += this->a[2 - i] * this->x[(this->insert - i + 3)%3]
+    float S = 0;
+    for(int i = 1; i < 3; ++i) {
+        this->x[i - 1] = this->x[i];
     }
-    this->insert++;
-    return this->y;
+    this->x[2] = e;
+    //
+    for(int i = 0; i < 3; ++i) {
+        S += this->nn[i] * this->x[i];
+    }
+    for(int i = 0; i < 2; ++i) {
+        S -= this->dd[i] * this->y[i];
+    }
+    S = S/(2 * this->T);
+    //
+    for(int i = 1; i < 2; ++i) {
+        this->y[i - 1] = this->y[i];
+    }
+    this->y[1] = S;
+    this->output += S;
+    return this->output;
 }
 
 float PIDZ::peek_output(void) {
-    return this->y;
+    return this->output;
 }
