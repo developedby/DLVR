@@ -19,9 +19,9 @@ public:
     RadioCommunication();
     ~RadioCommunication() {}
     void setAddress(uint8_t *addres);
-    void sendToRadio(const void *data, uint8_t len);
+    void sendToRadio(SendedMessage message);
     bool receiveFromRadio();
-    void getData(unsigned char *data);
+    ReceivedMessage getData();
     int getDataSize();
     void debug();
     bool isChipConnected();

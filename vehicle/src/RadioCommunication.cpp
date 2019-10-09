@@ -40,10 +40,38 @@ void RadioCommunication::setAddress(uint8_t *address)
     }
 }
 
-void RadioCommunication::sendToRadio(const void *data, uint8_t len)
+void RadioCommunication::sendToRadio(SendedMessage message)
 {
+    vector<uint8_t> data;
+    data.push(START_BYTE);
+    data.push(1);//id do robo
+    if(message.ultrassound_reading > 0)
+    {
+        float* p = new int(message.ultrassound_reading); 
+        uint8_t* ch = reinterpret_cast<uint8_t*>(p);
+        data.push(p);
+    }
+    else if(message.other_sensors_reading != NO_SENSOR_READ)
+    {
+        data.push(message.other_sensors_reading);
+    }
+    if(message.movement.read)
+    {
+        float* p = new int(message.movement.amplitude); 
+        uint8_t* ch = reinterpret_cast<uint8_t*>(p);
+        data.push(p);
+        float* p = new int(message.movement.curvature); 
+        uint8_t* ch = reinterpret_cast<uint8_t*>(p);
+        data.push(p);
+    }
+    else if(message.status != NO_STATUS)
+    {
+        data.push(message.status);
+    }
+    data.push(message.qr_codes_read);
+    data.push(START_BYTE);
     radio->stopListening();
-    radio->write(data, len);
+    radio->write(data, data.size());
     radio->startListening();
     radio_ack_thread = gpioStartThread(waitAck, nullptr);
 }
@@ -108,13 +136,40 @@ bool RadioCommunication::receiveFromRadio()
     return false;
 }
 
-void RadioCommunication::getData(unsigned char *data)
+ReceivedMessage RadioCommunication::getData()
 {
-    int i = 0;
-    for(i=0; i<siz; i++)
+    vector<uint8_t> path;
+    string qr_code;
+    commands command; 
+    possible_sensors sensor_to_read;
+    possible_status required_status;
+    int i = 3;
+    if((received_data[2] & 0x8) == 0x8)
     {
-        data[i] = received_data[i];
+        for(i=0; i<received_data[3]; i++)
+        {
+            path.push(received_data[4+i]);
+        }
+        i+=4;
+        qr_code = received_data[i] << 8 + received_data[i+1];
+        i+=2;
     }
+    if((received_data[2] & 0x4) == 0x4)
+    {
+        command = received_data[i];
+        i++;
+    }
+    if((received_data[2] & 0x2) == 0x2)
+    {
+        sensor_to_read = received_data[i];
+        i++;
+    }
+    if((received_data[2] & 0x1) == 0x1)
+    {
+        required_status = received_data[i];
+        i++;
+    }
+    return ReceivedMessage(path, qr_code, command, sensor_to_read, required_status)
 }
 
 int RadioCommunication::getDataSize()
