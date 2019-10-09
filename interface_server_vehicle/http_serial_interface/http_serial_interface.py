@@ -56,6 +56,7 @@ if sensor_to_read:
     packet_to_vehicle.append(vehicle_sensors_code[sensor_to_read])
 if required_status:
     packet_to_vehicle.append(possible_status_to_vehicle[required_status])
+
 packet_to_vehicle.append(START_BYTE)
 packet_to_vehicle = bytes(packet_to_vehicle)
 print(type(packet_to_vehicle), len(packet_to_vehicle), packet_to_vehicle)
