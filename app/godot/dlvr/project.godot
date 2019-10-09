@@ -16,17 +16,22 @@ _global_script_class_icons={
 [application]
 
 config/name="dlvr"
+run/main_scene="res://scenes/loginView.tscn"
 config/icon="res://icon.png"
 
 [display]
 
-window/size/width=300
-window/size/height=533
-window/size/test_width=300
+window/size/width=720
+window/size/height=1280
+window/size/test_width=299
 window/size/test_height=533
 window/handheld/orientation="portrait"
 window/stretch/mode="2d"
 window/stretch/aspect="keep"
+
+[locale]
+
+translations=PoolStringArray( "res://lang/lang.en.translation", "res://lang/lang.pt.translation" )
 
 [rendering]
 

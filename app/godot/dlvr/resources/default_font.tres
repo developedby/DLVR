@@ -3,6 +3,6 @@
 [ext_resource path="res://ttf/OpenSans-Bold.ttf" type="DynamicFontData" id=1]
 
 [resource]
-size = 18
-use_filter = true
+size = 36
+extra_spacing_top = -4
 font_data = ExtResource( 1 )
