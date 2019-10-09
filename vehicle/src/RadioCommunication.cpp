@@ -42,7 +42,7 @@ void RadioCommunication::setAddress(uint8_t *address)
 
 void RadioCommunication::sendToRadio(SendedMessage message)
 {
-    vector<uint8_t> data;
+    std::vector<uint8_t> data;
     data.push(START_BYTE);
     data.push(1);//id do robo
     if(message.ultrassound_reading > 0)
@@ -138,8 +138,8 @@ bool RadioCommunication::receiveFromRadio()
 
 ReceivedMessage RadioCommunication::getData()
 {
-    vector<uint8_t> path;
-    string qr_code;
+    std::vector<uint8_t> path;
+    std::string qr_code;
     commands command; 
     possible_sensors sensor_to_read;
     possible_status required_status;

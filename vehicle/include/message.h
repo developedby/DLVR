@@ -1,15 +1,17 @@
 #ifndef _MESSAGE_H_
 #define _MESSAGE_H_
 
+#include <vector>
+#include <string>
 
 class ReceivedMessage{
     public:
-        vector<uint8_t> path;
-        string qr_code;
+        std::vector<uint8_t> path;
+        std::string qr_code;
         commands command; 
         possible_sensors sensor_to_read;
         possible_status required_status;
-        ReceivedMessage(vector<uint8_t> _path, string _qr_code, commands _command, possible_sensors _sensor_to_read, possible_status _required_status)
+        ReceivedMessage(std::vector<uint8_t> _path, std::string _qr_code, commands _command, possible_sensors _sensor_to_read, possible_status _required_status)
         {
             path = _path;
             qr_code = _qr_code;
@@ -21,12 +23,12 @@ class ReceivedMessage{
 
 class SendedMessage{
     public:
-        vector<string> qr_codes_read;
+        std::vector<std::string> qr_codes_read;
         float ultrassound_reading;
         uint8_t other_sensors_reading;
         movement movement;
         status status;
-        SendedMessage(vector<string> _qr_codes_read, float _ultrassound_reading, bool _other_sensors_reading, movement _movement, status _status)
+        SendedMessage(std::vector<std::string> _qr_codes_read, float _ultrassound_reading, bool _other_sensors_reading, movement _movement, status _status)
         {
             qr_codes_read = _qr_codes_read;
             ultrassound_reading = _ultrassound_reading;
