@@ -16,7 +16,7 @@ public:
     RadioCommunication();
     ~RadioCommunication() {}
     void setAddress(uint8_t *addres);
-    void sendToRadio(const void *data, uint8_t len);
+    bool sendToRadio(const void *data, uint8_t len);
     bool receiveFromRadio();
     void getData(unsigned char *data);
     int getDataSize();
