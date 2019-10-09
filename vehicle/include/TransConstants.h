@@ -13,6 +13,7 @@
 #define START_BYTE 0xAA //chave que indica o inicio de um novo pacote contendo endereco e dados para os robos receptores
 #define COORD_ADDRESS "DLVRC" //endereco do coordenador
 #define MY_ADDRESS "DLVR1"
+#define TIME_OUT_RADIO_ACK 500000
 
 
 #endif

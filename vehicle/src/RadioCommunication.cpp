@@ -1,8 +1,10 @@
 #include "RadioCommunication.h"
 #include <iostream>
 
+RadioCommunication * internal_radio;
 RadioCommunication::RadioCommunication()
 {
+    internal_radio = this;
     int i = 0;
     radio = new Radio();
     for(i=0; i<W_DATA; i++)
@@ -16,6 +18,8 @@ RadioCommunication::RadioCommunication()
     radio->enableAckPayload();               // Allow optional ack payloads
     radio->enableDynamicPayloads();
     radio->startListening();
+    eventSetFunc(1, sendFailure);
+    eventSetFunc(2, sendOk);
 }
 
 void RadioCommunication::setAddress(uint8_t *address)
@@ -41,12 +45,43 @@ void RadioCommunication::sendToRadio(const void *data, uint8_t len)
     radio->stopListening();
     radio->write(data, len);
     radio->startListening();
+    radio_ack_thread = gpioStartThread(waitAck, nullptr);
+}
+
+void waitAck(void *)
+{
+    uint32_t startTick = gpioTick();
     while(!radio->isAckPayloadAvailable())
     {
-        ;
+        if((gpioTick() - startTick) > TIME_OUT_RADIO_ACK)
+        {
+            eventTrigger(1);
+            return
+        }
     }
-    radio->writeAckPayload(1, &ack, 1);
-    siz = 0;
+    eventTrigger(2);
+}
+
+void sendOk(int event, uint32_t tick, void *userdata)
+{
+    internal_radio->radio->writeAckPayload(1, &(internal_radio->ack), 1);
+    internal_radio->siz = 0;
+    internal_radio->attemps = 0;
+    gpioStopThread(radio_ack_thread);
+}
+
+void sendFailure(int event, uint32_t tick, void *userdata)
+{
+    internal_radio->attemps++;
+    gpioStopThread(radio_ack_thread);
+    if(internal_radio->attemps > RETRIES)
+    {
+        eventTrigger(3);
+    }
+    else
+    {
+        internal_radio->sendToRadio(internal_radio->last_sended_data, internal_radio->last_sended_data_size);
+    }
 }
 
 bool RadioCommunication::receiveFromRadio()

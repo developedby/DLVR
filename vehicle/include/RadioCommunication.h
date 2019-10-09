@@ -11,6 +11,9 @@ class RadioCommunication{
     int siz;
     uint8_t last_address[W_ADDRESS];
     int ack;
+    pthread_t *radio_ack_thread;
+    unsigned char *last_sended_data;
+    int last_sended_data_size;
     
 public:
     RadioCommunication();
@@ -23,5 +26,9 @@ public:
     void debug();
     bool isChipConnected();
 };
+
+void waitAck(void *);
+void sendOk(int event, uint32_t tick, void *userdata);
+void sendFailure(int event, uint32_t tick, void *userdata);
 
 #endif
