@@ -43,7 +43,7 @@ struct movement{
 };
 
 enum commands{
-    NO_COMMAND,
+    NO_COMMAND = 0,
     FORCE_GO_AHEAD,
     OPEN_BOX,
     CLOSE_BOX,
@@ -51,20 +51,20 @@ enum commands{
 };
 
 enum possible_sensors{
-    NO_SENSORS,
+    NO_SENSORS = 0,
     ITEM_DETECTOR,
     ULTASOUND,
     LOCK
 };
 
 enum possible_status{
-    NO_STATUS,
+    NO_STATUS = 0,
     MOVEMENT,
     VEHICLE_STATUS
 };
 
 enum status{
-    NO_STATUS,
+    NO_STATUS = 0,
     STOPPED, 
     MOVING_FORWARD, 
     MOVING_BACKWAY, 

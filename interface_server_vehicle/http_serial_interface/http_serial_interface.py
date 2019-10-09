@@ -28,7 +28,7 @@ movement = {"amplitude" : 0.00, "curvature" : 0.00}
 #vehicle
 #dictionaries to vehicle
 vehicle_sensors_code = {"item detector" : 1, "ultrasound" : 2, "lock" : 3}
-possible_commands = {"force go ahead" : 1, "open_box" : 2, "close_box" : 3}
+possible_commands = {"force_go_ahead" : 1, "open_box" : 2, "close_box" : 3, "get qr_code" : 4}
 possible_status_to_vehicle = {"movement" : 1, "status_robot" : 2}
 #dictionaries from vehicle
 possible_status_from_vehicle = {1 : "stopped", 2 : "moving forward", 3 :"moving backway", 4 : "avoiding obstacle", 5 : "waiting semaphore", 6 : "waiting route"}
