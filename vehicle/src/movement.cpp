@@ -20,15 +20,15 @@ Movement::Movement(float wheel_distance, float l_Kp, float l_Ki, float l_Kd, flo
           lr(0.0f), rr(0.0f), balance(0.0f), l_dir(0), r_dir(0) {}
 
 void Movement::turn(float degrees) {
-    lr = 800 * LEFT_BALANCE;
-    rr = 800 * RIGHT_BALANCE;
+    lr = 800;
+    rr = 800;
     r_dir = 2*(degrees > 0) - 1;
     l_dir = -r_dir;
 }
 
 void Movement::goStraight(int direction, float speed){ //mmps
-    lr = abs(speed) * LEFT_BALANCE;
-    rr = abs(speed) * RIGHT_BALANCE;
+    lr = abs(speed);
+    rr = abs(speed);
     //Dir L = Dir R
     r_dir = l_dir = direction * (speed > 0);
 }
@@ -54,7 +54,7 @@ void Movement::tick(void) {
     else if(aux > 1000.0) {
         aux /= 2.0f;
     }
-    float l_dc = this->limit(this->left_pid.push_error(lr, aux));
+    float l_dc = this->limit(this->left_pid.push_error(lr * LEFT_BALANCE, aux));
     // Right
     aux = this->right_wheel.getSpeed();
     if (aux < 3.7f) {
@@ -63,7 +63,7 @@ void Movement::tick(void) {
     else if(aux > 1000.0) {
         aux /= 2.0f;
     }
-    float r_dc = this->right_pid.push_error(rr, aux);
+    float r_dc = this->right_pid.push_error(rr * RIGHT_BALANCE, aux);
     // Adjust
     if(iwflag) {
         this->right_wheel.spin(r_dir, r_dc);
