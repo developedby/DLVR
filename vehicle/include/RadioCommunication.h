@@ -4,18 +4,21 @@
 #define _RADIOCOMMUNICATION_H_
 
 #include "Radio.h"
+#include "message.h"
+#include <pigpio.h>
 
 class RadioCommunication{
-    Radio *radio;
     unsigned char received_data[W_DATA];
-    int siz;
     uint8_t last_address[W_ADDRESS];
-    int ack;
-    pthread_t *radio_ack_thread;
-    unsigned char *last_sended_data;
-    int last_sended_data_size;
+    //pthread_t *radio_ack_thread;
     
 public:
+    SendedMessage last_sended_message;
+    pthread_t *radio_ack_thread; 
+    int siz;
+    int ack;
+    int attemps;
+    Radio radio;
     RadioCommunication();
     ~RadioCommunication() {}
     void setAddress(uint8_t *addres);
@@ -27,8 +30,8 @@ public:
     bool isChipConnected();
 };
 
-void waitAck(void *);
-void sendOk(int event, uint32_t tick, void *userdata);
-void sendFailure(int event, uint32_t tick, void *userdata);
+void* waitAck(void *);
+void sendOk(int event, uint32_t tick, void *obj);
+void sendFailure(int event, uint32_t tick, void *obj);
 
 #endif

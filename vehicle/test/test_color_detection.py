@@ -2,8 +2,8 @@ import numpy as np
 import cv2
 
 path = "./img/street/"
-img_in = "green"
-extension = ".jpg"
+img_in = "cruzamento"
+extension = ".png"
 
 img = cv2.imread(path + img_in + extension)
 if img is None:
@@ -48,6 +48,7 @@ while True:
     cv2.imshow('masked image', out_img)
     if (cv2.waitKey(1) & 0xFF) == 27:
         break
+cv2.destroyAllWindows()
 #cv2.imwrite(path + img_in + " mask_h" + extension, h_mask)
 #cv2.imwrite(path + img_in + " mask_l" + extension, l_mask)
 #cv2.imwrite(path + img_in + " mask_s" + extension, s_mask)
