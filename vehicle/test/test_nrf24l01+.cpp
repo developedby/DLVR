@@ -19,16 +19,18 @@ int main()
 		if(radio.receiveFromRadio())
 		{
 			std::cout <<"recebi pacote"<<std::endl;
-			ReceivedMessage received= radio.getData();
-			for(auto i : received.path)
+			ReceivedMessage received = radio.getData();
+			std::cout << "path: ";
+			//for(int i=0; i<int(received.path.size()); i++)
+			for(auto i:received.path)
 			{
-				std::cout << received.path[i] <<" ";
+				std::cout<<int(i) <<" ";
 			}
 			std::cout << std::endl;
-			std::cout <<received.qr_code<<std::endl;
-			std::cout <<received.command<<std::endl;
-			std::cout <<received.sensor_to_read<<std::endl;
-			std::cout <<received.required_status<<std::endl;
+			std::cout <<"qr_code: "<<received.qr_code<<std::endl;
+			std::cout <<"command: "<<received.command<<std::endl;
+			std::cout <<"sensor: "<<received.sensor_to_read<<std::endl;
+			std::cout <<"required_Status: "<<received.required_status<<std::endl;
 			std::vector<uint16_t> qr_codes_read;
 			qr_codes_read.push_back(1);
 			qr_codes_read.push_back(2);

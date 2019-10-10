@@ -80,15 +80,16 @@ void RadioCommunication::sendToRadio(SendedMessage message)
     }
     for(auto i : message.qr_codes_read)
     {
-        data.push_back((message.qr_codes_read[i] & 0xff00) >> 8);
-        data.push_back((message.qr_codes_read[i] & 0xff));
+        data.push_back((int(i) & 0xff00) >> 8);
+        data.push_back(int(i) & 0xff);
     }
     data.push_back(START_BYTE);
     radio.stopListening();
     int len = static_cast<uint8_t>(data.size());
     uint8_t send_data[len];
-    for(auto i : data)
+    for(int i = 0; i<int(data.size()); i++)
     {
+        std::cout<<int(data[i])<<" "<<std::endl;
         send_data[i] = data[i];
     }
     radio.write(send_data, len);
