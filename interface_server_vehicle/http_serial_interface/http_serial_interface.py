@@ -12,12 +12,12 @@ time.sleep(2)
 
 #server
 #variables from server
-route = []
-qr_code_destination = ""
-required_status = ""
+route = [1, 1, 2, 2, 3, 3, 4, 4]
+qr_code_destination = 0x0005
+required_status = "status_robot"
 device_id = 0
-sensor_to_read = ""
-command = ""
+sensor_to_read = "ultrasound"
+command = "open_box"
 #variables to server
 qr_codes_read = []
 sensor_reading = 0
