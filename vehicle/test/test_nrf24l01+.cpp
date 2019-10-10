@@ -15,7 +15,19 @@ int main()
 	
 	while(radio.isChipConnected())
 	{
-		//std::cout<<"nada"<<std::endl;
+		/*std::vector<uint16_t> qr_codes_read;
+		qr_codes_read.push_back(1);
+		qr_codes_read.push_back(2);
+		qr_codes_read.push_back(3);
+		float ultrassound_reading;
+		uint8_t other_sensors_reading;
+		ultrassound_reading = 2.345678;
+		other_sensors_reading = NO_SENSOR_READ;
+		Movement movement;
+		status::Status status;
+		movement.read = false;
+		status = status::MOVING_FORWARD;
+		radio.sendToRadio(SendedMessage(qr_codes_read, ultrassound_reading, other_sensors_reading, movement, status));*/
 		if(radio.receiveFromRadio())
 		{
 			std::cout <<"recebi pacote"<<std::endl;
@@ -71,7 +83,6 @@ int main()
 				status = status::NO_STATUS;
 			}
 			radio.sendToRadio(SendedMessage(qr_codes_read, ultrassound_reading, other_sensors_reading, movement, status));
-			std::cout << "mandei de volta"<<std::endl;
 		}
 	}
 	std::cout <<"acabou" <<std::endl;

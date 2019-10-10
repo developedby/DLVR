@@ -18,6 +18,7 @@ RadioCommunication::RadioCommunication()
     radio.startListening();
     eventSetFuncEx(1, sendFailure, this);
     eventSetFuncEx(2, sendOk, this);
+    attemps = 0;
 }
 
 void RadioCommunication::setAddress(uint8_t *address)
@@ -89,7 +90,6 @@ void RadioCommunication::sendToRadio(SendedMessage message)
     uint8_t send_data[len];
     for(int i = 0; i<int(data.size()); i++)
     {
-        std::cout<<int(data[i])<<" "<<std::endl;
         send_data[i] = data[i];
     }
     radio.write(send_data, len);
