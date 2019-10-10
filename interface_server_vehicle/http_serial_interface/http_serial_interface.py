@@ -15,11 +15,11 @@ time.sleep(2)
 route = [1, 1, 2, 2, 3, 3, 4, 4]
 qr_code_destination = 0x0005
 required_status = "status_robot"
-device_id = 0
+device_id = 1
 sensor_to_read = "ultrasound"
 command = "open_box"
 #variables to server
-qr_codes_read = []
+qr_codes_read = bytearray()
 sensor_reading = 0
 status = ""
 #dictionaries to server
@@ -48,16 +48,18 @@ packet_content += (1 if required_status else 0) << 0
 packet_to_vehicle.append(packet_content)
 if route:
     packet_to_vehicle.append(len(route))
-    packet_to_vehicle.append(route)
-    packet_to_vehicle.append(qr_code_destination)
+    packet_to_vehicle.extend(route)
+    packet_to_vehicle.append((qr_code_destination & 0xff00) >> 8)
+    packet_to_vehicle.append((qr_code_destination & 0xff))
 if command:
-    packet_to_vehicle.append(command)
+    packet_to_vehicle.append(possible_commands[command])
 if sensor_to_read:
     packet_to_vehicle.append(vehicle_sensors_code[sensor_to_read])
 if required_status:
     packet_to_vehicle.append(possible_status_to_vehicle[required_status])
 
 packet_to_vehicle.append(START_BYTE)
+print(packet_to_vehicle)
 packet_to_vehicle = bytes(packet_to_vehicle)
 print(type(packet_to_vehicle), len(packet_to_vehicle), packet_to_vehicle)
 s.write(packet_to_vehicle)
@@ -73,24 +75,28 @@ print(type(packet_from_vehicle), len(packet_from_vehicle), packet_from_vehicle)
 
 #interpret packet from vehicle
 
-if(packet_from_vehicle and packet_from_vehicle[0] == START_BYTE and packet_from_vehicle[len(packet_from_vehicle)] == START_BYTE 
-                                        and packet_from_vehicle[1] == device_id):
-    current_address = 2
+if(packet_from_vehicle and packet_from_vehicle[-1] == START_BYTE 
+                                        and packet_from_vehicle[0] == device_id):
+    current_address = 1
     if sensor_to_read == "ultrasound":
-        sensor_read = struct.pack('f', packet_from_vehicle[current_address:(current_address+3)])
+        sensor_read = struct.unpack('f', packet_from_vehicle[current_address:(current_address+4)])
         current_address += 4
     elif sensor_to_read != "ultrasound":
             sensor_read = packet_from_vehicle[current_address]
             current_address += 1
     if required_status == "movement":
-        movement["amplitude"] = struct.pack('f', packet_from_vehicle[current_address:(current_address+3)])
+        movement["amplitude"] = struct.unpack('f', packet_from_vehicle[current_address:(current_address+4)])
         current_address += 4
-        movement["curvature"] = struct.pack('f',packet_from_vehicle[current_address:(current_address+3)])
+        movement["curvature"] = struct.unpack('f',packet_from_vehicle[current_address:(current_address+4)])
         current_address += 4
         status = movement
     elif required_status == "status_robot":
         status = possible_status_from_vehicle[packet_from_vehicle[current_address]]
-    qr_codes_read.append(packet_from_vehicle[current_address : len(packet_from_vehicle - 2)])
+        current_address += 1
+    qr_codes_read += packet_from_vehicle[current_address : -1]
+    print("sensor: ", sensor_read)
+    print("status: ", status)
+    print(list(qr_codes_read))
 
 s.close()
 print("fim")
