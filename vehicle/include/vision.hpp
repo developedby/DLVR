@@ -1,5 +1,5 @@
-#ifndef vision_h_
-#define vision_h_
+#ifndef vision_hpp_
+#define vision_hpp_
 
 #include <vector>
 #include <raspicam/raspicam_cv.h>

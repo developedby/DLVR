@@ -1,5 +1,5 @@
-#ifndef wheel_h_
-#define wheel_h_
+#ifndef wheel_hpp_
+#define wheel_hpp_
 #include <cstdint>
 #include "encoder.hpp"
 #include "dc_motor.hpp"

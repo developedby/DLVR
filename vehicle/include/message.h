@@ -1,5 +1,5 @@
-#ifndef _MESSAGE_H_
-#define _MESSAGE_H_
+#ifndef message_hpp_
+#define message_hpp_
 
 #include <vector>
 

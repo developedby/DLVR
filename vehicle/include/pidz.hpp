@@ -1,5 +1,5 @@
-#ifndef __PIDZ__
-#define __PIDZ__
+#ifndef pidz_hpp_
+#define pidz_hpp_
 
 #include <limits>
 
