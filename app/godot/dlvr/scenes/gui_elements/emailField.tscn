@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://scripts/EmailField.gd" type="Script" id=1]
+
+[sub_resource type="StyleBoxFlat" id=1]
+bg_color = Color( 1, 1, 1, 1 )
+border_width_bottom = 2
+border_color = Color( 0.517647, 0.729412, 0.898039, 1 )
+
+[node name="emailField" type="LineEdit"]
+margin_left = 10.0
+margin_top = 20.0
+margin_right = 710.0
+margin_bottom = 67.0
+custom_styles/focus = SubResource( 1 )
+script = ExtResource( 1 )
