@@ -1,5 +1,5 @@
-#ifndef servo_h_
-#define servo_h_
+#ifndef servo_hpp_
+#define servo_hpp_
 
 class Servo
 {

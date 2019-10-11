@@ -1,5 +1,5 @@
-#ifndef item_detector_h_
-#define item_detector_h_
+#ifndef item_detector_hpp_
+#define item_detector_hpp_
 
 class ItemDetector
 {

@@ -1,5 +1,5 @@
 #ifndef ultrasound_h_
-#define ultrasound_h_
+#define ultrasound_hpp_
 #include <cstdint>
 
 class Ultrasound

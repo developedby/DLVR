@@ -1,5 +1,5 @@
-#ifndef encoder_h_
-#define encoder_h_
+#ifndef encoder_hpp_
+#define encoder_hpp_
 #include <cstdint>
 
 class Encoder

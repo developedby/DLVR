@@ -1,5 +1,5 @@
-#ifndef lock_h_
-#define lock_h_
+#ifndef lock_hpp_
+#define lock_hpp_
 #include "servo.hpp"
 
 class Lock

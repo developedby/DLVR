@@ -1,5 +1,5 @@
-#ifndef dc_motor_h
-#define dc_motor_h
+#ifndef dc_motor_hpp_
+#define dc_motor_hpp_
 
 class DCMotor
 {

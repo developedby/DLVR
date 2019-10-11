@@ -1,5 +1,5 @@
-#ifndef __MOVEMENT__
-#define __MOVEMENT__
+#ifndef movement_hpp_
+#define movement_hpp_
 
 #include "pidz.hpp"
 #include "wheel.hpp" 

@@ -1,10 +1,10 @@
 //biblioteca criada para escrever para um radio transmissor
 
-#ifndef _RADIOCOMMUNICATION_H_
-#define _RADIOCOMMUNICATION_H_
+#ifndef radiocommunication_hpp_
+#define radiocommunication_hpp_
 
-#include "Radio.h"
-#include "message.h"
+#include "radio.hpp"
+#include "message.hpp"
 #include <pigpio.h>
 
 class RadioCommunication{
