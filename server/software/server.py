@@ -1,22 +1,27 @@
 import http.server
 import socketserver
+import ssl
 import os
 import mimetypes
 import importlib
 
 def main():
-    os.chdir("./public")
-    PORT = 80
-    socketserver.ThreadingTCPServer.allow_reuse_address = True
-    httpd = socketserver.ThreadingTCPServer(("", PORT), HTTPRequestHandler)
-    print("Serving HTTP on {0} port {1} (http://{0}:{1}/) ...".format(httpd.server_address[0], httpd.server_address[1]))
-    httpd.serve_forever()
+    try:
+        PORT = 443
+        socketserver.ThreadingTCPServer.allow_reuse_address = True
+        httpd = socketserver.ThreadingTCPServer(("", PORT), HTTPRequestHandler)
+        httpd.socket = ssl.wrap_socket(httpd.socket, keyfile = "./key.pem", certfile = "./cert.pem", server_side = True)
+        print("Serving HTTPS on {0} port {1} (https://{0}:{1}/) ...".format(httpd.server_address[0], httpd.server_address[1]))
+        os.chdir("./public")
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        httpd.server_close()
 
 class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     script_cache = {}
 
     def do_GET(self):
-        path = "." + self.path
+        path = "./" + self.path.strip("/")
 
         if not os.path.exists(path):
             path += ".py"
@@ -40,12 +45,21 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                     "lastmodified": os.path.getmtime(path)
                 }
 
-            script.main(self)
+            try:
+                script.main(self)
+            except:
+                self.send_error(500)
+                self.end_headers()
         else:
-            super().do_GET()
+            path = "./" + self.path.strip("/")
+            if os.path.isdir(path) and os.path.isfile(path + "/forbidden"):
+                self.send_error(403)
+                self.end_headers()
+            else:
+                super().do_GET()
 
     def do_POST(self):
-        path = self.path
+        path = "./" + self.path.strip("/")
 
         if not os.path.exists(path):
             path += ".py"
@@ -69,13 +83,17 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                     "lastmodified": os.path.getmtime(path)
                 }
 
-            script.main(self)
+            try:
+                script.main(self)
+            except:
+                self.send_error(500)
+                self.end_headers()
         else:
-            self.send_response(501)
+            self.send_error(501)
             self.end_headers()
 
     def do_PUT(self):
-        path = self.path
+        path = "./" + self.path.strip("/")
 
         if not os.path.exists(path):
             path += ".py"
@@ -99,13 +117,17 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                     "lastmodified": os.path.getmtime(path)
                 }
 
-            script.main(self)
+            try:
+                script.main(self)
+            except:
+                self.send_error(500)
+                self.end_headers()
         else:
-            self.send_response(501)
+            self.send_error(501)
             self.end_headers()
 
     def do_DELETE(self):
-        path = self.path
+        path = "./" + self.path.strip("/")
 
         if not os.path.exists(path):
             path += ".py"
@@ -129,9 +151,13 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                     "lastmodified": os.path.getmtime(path)
                 }
 
-            script.main(self)
+            try:
+                script.main(self)
+            except:
+                self.send_error(500)
+                self.end_headers()
         else:
-            self.send_response(501)
+            self.send_error(501)
             self.end_headers()
 
 if __name__ == "__main__":
