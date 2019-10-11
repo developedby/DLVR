@@ -97,46 +97,6 @@ void RadioCommunication::sendToRadio(SendedMessage message)
     radio_ack_thread = gpioStartThread(waitAck, this);
 }
 
-void* waitAck(void *obj)
-{
-    RadioCommunication *internal_radio = static_cast<RadioCommunication*>(obj);
-    uint32_t startTick = gpioTick();
-    while(!internal_radio->radio.isAckPayloadAvailable())
-    {
-        if((gpioTick() - startTick) > TIME_OUT_RADIO_ACK)
-        {
-            eventTrigger(1);
-            return nullptr;
-        }
-    }
-    eventTrigger(2);
-    return nullptr;
-}
-
-void sendOk(int event, uint32_t tick, void* obj)
-{
-    RadioCommunication *internal_radio = static_cast<RadioCommunication*>(obj);
-    internal_radio->radio.writeAckPayload(1, &(internal_radio->ack), 1);
-    internal_radio->siz = 0;
-    internal_radio->attemps = 0;
-    gpioStopThread(internal_radio->radio_ack_thread);
-}
-
-void sendFailure(int event, uint32_t tick, void* obj)
-{
-    RadioCommunication *internal_radio = static_cast<RadioCommunication*>(obj);
-    internal_radio->attemps++;
-    gpioStopThread(internal_radio->radio_ack_thread);
-    if(internal_radio->attemps > RETRIES)
-    {
-        eventTrigger(3);
-    }
-    else
-    {
-        internal_radio->sendToRadio(internal_radio->last_sended_message);
-    }
-}
-
 bool RadioCommunication::receiveFromRadio()
 {
     if(radio.available())
@@ -210,4 +170,44 @@ void RadioCommunication::debug()
 bool RadioCommunication::isChipConnected()
 {
     return radio.isChipConnected();
-} 
+}
+
+void* waitAck(void *obj)
+{
+    RadioCommunication *internal_radio = static_cast<RadioCommunication*>(obj);
+    uint32_t startTick = gpioTick();
+    while(!internal_radio->radio.isAckPayloadAvailable())
+    {
+        if((gpioTick() - startTick) > TIME_OUT_RADIO_ACK)
+        {
+            eventTrigger(1);
+            return nullptr;
+        }
+    }
+    eventTrigger(2);
+    return nullptr;
+}
+
+void sendOk(int event, uint32_t tick, void* obj)
+{
+    RadioCommunication *internal_radio = static_cast<RadioCommunication*>(obj);
+    internal_radio->radio.writeAckPayload(1, &(internal_radio->ack), 1);
+    internal_radio->siz = 0;
+    internal_radio->attemps = 0;
+    gpioStopThread(internal_radio->radio_ack_thread);
+}
+
+void sendFailure(int event, uint32_t tick, void* obj)
+{
+    RadioCommunication *internal_radio = static_cast<RadioCommunication*>(obj);
+    internal_radio->attemps++;
+    gpioStopThread(internal_radio->radio_ack_thread);
+    if(internal_radio->attemps > RETRIES)
+    {
+        eventTrigger(3);
+    }
+    else
+    {
+        internal_radio->sendToRadio(internal_radio->last_sended_message);
+    }
+}

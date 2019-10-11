@@ -3,11 +3,20 @@
 #include <cstdint>
 #include <cmath>
 #include <pigpio.h>
+#include "constants.hpp"
 
 int Encoder::instances = 0;
 
-Encoder::Encoder(int const pin) : pin_read(pin), last_measure(gpioTick()), sigma_space(2.0), sigma_time(2.0)
+Encoder::Encoder(int encoder_num) : last_measure(gpioTick()), sigma_space(2.0), sigma_time(2.0)
 {
+    if(encoder_num == 0)
+    {
+        pin_read = constants::left_encoder_pin;
+    }
+    else
+    {
+        pin_read = constants::right_encoder_pin;
+    }
     this->instances++;
     this->createSpatialWeights();
     for (int i=0; i < n_measures; i++)

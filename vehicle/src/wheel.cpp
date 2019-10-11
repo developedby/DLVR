@@ -5,9 +5,7 @@
 #include <pigpio.h>
 
 
-Wheel::Wheel(int const enc_pin, int const motor_fwd_pin, int const motor_bkwd_pin, int const motor_pwm_pin) : encoder(enc_pin), dc_motor(motor_fwd_pin, motor_bkwd_pin, motor_pwm_pin)
-{
-}
+Wheel::Wheel(int wheel_num) : encoder(wheel_num), dc_motor(wheel_num) {}
 
 void Wheel::spin(int const direction, float const duty_cycle)
 {

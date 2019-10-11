@@ -2,17 +2,17 @@
 #include <iostream>
 #include <cstdint>
 #include <pigpio.h>
+#include "constants.hpp"
 
-Ultrasound * the_ultrasound;
-
-Ultrasound::Ultrasound(int const pin_trigger_, int const pin_echo_) : pin_trigger(pin_trigger_), pin_echo(pin_echo_)
+Ultrasound::Ultrasound()
 {
-    the_ultrasound = this;
+    pin_trigger = constants::ultrasound_trigger_pin;
+    pin_echo = constants::ultrasound_echo_pin;
     gpioSetMode(pin_trigger, PI_OUTPUT);
     gpioSetMode(pin_echo, PI_INPUT);
     gpioWrite(pin_trigger, 0);
-    gpioSetAlertFunc(pin_echo, callRegisterEcho);
-    gpioSetTimerFunc(0, poll_rate_ms, callPollDistance);
+    gpioSetAlertFuncEx(pin_echo, callRegisterEcho, this);
+    gpioSetTimerFuncEx(0, poll_rate_ms, callPollDistance, this);
 }
 
 void Ultrasound::pollDistance()
@@ -42,12 +42,14 @@ double Ultrasound::getDistance()
 }
 
 
-void callPollDistance()
+void callPollDistance(void *obj)
 {
+    Ultrasound *the_ultrasound = static_cast<Ultrasound*>(obj);
     the_ultrasound->pollDistance();
 }
 
-void callRegisterEcho(int const gpio, int const level, uint32_t const tick)
+void callRegisterEcho(int const gpio, int const level, uint32_t const tick, void *obj)
 {
+    Ultrasound *the_ultrasound = static_cast<Ultrasound*>(obj); 
     the_ultrasound->registerEcho(level, tick);
 }

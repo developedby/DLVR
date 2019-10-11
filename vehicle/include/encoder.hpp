@@ -5,7 +5,7 @@
 class Encoder
 {
     public:
-        Encoder(int const pin);
+        Encoder(int encoder_num);
         float getAngularSpeed();
         void registerMeasurement(int const level, uint32_t const tick);
         void registerStopped();

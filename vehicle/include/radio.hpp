@@ -3,7 +3,6 @@
 #ifndef radiosets_hpp_
 #define radiosets_hpp_
 
-#include "TransConstants.h"
 #include <RF24/RF24.h>
 
 class Radio : public RF24{

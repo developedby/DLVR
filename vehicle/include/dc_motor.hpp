@@ -8,7 +8,7 @@ class DCMotor
         int pin_bkwd;
         int pin_pwm;
     public:
-        DCMotor(int const pin_fwd_, int const pin_bkwd_, int const pin_pwm_);
+        DCMotor(int motor_num);
         void spin(int const direction, double const duty_cycle);
 };
 

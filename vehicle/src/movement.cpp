@@ -9,15 +9,15 @@ float Movement::limit(float vmin, float v, float vmax) {
     return min(vmax, max(vmin, v));
 }
 
-Movement::Movement(float wheel_distance, float l_Kp, float l_Ki, float l_Kd, float r_Kp, float r_Ki, float r_Kd, float T,
-                   int const l_enc_pin, int const l_motor_fwd_pin, int const l_motor_bkwd_pin, int const l_motor_pwm_pin,
-                   int const r_enc_pin, int const r_motor_fwd_pin, int const r_motor_bkwd_pin, int const r_motor_pwm_pin) :
+Movement::Movement(float wheel_distance, float l_Kp, float l_Ki, float l_Kd, float r_Kp, float r_Ki, float r_Kd, float T) :
           wheel_distance(wheel_distance), iwflag(false)
           left_pid(l_Kp, l_Ki, l_Kd, T, 0.0f, 1.0f),
           right_pid(r_Kp, r_Ki, r_Kd, T, 0.0f, 1.0f),
-          left_wheel(l_enc_pin, l_motor_fwd_pin, l_motor_bkwd_pin, l_motor_pwm_pin),
-          right_wheel(r_enc_pin, r_motor_fwd_pin, r_motor_bkwd_pin, r_motor_pwm_pin),
-          lr(0.0f), rr(0.0f), balance(0.0f), l_dir(0), r_dir(0) {}
+          lr(0.0f), rr(0.0f), balance(0.0f), l_dir(0), r_dir(0) 
+{
+    left_wheel(0);
+    right_wheel(1);
+}
 
 void Movement::turn(float degrees) {
     lr = 800;
