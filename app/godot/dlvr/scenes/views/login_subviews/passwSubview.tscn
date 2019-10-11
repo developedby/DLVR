@@ -1,0 +1,41 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://resources/theme.tres" type="Theme" id=1]
+[ext_resource path="res://scripts/subview.gd" type="Script" id=2]
+[ext_resource path="res://resources/link_font.tres" type="DynamicFont" id=3]
+
+[node name="passw_view" type="Control"]
+editor/display_folded = true
+visible = false
+margin_top = 435.0
+margin_right = 721.0
+margin_bottom = 518.0
+theme = ExtResource( 1 )
+script = ExtResource( 2 )
+id = 1
+
+[node name="label" type="Label" parent="."]
+margin_left = 11.0
+margin_top = 19.0
+margin_right = 711.0
+margin_bottom = 72.2
+hint_tooltip = "Email"
+text = "someone@example.com"
+
+[node name="inputField" type="LineEdit" parent="."]
+margin_left = 10.0
+margin_top = 100.0
+margin_right = 710.0
+margin_bottom = 147.0
+hint_tooltip = "PASSW_KS"
+secret = true
+placeholder_text = "PASSW_KS"
+placeholder_alpha = 0.45
+caret_blink = true
+
+[node name="forgetPassW" type="ToolButton" parent="."]
+margin_top = 159.0
+margin_right = 159.0
+margin_bottom = 188.2
+custom_fonts/font = ExtResource( 3 )
+text = "FORGET_PASSW_KS"

@@ -1,3 +1,8 @@
 ,en,pt
+CONTINUE_KS,Continue,Continuar
 EMAIL_KS,Email,Email
 PASSW_KS,Password,Senha
+FORGET_PASSW_KS,Forget password?,Esqueceu a senha?
+NAME_KS,Name,Nome
+SURNAME_KS,Surname,Sobrenome
+REPASSW_KS,Password (Again),Senha (Novamente)
