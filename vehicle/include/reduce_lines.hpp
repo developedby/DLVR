@@ -4,9 +4,9 @@
 #include <vector>
 #include <opencv2/core.hpp>
 
-namespace reduce_lines
+namespace street_lines
 {
-	void reduceLines (const std::vector<cv::Vec4i>& in_lines, std::vector<cv::Vec4i> out_lines,
+	void reduceLines (const std::vector<cv::Vec4i>& in_lines, std::vector<cv::Vec4i>& out_lines,
 				      const float extend_ratio, const float delta_theta, const float rect_thickness);
 
 	bool extendedBoundingRectangleLineEquivalence(const cv::Vec4i& _l1, const cv::Vec4i& _l2, float extensionLengthFraction,

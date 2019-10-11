@@ -5,9 +5,9 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 
-namespace reduce_lines
+namespace street_lines
 {
-    void reduceLines (const std::vector<cv::Vec4i>& in_lines, std::vector<cv::Vec4i> out_lines,
+    void reduceLines (const std::vector<cv::Vec4i>& in_lines, std::vector<cv::Vec4i>& out_lines,
                       const float extend_ratio, const float delta_theta, const float rect_thickness)
     {
         std::vector<int> labels;
@@ -91,7 +91,6 @@ namespace reduce_lines
         return (pointPolygonTest(lineBoundingContour, cv::Point(el2[0], el2[1]), false) == 1 ||
                 pointPolygonTest(lineBoundingContour, cv::Point(el2[2], el2[3]), false) == 1);
     }
-
 
     cv::Vec4i extendedLine(cv::Vec4i line, double d)
     {
