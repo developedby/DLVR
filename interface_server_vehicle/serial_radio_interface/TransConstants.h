@@ -34,6 +34,7 @@
 //chaves de comunicacao
 #define START_BYTE 0xAA //chave que indica o inicio de um novo pacote contendo endereco e dados para os robos receptores
 #define COORD_ADDRESS "DLVRC" //chave que indica o inicio de um pacote efetivo de velocidades
+#define TIME_OUT_RADIO_ACK 500
 
 
 #endif

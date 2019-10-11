@@ -35,17 +35,22 @@ void RadioCommunication::setAddress(uint8_t *address)
     }
 }
 
-void RadioCommunication::sendToRadio(const void *data, uint8_t len)
+bool RadioCommunication::sendToRadio(const void *data, uint8_t len)
 {
+    unsigned long time_start = millis();
     radio->stopListening();
     radio->write(data, len);
     radio->startListening();
     while(!radio->isAckPayloadAvailable())
     {
-        ;
+        if(millis()-time_start >= TIME_OUT_RADIO_ACK)
+        {
+            return false;
+        }
     }
     radio->writeAckPayload(1, &ack, 1);
     siz = 0;
+    return true;
 }
 
 bool RadioCommunication::receiveFromRadio()
