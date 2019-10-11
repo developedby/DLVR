@@ -1,22 +1,22 @@
 import http.server
+import socketserver
 import os
 import mimetypes
 import importlib
 
 def main():
-    PORT = 8080
-    httpd = http.server.ThreadingHTTPServer(("", PORT), HTTPRequestHandler)
+    os.chdir("./public")
+    PORT = 80
+    socketserver.ThreadingTCPServer.allow_reuse_address = True
+    httpd = socketserver.ThreadingTCPServer(("", PORT), HTTPRequestHandler)
     print("Serving HTTP on {0} port {1} (http://{0}:{1}/) ...".format(httpd.server_address[0], httpd.server_address[1]))
     httpd.serve_forever()
 
 class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     script_cache = {}
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, directory = "./public", **kwargs)
-
     def do_GET(self):
-        path = "./public" + self.path
+        path = "." + self.path
 
         if not os.path.exists(path):
             path += ".py"
@@ -26,7 +26,7 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         mimetype = mimetypes.guess_type(path)
 
         if os.path.exists(path) and mimetype[0] == "text/x-python":
-            module_name = path.replace(".py", "").replace("/", ".").strip(".")
+            module_name = "public." + path.replace(".py", "").replace("/", ".").strip(".")
             if module_name in self.script_cache:
                 if self.script_cache[module_name]["lastmodified"] < os.path.getmtime(path):
                     self.script_cache[module_name]["module"] = importlib.reload(self.script_cache[module_name]["module"])
@@ -45,7 +45,7 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             super().do_GET()
 
     def do_POST(self):
-        path = "./public" + self.path
+        path = self.path
 
         if not os.path.exists(path):
             path += ".py"
@@ -75,7 +75,7 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
 
     def do_PUT(self):
-        path = "./public" + self.path
+        path = self.path
 
         if not os.path.exists(path):
             path += ".py"
@@ -105,7 +105,7 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
 
     def do_DELETE(self):
-        path = "./public" + self.path
+        path = self.path
 
         if not os.path.exists(path):
             path += ".py"
