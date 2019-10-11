@@ -8,7 +8,14 @@
 #include "intelligence.hpp"
 class Vehicle
 {
-
+    private:
+        Vision vision;
+        Movement movement;
+        RadioCommunication communication;
+        DeliveryBox box;
+        Intelligence intelligence;
+    public:
+        Vehicle();
 };
 
 #endif

@@ -7,7 +7,7 @@ class ItemDetector
         int pin_read1;
         int pin_read2;
     public:
-        ItemDetector(int pin1, int pin2);
+        ItemDetector();
         bool hasItem();
 };
 

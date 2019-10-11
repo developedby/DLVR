@@ -8,7 +8,7 @@ class Servo
     public:
         double crnt_pos;
         bool active;
-        Servo(int const pin);
+        Servo();
         void goPos(double const pos);
         void release();
 };

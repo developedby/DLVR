@@ -1,9 +1,11 @@
 #include "servo.hpp"
 #include <cassert>
 #include <pigpio.h>
+#include "constants.hpp"
 
 Servo::Servo(int const pin) : pwm_pin(pin)
 {
+    pwm_pin = constants::servo_pin;
     assert(pwm_pin == 12 || pwm_pin == 13 || pwm_pin == 18 || pwm_pin == 19);
     if (pwm_pin == 12 || pwm_pin == 13)
         gpioSetMode(pwm_pin, PI_ALT0);

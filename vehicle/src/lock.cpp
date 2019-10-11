@@ -1,6 +1,6 @@
 #include "lock.hpp"
 
-Lock::Lock(int const servo_pin) : servo{servo_pin} {}
+Lock::Lock() {}
 
 void Lock::lock()
 {
