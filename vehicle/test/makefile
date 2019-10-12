@@ -41,3 +41,10 @@ pid_tunning: ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ./pid_tunni
 radio: test_nrf24l01+.cpp ../src/Radio.cpp ../src/RadioCommunication.cpp
 	gcc -Wall -o ./build/test_nrf24l01 test_nrf24l01+.cpp ../src/Radio.cpp ../src/RadioCommunication.cpp \
 		-lpigpio -lrt -lm -lpthread -lstdc++ -lrf24-bcm -I../include
+
+#Teste visão
+vision: test_vision.cpp ../src/vision.cpp
+	gcc -Wall -o ./build/test_vision test_vision.cpp ../src/vision.cpp
+		-lpigpio -lrt -lm -lpthread -lstdc++ -lrf24-bcm \
+		-lopencv_core -lopencv_highgui -lopencv_imgcodecs \
+		-I../include -I/usr/local/include -I/usr/local/include/opencv4
