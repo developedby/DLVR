@@ -24,7 +24,7 @@ void Vision::getCamImg()
 	cv::cvtColor(this->img, this->img, cv::COLOR_BGR2HLS);
 }
 
-std::vector<StreetSection> Vision::findStreets()
+std::vector<street_lines::StreetSection> Vision::findStreets()
 {
 	cv::Mat blue_tape_mask;
 	this->getBlueTapeMask(blue_tape_mask);
@@ -40,24 +40,18 @@ std::vector<StreetSection> Vision::findStreets()
 	street_lines::getStreetLines(street_lines_mask, street_lines);
 	
 	std::vector<float> street_lines_angles;
-	angles.resize(street_lines.size());
+	street_lines_angles.resize(street_lines.size());
 	std::transform(street_lines.begin(), street_lines.end(), street_lines_angles.begin(), street_lines::getStreetLineAngle);
 	
-	std::vector<std::pair<float>> street_lines_dists;
+	std::vector<std::pair<float,float>> street_lines_dists;
 	street_lines_dists.resize(street_lines.size());
-	std::transform(street_lines.begin(), street_lines.end(), street_lines_dists.begin()
+	std::transform(street_lines.begin(), street_lines.end(), street_lines_dists.begin(), street_lines::getStreetLines);
+	//return ;//
 }
 
 void Vision::getColorMask(cv::Mat& dst, int const h_min, int const h_max, int const l_min, int const l_max, int const s_min, int const s_max)
 {
-	cv::Mat img_ch[3];
-	cv::split(this->img, img_ch);
-	cv::Mat mask_aux;
-	cv::inRange(img_ch[0], h_min, h_max, mask)
-	cv::inRange(img_ch[1], l_min, l_max, mask_aux);
-	cv::bitwise_and(mask, mask_aux, mask);
-	cv::inRange(img_ch[2], s_min, s_max, mask_aux);
-	cv::bitwise_and(mask, mask_aux, mask);	
+	cv::inRange(img, cv::Scalar(h_min, l_min, s_min), cv::Scalar(h_max, l_max, s_max), dst);
 }
 
 void Vision::getRedTapeMask(cv::Mat& dst)

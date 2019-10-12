@@ -1,4 +1,4 @@
-#include "RadioCommunication.h"
+#include "radio_communication.hpp"
 #include <iostream>
 
 RadioCommunication::RadioCommunication()
