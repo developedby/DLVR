@@ -1,18 +1,19 @@
-#include "RadioCommunication.h"
 #include <iostream>
+#include "RadioCommunication.h"
+#include "constants.hpp"
+
 
 RadioCommunication::RadioCommunication()
 {
     int i = 0;
     //radio = new Radio();
-    for(i=0; i<W_DATA; i++)
+    for(i=0; i<constants::radio_width_data; i++)
     {
         received_data[i] = 0;
     }
     siz = 0;
     ack = 0;
-    uint8_t address[] = {MY_ADDRESS};
-    radio.openReadingPipe(1, address);
+    radio.openReadingPipe(1, constants::radio_address);
     radio.enableAckPayload();               // Allow optional ack payloads
     radio.enableDynamicPayloads();
     radio.startListening();
@@ -24,13 +25,13 @@ RadioCommunication::RadioCommunication()
 void RadioCommunication::setAddress(uint8_t *address)
 {
     int i = 0, j=0;
-    for(i=0; i<W_ADDRESS; i++)
+    for(i=0; i<constants::radio_width_address; i++)
     {
         if(address[i] != last_address[i])
         {
             radio.openWritingPipe(address);
             ack = 0;
-            for(j=0; j<W_ADDRESS; j++)
+            for(j=0; j<constants::radio_width_address; j++)
             {
                 last_address[j] = address[j];
             }

@@ -22,6 +22,14 @@ namespace constants
 	int const right_encoder_pin = 3;
 	int const ultrasound_trigger_pin = 27;
 	int const ultrasound_echo_pin = 22;
+	int const radio_delay_transmitting = 0;
+	int const radio_retries = 3;
+	int const radio_width_address = 5;
+	int const radio_width_data = 45;
+	uint8_t const radio_start_byte = 0xaa;
+	uint8_t const radio_address[] = "DLVR1";
+	uint8_t const coord_address[] = "DLVRC";
+	int const time_out_radio_ack = 500000;
 }
 
 #endif

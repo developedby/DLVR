@@ -1,6 +1,7 @@
 #include <iostream>
 #include <pigpio.h>
 #include "RadioCommunication.h"
+#include "constants.hpp"
 
 int main()
 {
@@ -11,7 +12,7 @@ int main()
     }
 	RadioCommunication radio = RadioCommunication();
 	uint8_t address[] = {COORD_ADDRESS};
-	radio.setAddress(address);
+	radio.setAddress(constants::coord_address);
 	
 	while(radio.isChipConnected())
 	{

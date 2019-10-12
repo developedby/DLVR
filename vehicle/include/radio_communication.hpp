@@ -3,9 +3,9 @@
 #ifndef radiocommunication_hpp_
 #define radiocommunication_hpp_
 
+#include <pigpio.h>
 #include "radio.hpp"
 #include "message.hpp"
-#include <pigpio.h>
 
 class RadioCommunication{
     unsigned char received_data[W_DATA];
