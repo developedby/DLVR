@@ -5,12 +5,12 @@ DeliveryBox::DeliveryBox() {}
 
 void DeliveryBox::lock()
 {
-    lock.lock();
+    lock_obj.lock();
 }
 
 void  DeliveryBox::unlock()
 {
-    lock.unlock();
+    lock_obj.unlock();
 }
 
 bool DeliveryBox::hasItem()

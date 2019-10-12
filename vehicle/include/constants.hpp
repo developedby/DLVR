@@ -1,6 +1,8 @@
 #ifndef constants_h_
 #define constants_h_
 
+#include<cstdint>
+
 namespace constants
 {
 	int const img_height = 960;

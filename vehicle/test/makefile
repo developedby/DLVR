@@ -48,3 +48,9 @@ vision: test_vision.cpp ../src/vision.cpp
 		-lpigpio -lrt -lm -lpthread -lstdc++ -lrf24-bcm \
 		-lopencv_core -lopencv_highgui -lopencv_imgcodecs \
 		-I../include -I/usr/local/include -I/usr/local/include/opencv4
+
+#Teste vehicle
+#vehicle: ../src/vehicle.cpp ../src/movement.cpp ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/pidz.cpp ../src/radio.cpp ../src/radio_communication.cpp ../src/servo.cpp ../src/lock.cpp ../src/item_detector.cpp ../src/delivery_box.cpp
+vehicle: ../src/vehicle.cpp ../src/radio.cpp ../src/radio_communication.cpp ../src/servo.cpp ../src/lock.cpp ../src/item_detector.cpp ../src/delivery_box.cpp ../src/intelligence.cpp
+	gcc -Wall -o ./build/vehicle ../src/vehicle.cpp ../src/radio.cpp ../src/radio_communication.cpp ../src/servo.cpp ../src/lock.cpp ../src/item_detector.cpp ../src/delivery_box.cpp ../src/intelligence.cpp\
+		-lpigpio -lrt -lm -lpthread -lstdc++ -lrf24-bcm -I../include

@@ -1,6 +1,7 @@
 #include "intelligence.hpp"
 
-Intelligence::Intelligence()
+Intelligence::Intelligence(Vehicle *_vehicle) : vehicle(_vehicle)
 {
     
 }
+
