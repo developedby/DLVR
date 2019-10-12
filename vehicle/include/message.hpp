@@ -3,7 +3,7 @@
 
 #include <vector>
 
-struct Movement{
+struct MovementInfo{
     bool read;
     float amplitude;
     float curvature;
@@ -58,9 +58,9 @@ class SendedMessage{
         std::vector<uint16_t> qr_codes_read;
         float ultrassound_reading;
         uint8_t other_sensors_reading;
-        Movement movement;
+        MovementInfo movement;
         status::Status status;
-        SendedMessage(std::vector<uint16_t> _qr_codes_read, float _ultrassound_reading, bool _other_sensors_reading, Movement _movement, status::Status _status):
+        SendedMessage(std::vector<uint16_t> _qr_codes_read, float _ultrassound_reading, bool _other_sensors_reading, MovementInfo _movement, status::Status _status):
             qr_codes_read(_qr_codes_read), ultrassound_reading(_ultrassound_reading), other_sensors_reading(_other_sensors_reading), movement(_movement), status(_status) {}
         SendedMessage(){;}
 };

@@ -8,7 +8,7 @@ class DeliveryBox
 {
     private:
         ItemDetector detector;
-        Lock lock;
+        Lock lock_obj;
     public:
         DeliveryBox();
         void lock();

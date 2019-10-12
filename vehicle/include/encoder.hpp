@@ -14,7 +14,7 @@ class Encoder
         float measures_us[n_measures];
     private:
         static int instances;
-        int const pin_read;
+        int pin_read;
         uint32_t last_measure;
         uint32_t static const max_measure_interval = 1000000;
         float space_weight[n_measures] = {};

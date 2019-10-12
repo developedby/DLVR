@@ -4,11 +4,16 @@
 #include <vector>
 #include <algorithm>
 #include <opencv2/core.hpp>
+#include <opencv2/imgproc.hpp>
 #include <reduce_lines.hpp>
 #include "geometry.hpp"
+#include "constants.hpp"
 
-using constants::y_horizon, constants::img_height,
-      constants::img_width, constants::img_theta_min, constants::img_real_zero_deg;
+using constants::img_y_horizon;
+using constants::img_height;
+using constants::img_width;
+using constants::img_theta_min;
+using constants::img_real_zero_deg;
 
 namespace street_lines
 {

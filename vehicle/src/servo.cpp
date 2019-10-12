@@ -3,7 +3,7 @@
 #include <pigpio.h>
 #include "constants.hpp"
 
-Servo::Servo(int const pin) : pwm_pin(pin)
+Servo::Servo()
 {
     pwm_pin = constants::servo_pin;
     assert(pwm_pin == 12 || pwm_pin == 13 || pwm_pin == 18 || pwm_pin == 19);

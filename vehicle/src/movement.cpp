@@ -1,22 +1,26 @@
 #include "movement.hpp"
 #include <iostream>
+#include "constants.hpp"
 
 #define abs(a) ((a >= 0)?a:-a)
 #define LEFT_BALANCE    ((1 - balance)/2)
 #define RIGHT_BALANCE   ((1 + balance)/2) 
 
 float Movement::limit(float vmin, float v, float vmax) {
-    return min(vmax, max(vmin, v));
+    return ((v > vmax)?(vmax):((v < vmin)?(vmin):(v)));
 }
 
-Movement::Movement(float wheel_distance, float l_Kp, float l_Ki, float l_Kd, float r_Kp, float r_Ki, float r_Kd, float T) :
-          wheel_distance(wheel_distance), iwflag(false)
-          left_pid(l_Kp, l_Ki, l_Kd, T, 0.0f, 1.0f),
-          right_pid(r_Kp, r_Ki, r_Kd, T, 0.0f, 1.0f),
-          lr(0.0f), rr(0.0f), balance(0.0f), l_dir(0), r_dir(0) 
+Movement::Movement() :
+          left_pid(0), right_pid(1),
+          left_wheel(0),  right_wheel(1)
 {
-    left_wheel(0);
-    right_wheel(1);
+    lr = 0.0f;
+    rr = 0.0f;
+    balance = 0.0f;
+    l_dir = 0;
+    r_dir = 0;
+    iwflag = false;
+    wheel_distance = constants::vehicle_wheel_distance;
 }
 
 void Movement::turn(float degrees) {
@@ -54,7 +58,7 @@ void Movement::tick(void) {
     else if(aux > 1000.0) {
         aux /= 2.0f;
     }
-    float l_dc = this->limit(this->left_pid.push_error(lr * LEFT_BALANCE, aux));
+    float l_dc = this->limit(0, this->left_pid.push_error(lr * LEFT_BALANCE, aux), 1);
     // Right
     aux = this->right_wheel.getSpeed();
     if (aux < 3.7f) {
@@ -63,7 +67,7 @@ void Movement::tick(void) {
     else if(aux > 1000.0) {
         aux /= 2.0f;
     }
-    float r_dc = this->right_pid.push_error(rr * RIGHT_BALANCE, aux);
+    float r_dc = this->limit(0, this->right_pid.push_error(rr * RIGHT_BALANCE, aux), 1);
     // Adjust
     if(iwflag) {
         this->right_wheel.spin(r_dir, r_dc);
@@ -76,11 +80,11 @@ void Movement::tick(void) {
     this->iwflag = !(this->iwflag);
 }
 
-float getBalance(void) {
+float Movement::getBalance(void) {
     return (this->balance);
 }
 
-float setBalance(float balance) {
-    this->balance = ((balance < 1.0)?((balance > -1.0)?balance:(-1.0)):(1.0))
+float Movement::setBalance(float balance) {
+    this->balance = ((balance < 1.0)?((balance > -1.0)?balance:(-1.0)):(1.0));
     return (this->balance);
 }

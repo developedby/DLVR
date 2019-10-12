@@ -21,7 +21,7 @@ class Movement {
         float limit(float vmin, float v, float vmax);
 
     public:
-        Movement(float wheel_distance, float l_Kp, float l_Ki, float l_Kd, float r_Kp, float r_Ki, float r_Kd, float T);
+        Movement();
         void tick(void);
         void turn(float degrees);
         void goStraight(int direction, float speed);

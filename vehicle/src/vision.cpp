@@ -6,6 +6,7 @@
 #include <opencv2/imgproc.hpp>
 #include "reduce_lines.hpp"
 #include "constants.hpp"
+#include "street_lines.hpp"
 
 Vision::Vision()
 {
@@ -51,7 +52,7 @@ std::vector<street_lines::StreetSection> Vision::findStreets()
                    lines_angles.begin(), street_lines::getStreetLineAngle);
     
     // Finds the distance of both ends of each line to the vehicle
-    std::vector<std::pair<float,float>> lines_dists(lines.size());
+    std::vector<cv::Vec4i> lines_dists(lines.size());
     std::transform(lines.begin(), lines.end(),
                    lines_dists.begin(), street_lines::linePxToDist);
 
