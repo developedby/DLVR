@@ -6,11 +6,11 @@
 #include <pigpio.h>
 #include "radio.hpp"
 #include "message.hpp"
+#include "constants.hpp"
 
 class RadioCommunication{
-    unsigned char received_data[W_DATA];
-    uint8_t last_address[W_ADDRESS];
-    //pthread_t *radio_ack_thread;
+    unsigned char received_data[constants::radio_width_data];
+    uint8_t last_address[constants::radio_width_address];
     
 public:
     SendedMessage last_sended_message;
@@ -21,7 +21,7 @@ public:
     Radio radio;
     RadioCommunication();
     ~RadioCommunication() {}
-    void setAddress(uint8_t *addres);
+    void setAddress(uint8_t const *addres);
     void sendToRadio(SendedMessage message);
     bool receiveFromRadio();
     ReceivedMessage getData();

@@ -1,11 +1,6 @@
-<<<<<<< HEAD
-=======
-#include "radio_communication.hpp"
->>>>>>> c0c17c1b702e12bc5ad2b491a534e92c82d8e847
 #include <iostream>
-#include "RadioCommunication.h"
 #include "constants.hpp"
-
+#include "radio_communication.hpp"
 
 RadioCommunication::RadioCommunication()
 {
@@ -26,7 +21,7 @@ RadioCommunication::RadioCommunication()
     attemps = 0;
 }
 
-void RadioCommunication::setAddress(uint8_t *address)
+void RadioCommunication::setAddress(uint8_t const *address)
 {
     int i = 0, j=0;
     for(i=0; i<constants::radio_width_address; i++)
@@ -48,7 +43,7 @@ void RadioCommunication::sendToRadio(SendedMessage message)
 {
     last_sended_message = message;
     std::vector<uint8_t> data;
-    data.push_back(START_BYTE);
+    data.push_back(constants::radio_start_byte);
     data.push_back(1);//id do robo
     if(message.ultrassound_reading > 0)
     {
@@ -89,7 +84,7 @@ void RadioCommunication::sendToRadio(SendedMessage message)
         data.push_back((int(i) & 0xff00) >> 8);
         data.push_back(int(i) & 0xff);
     }
-    data.push_back(START_BYTE);
+    data.push_back(constants::radio_start_byte);
     radio.stopListening();
     int len = static_cast<uint8_t>(data.size());
     uint8_t send_data[len];
@@ -114,11 +109,11 @@ bool RadioCommunication::receiveFromRadio()
         //std::cout <<"ok"<<std::endl;
         radio.read(received_data, sizeof(received_data));
         siz = 2;
-        for (int i=1; received_data[i] != START_BYTE and i < W_DATA; i++)
+        for (int i=1; received_data[i] != constants::radio_start_byte and i < constants::radio_width_data; i++)
         {
             siz++;
         }
-        if((received_data[0] == START_BYTE) && (received_data[siz - 1] == START_BYTE))
+        if((received_data[0] == constants::radio_start_byte) && (received_data[siz - 1] == constants::radio_start_byte))
         {
             return true;
         }
@@ -183,7 +178,7 @@ void* waitAck(void *obj)
     uint32_t startTick = gpioTick();
     while(!internal_radio->radio.isAckPayloadAvailable())
     {
-        if((gpioTick() - startTick) > TIME_OUT_RADIO_ACK)
+        if((gpioTick() - startTick) > constants::time_out_radio_ack)
         {
             eventTrigger(1);
             return nullptr;
@@ -207,7 +202,7 @@ void sendFailure(int event, uint32_t tick, void* obj)
     RadioCommunication *internal_radio = static_cast<RadioCommunication*>(obj);
     internal_radio->attemps++;
     gpioStopThread(internal_radio->radio_ack_thread);
-    if(internal_radio->attemps > RETRIES)
+    if(internal_radio->attemps > constants::radio_retries)
     {
         eventTrigger(3);
     }
