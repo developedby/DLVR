@@ -8,9 +8,9 @@ namespace street_lines
 {
 	void getStreetLines(const cv::Mat& lines_mask, std::vector<cv::Vec4i>& street_lines);
 
-	std::vector<float> getStreetLineAngle(const cv::Vec4i& line);
+	float getStreetLineAngle(const cv::Vec4i& line);
 	
-	cv::Point2f linePxToDist(const cv::Vec4i& line);
+	cv::Vec4i linePxToDist(const cv::Vec4i& line);
 }
 
 #endif

@@ -6,6 +6,7 @@
 #include <opencv2/imgproc.hpp>
 #include "reduce_lines.hpp"
 #include "constants.hpp"
+#include "street_lines.hpp"
 
 Vision::Vision()
 {
@@ -43,9 +44,9 @@ std::vector<street_lines::StreetSection> Vision::findStreets()
 	street_lines_angles.resize(street_lines.size());
 	std::transform(street_lines.begin(), street_lines.end(), street_lines_angles.begin(), street_lines::getStreetLineAngle);
 	
-	std::vector<std::pair<float,float>> street_lines_dists;
+	std::vector<cv::Vec4i> street_lines_dists;
 	street_lines_dists.resize(street_lines.size());
-	std::transform(street_lines.begin(), street_lines.end(), street_lines_dists.begin(), street_lines::getStreetLines);
+	std::transform(street_lines.begin(), street_lines.end(), street_lines_dists.begin(), street_lines::linePxToDist);
 	//return ;//
 }
 

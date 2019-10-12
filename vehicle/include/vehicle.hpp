@@ -2,7 +2,7 @@
 #define vehicle_hpp_
 
 //#include "vision.hpp"
-//#include "movement.hpp"
+#include "movement.hpp"
 #include "radio_communication.hpp"
 #include "delivery_box.hpp"
 #include "intelligence.hpp"
@@ -10,7 +10,7 @@ class Vehicle
 {
     private:
         //Vision vision;
-        //Movement movement;
+        Movement movement;
         RadioCommunication communication;
         DeliveryBox box;
         Intelligence intelligence;
