@@ -14,7 +14,7 @@ namespace street_lines
 
 	float lineAbsDist(const cv::Vec4i& line);
 
-	std::vector<int> groupLinesByAngle(const std::vector<cv::Vec4i>& lines_angles);
+	std::vector<int> groupLinesByAngle(std::vector<float>& lines_angles);
 }
 
 #endif

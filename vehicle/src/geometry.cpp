@@ -1,4 +1,4 @@
-#include "geometry.h"
+#include "geometry.hpp"
 #include <cmath>
 #include <algorithm>
 #include <numeric>
@@ -14,8 +14,8 @@ namespace street_lines
             return 0;
         else
         {
-            return std::min({distPointLine(cv::Point2i(line1[0], line1[1]), line2),
-                             distPointLine(cv::Point2i(line1[2], line1[3]), line2),
+            return std::min({(distPointLine(cv::Point2i(line1[0], line1[1]), line2)),
+                             (distPointLine(cv::Point2i(line1[2], line1[3]), line2)),
                              distPointLine(cv::Point2i(line2[0], line2[1]), line1),
                              distPointLine(cv::Point2i(line2[2], line2[3]), line1)});
         }
@@ -49,16 +49,16 @@ namespace street_lines
     }
 
     // Calculates the distance between a point and a line segment
-    float distPointLine(const cv::Point& pt, cv::Vec4i& line)
+    float distPointLine(const cv::Point& pt, cv::Vec4i line)
     {
-        const auto u_num = (pt[0]-line[0]) * (line[2]-line[0])
-                           + (pt[1]-line[1]) * (line[3]-line[1]);
+        const auto u_num = (pt.y-line[0]) * (line[2]-line[0])
+                           + (pt.x-line[1]) * (line[3]-line[1]);
         const auto u_den = (line[2] - line[0]) * (line[2] - line[0])
                            + (line[3] - line[1]) * (line[3] - line[1]);
         float u;
         if (u_den != 0)
             u = u_num / float(u_den);
-        else:
+        else
             u = std::numeric_limits<float>::infinity();
 
         if (0 <= u && u <= 1)
@@ -67,7 +67,7 @@ namespace street_lines
             const auto y = line[1] + u*(line[3] - line[1]);
             return distPoints(pt, cv::Point(x, y));
         }
-        else:
+        else
             return std::min(distPoints(pt, cv::Point(line[0], line[1])),
                             distPoints(pt, cv::Point(line[2], line[3])));
     }
@@ -75,7 +75,7 @@ namespace street_lines
     // Calculates the distance between two points
     float distPoints(const cv::Point& pt1, const cv::Point& pt2)
     {
-        return sqrt((pt1[0]-pt2[0])*(pt1[0]-pt2[0])
-                    + (pt1[1]-pt2[1])*(pt1[1]-pt2[1]));
+        return sqrt((pt1.y-pt2.y)*(pt1.y-pt2.y)
+                    + (pt1.x-pt2.x)*(pt1.x-pt2.x));
     }
 }

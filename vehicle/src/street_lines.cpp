@@ -20,20 +20,20 @@ namespace street_lines
     // Finds the lines in the mask representing the street lane markers
     void getStreetLines(const cv::Mat& lines_mask, std::vector<cv::Vec4i>& lines)
     {
-        cv::HoughLinesP(mask, lines, 1, np.radians(1), 80, 20, 10);
+        cv::HoughLinesP(lines_mask, lines, 1, M_PI/180, 80, 20, 10);
         reduceLines(lines, lines, 0.2, 2.0, 10.0);
     }
 
     // Finds the line segment's angle relative to the vehicle
     // Adjusts for perspective and camera rotation
-    std::vector<float> getStreetLineAngle(const cv::Vec4i& line)
+    float getStreetLineAngle(const cv::Vec4i& line)
     {
         // Finds the point of intersection at the horizon
         // Vector given by pt1 + v*(pt2 - pt1)
         float x_horizon;
         if (line[3] != line[1])
         {
-            float v = float(y_horizon - line[1]) / float(line[3] - line[1]);
+            float v = float(img_y_horizon - line[1]) / float(line[3] - line[1]);
             x_horizon = line[0] + v*(line[2] - line[0]);
         }
         // If parallel to the horizon
@@ -41,7 +41,7 @@ namespace street_lines
             x_horizon = std::numeric_limits<float>::infinity();
         
         // Finds the angle
-        float angle = std::atan2(img_height*(1 - y_horizon), (x_horizon - img_width/2));
+        float angle = std::atan2(img_height*(1 - img_y_horizon), (x_horizon - img_width/2));
         // Corrects the angle to the vehicle
         angle -= img_real_zero_deg;
         
@@ -56,7 +56,7 @@ namespace street_lines
         float constexpr px_per_rad = (img_y_horizon - y_theta_min)/img_theta_min;
         float constexpr y_vehicle = 90 * px_per_rad;
         float constexpr dist_theta_min_m = 0.145; // Distance to the bottom point of the image
-        float constexpr meter_per_px = dist_theta_min / (y_vehicle - y_theta_min); // Using a known distance
+        float constexpr meter_per_px = dist_theta_min_m / (y_vehicle - y_theta_min); // Using a known distance
 
         cv::Vec4i line_dists;
         float y_angle = (line[1] - img_y_horizon) / px_per_rad;
@@ -77,16 +77,16 @@ namespace street_lines
                         sqrt(line[2]*line[2] + line[3]*line[3]));
     }
 
-    std::vector<int> groupLinesByAngle(const std::vector<cv::Vec4i>& lines_angles)
+    std::vector<int> groupLinesByAngle(std::vector<float>& lines_angles)
     {
         int group_counter = 0;
         std::vector<int> line_grouping(lines_angles.size(), -1);
-        for (auto i=lines_angles.begin(); i != lines_angles.end(); i++)
+        for (int i=0; i < int(lines_angles.size()); i++)
         {
             if (line_grouping[i] == -1)
             {
                 line_grouping[i] = group_counter;
-                for (auto j=i+1; j != lines_angles.end(); j++)
+                for (int j=i+1; j < int(lines_angles.size()); j++)
                 {
                     // Group together if angles have difference less than [-5, 5]
                     if (line_grouping[j] == -1
