@@ -11,6 +11,10 @@ namespace street_lines
 	std::vector<float> getStreetLineAngle(const cv::Vec4i& line);
 	
 	cv::Point2f linePxToDist(const cv::Vec4i& line);
+
+	float lineAbsDist(const cv::Vec4i& line);
+
+	std::vector<int> groupLinesByAngle(const std::vector<cv::Vec4i>& lines_angles);
 }
 
 #endif
