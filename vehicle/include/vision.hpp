@@ -16,9 +16,11 @@ class Vision
 		void getGreenTapeMask(cv::Mat& dst);
 		void getBlueTapeMask(cv::Mat& dst);
 		void getYellowTapeMask(cv::Mat& dst);
+		void getWhiteTapeMask(cv::Mat& dst);
+		void getGroundMask(cv::Mat& dst);
 	public:
 		void getCamImg();
-		std::vector<StreetSection> findStreets();
+		std::vector<street_lines::StreetSection> findStreets();
 		Vision();
 };
 

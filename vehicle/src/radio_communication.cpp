@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+#include "radio_communication.hpp"
+>>>>>>> c0c17c1b702e12bc5ad2b491a534e92c82d8e847
 #include <iostream>
 #include "RadioCommunication.h"
 #include "constants.hpp"

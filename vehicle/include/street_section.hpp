@@ -18,7 +18,7 @@ namespace street_lines
 			float direction;
 			float lane_offset;
 			float section_len;
-			std::vector<std::pair<StreetSection *, float dist>> connections;
+			std::vector<std::pair<StreetSection *,float>> connections;
 	};
 }
 

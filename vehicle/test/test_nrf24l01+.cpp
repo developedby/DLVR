@@ -1,6 +1,6 @@
 #include <iostream>
 #include <pigpio.h>
-#include "RadioCommunication.h"
+#include "RadioCommunication.hpp"
 #include "constants.hpp"
 
 int main()
