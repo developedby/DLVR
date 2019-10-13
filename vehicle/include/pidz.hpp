@@ -13,8 +13,7 @@ class PIDZ {
         float T;
         float omin, omax;
     public:
-        PIDZ(float Kp, float Ki, float Kd, float T);
-        PIDZ(float Kp, float Ki, float Kd, float T, float min, float max);
+        PIDZ(int pid_num);
         void tune(float Kp, float Ki, float Kd);
         float push_error(float e);
         float push_error(float rf, float fb);

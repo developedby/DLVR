@@ -1,20 +1,21 @@
 #include "pidz.hpp"
+#include "constants.hpp"
 
-PIDZ::PIDZ(float Kp, float Ki, float Kd, float T) {
-    this->T = T;
-    this->tune(Kp, Ki, Kd);
-    this->omin = -std::numeric_limits<float>::infinity();
-    this->omax =  std::numeric_limits<float>::infinity();
+PIDZ::PIDZ(int pid_num) {
+    this->T = constants::pid_T_ms;
+    if(pid_num == 0)
+    {
+        this->tune(constants::pid_l_Kp, constants::pid_l_Ki, constants::pid_l_Kd);
+    }
+    else
+    {
+        this->tune(constants::pid_r_Kp, constants::pid_r_Ki, constants::pid_r_Kd);
+    }
+    this->omin = 0.0f;
+    this->omax =  1.0f;
 }
 
-PIDZ::PIDZ(float Kp, float Ki, float Kd, float T, float min, float max) {
-    this->T = T;
-    this->tune(Kp, Ki, Kd);
-    this->omin = min;
-    this->omax = max;
-}
-
-void tune(float Kp, float Ki, float Kd) {
+void PIDZ::tune(float Kp, float Ki, float Kd) {
     for(int i = 0; i < 3; ++i) {
         this->x[i] = 0.0f;
     }
@@ -50,13 +51,13 @@ float PIDZ::push_error(float e) {
     for(int i = 1; i < 2; ++i) {
         this->y[i - 1] = this->y[i];
     }
-    this->y[1] = S
+    this->y[1] = S;
     this->output = S;
     return this->output;
 }
 
 float PIDZ::push_error(float rf, float fb) {
-    return this->push_error(rf - fb)
+    return this->push_error(rf - fb);
 }
 
 float PIDZ::peek_output(void) {

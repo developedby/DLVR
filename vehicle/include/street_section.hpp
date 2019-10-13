@@ -6,20 +6,20 @@
 
 namespace street_lines
 {
-	enum StreetSectionType
-	{
-		SECTION_STREET, SECTION_HOUSE
-	};
+    enum StreetSectionType
+    {
+        SECTION_STREET, SECTION_HOUSE
+    };
 
-	class StreetSection
-	{
-		public:
-			StreetSectionType type;
-			float direction;
-			float lane_offset;
-			float section_len;
-			std::vector<std::pair<StreetSection *,float>> connections;
-	};
+    class StreetSection
+    {
+        public:
+            StreetSectionType type;
+            float direction;
+            float lane_offset;
+            float section_len;
+            std::vector<std::pair<StreetSection *,float>> connections;
+    };
 }
 
 #endif
