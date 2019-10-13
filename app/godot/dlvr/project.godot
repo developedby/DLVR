@@ -42,6 +42,10 @@ config/name="dlvr"
 run/main_scene="res://scenes/views/loginView.tscn"
 config/icon="res://icon.png"
 
+[autoload]
+
+DLVR="*res://scripts/dlvr.gd"
+
 [display]
 
 window/size/width=720
