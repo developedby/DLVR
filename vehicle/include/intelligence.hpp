@@ -9,5 +9,9 @@ class Intelligence
         Vehicle *vehicle;
     public:
         Intelligence(Vehicle *_vehicle);
+        void mainLoop();
+        bool hasCommand();
+        void followTheRoad();
+        void avoidObstacle();
 };
 #endif

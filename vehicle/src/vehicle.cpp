@@ -2,10 +2,15 @@
 
 Vehicle::Vehicle() : intelligence(this)
 {
-	//intelligence(this);
+}
+
+void Vehicle::start()
+{
+	intelligence.mainLoop();
 }
 
 int main()
 {
-	Vehicle vehicle();
+	Vehicle vehicle = Vehicle();
+	vehicle.start();
 }

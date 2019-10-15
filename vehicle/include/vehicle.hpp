@@ -16,6 +16,7 @@ class Vehicle
         Intelligence intelligence;
     public:
         Vehicle();
+        void start();
 };
 
 #endif
