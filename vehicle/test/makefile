@@ -55,3 +55,10 @@ vehicle: ../src/vehicle.cpp ../src/movement.cpp ../src/dc_motor.cpp ../src/encod
 		-lpigpio -lrt -lm -lpthread -lstdc++ -lrf24-bcm \
 		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lraspicam -lraspicam_cv \
 		-I../include -I/usr/local/include -I/usr/local/include/opencv4
+
+#teste seguir rua
+follow_road:  test_follow_road.cpp ../src/movement.cpp ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/pidz.cpp ../src/vision.cpp ../src/street_lines.cpp ../src/reduce_lines.cpp ../src/geometry.cpp
+	gcc -Wall -o ./build/test_follow_road ../src/movement.cpp ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/pidz.cpp ../src/vision.cpp ../src/street_lines.cpp ../src/reduce_lines.cpp ../src/geometry.cpp \
+		-lpigpio -lrt -lm -lpthread -lstdc++ -lrf24-bcm \
+		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lraspicam -lraspicam_cv \
+		-I../include -I/usr/local/include -I/usr/local/include/opencv4
