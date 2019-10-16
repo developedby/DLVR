@@ -47,7 +47,8 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
             try:
                 script.main(self)
-            except:
+            except Exception as e:
+                print(e)
                 self.send_error(500)
                 self.end_headers()
         else:
@@ -64,12 +65,12 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         if not os.path.exists(path):
             path += ".py"
         elif not os.path.isfile(path):
-            path += "/index.py"
+            path += "index.py"
 
         mimetype = mimetypes.guess_type(path)
 
         if os.path.exists(path) and mimetype[0] == "text/x-python":
-            module_name = path.replace(".py", "").replace("/", ".").strip(".")
+            module_name = "public." + path.replace(".py", "").replace("/", ".").strip(".")
             if module_name in self.script_cache:
                 if self.script_cache[module_name]["lastmodified"] < os.path.getmtime(path):
                     self.script_cache[module_name]["module"] = importlib.reload(self.script_cache[module_name]["module"])
@@ -85,7 +86,8 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
             try:
                 script.main(self)
-            except:
+            except Exception as e:
+                print(e)
                 self.send_error(500)
                 self.end_headers()
         else:
@@ -98,12 +100,12 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         if not os.path.exists(path):
             path += ".py"
         elif not os.path.isfile(path):
-            path += "/index.py"
+            path += "index.py"
 
         mimetype = mimetypes.guess_type(path)
 
         if os.path.exists(path) and mimetype[0] == "text/x-python":
-            module_name = path.replace(".py", "").replace("/", ".").strip(".")
+            module_name = "public." + path.replace(".py", "").replace("/", ".").strip(".")
             if module_name in self.script_cache:
                 if self.script_cache[module_name]["lastmodified"] < os.path.getmtime(path):
                     self.script_cache[module_name]["module"] = importlib.reload(self.script_cache[module_name]["module"])
@@ -119,7 +121,8 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
             try:
                 script.main(self)
-            except:
+            except Exception as e:
+                print(e)
                 self.send_error(500)
                 self.end_headers()
         else:
@@ -132,12 +135,12 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         if not os.path.exists(path):
             path += ".py"
         elif not os.path.isfile(path):
-            path += "/index.py"
+            path += "index.py"
 
         mimetype = mimetypes.guess_type(path)
 
         if os.path.exists(path) and mimetype[0] == "text/x-python":
-            module_name = path.replace(".py", "").replace("/", ".").strip(".")
+            module_name = "public." + path.replace(".py", "").replace("/", ".").strip(".")
             if module_name in self.script_cache:
                 if self.script_cache[module_name]["lastmodified"] < os.path.getmtime(path):
                     self.script_cache[module_name]["module"] = importlib.reload(self.script_cache[module_name]["module"])
@@ -153,7 +156,8 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
             try:
                 script.main(self)
-            except:
+            except Exception as e:
+                print(e)
                 self.send_error(500)
                 self.end_headers()
         else:
