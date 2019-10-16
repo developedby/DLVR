@@ -26,7 +26,7 @@ void Vision::getCamImg()
 }
 
 // Looks at the image and finds the streets
-// Returns a graph of the StreetSections perceived
+// Returns a graph of the StreetSections identified
 std::vector<street_lines::StreetSection> Vision::findStreets()
 {
     // Finds the binary mask for each marker type
@@ -59,8 +59,12 @@ std::vector<street_lines::StreetSection> Vision::findStreets()
     // Group the lines together by their angle
     auto line_grouping = street_lines::groupLinesByAngle(lines_angles);
 
+    // Find the street(s) that passes through each group
+    
 
-    // Contructs the StreetSection from the lines and the information about them
+    // Contructs the StreetSection graph from the lines and the information about them
+
+
     //Takes the nearest line as the current section
     float i_min_dist = std::min_element(street_lines_dists.begin(), street_lines_dists.end(),
                                         street_lines::lineAbsDist);

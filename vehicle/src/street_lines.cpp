@@ -77,28 +77,34 @@ namespace street_lines
                         sqrt(line[2]*line[2] + line[3]*line[3]));
     }
 
-    std::vector<int> groupLinesByAngle(const std::vector<cv::Vec4i>& lines_angles)
+    // Groups together lines with similar angles
+    // Returns a vector with the index to the members of each group
+    std::vector<std::vector<int>> groupLinesByAngle(const std::vector<cv::Vec4i>& lines_angles
+                                                    const float max_theta_diff)
     {
         int group_counter = 0;
         std::vector<int> line_grouping(lines_angles.size(), -1);
+        std::vector<std::vector<int>> groups;
         for (auto i=lines_angles.begin(); i != lines_angles.end(); i++)
         {
             if (line_grouping[i] == -1)
             {
+                groups.push_back({i});
                 line_grouping[i] = group_counter;
                 for (auto j=i+1; j != lines_angles.end(); j++)
                 {
-                    // Group together if angles have difference less than [-5, 5]
+                    // Group together if angles have difference less than max_theta_diff
                     if (line_grouping[j] == -1
-                        && lines_angles[i]-5 < lines_angles[j]
-                        && lines_angles[j] < lines_angles[i]+5)
+                        && lines_angles[i]-max_theta_diff < lines_angles[j]
+                        && lines_angles[j] < lines_angles[i]+max_theta_diff)
                     {
                         lines_angles[j] = group_counter;
+                        groups[group_counter].push_back(j);
                     }
                 }
                 group_counter++;
             }
         }
-        return line_grouping;
+        return groups;
     }
 }
