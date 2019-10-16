@@ -18,9 +18,12 @@ func _on_email_entered(email:String):
 	change_subview($signinSubview.id)
 
 func _on_data_entered(email:String, first_name:String, surname:String, passw:String):
+	DLVR.set_first_name(first_name)
+	DLVR.set_surname(surname)
 	$passwSubview.initial()
 	$passwSubview.set_email(email)
 	change_subview($passwSubview.id)
+
 
 func _on_passw_entered(email:String, passw:String):
 	$emailSubview.initial()

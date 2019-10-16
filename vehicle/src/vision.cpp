@@ -66,8 +66,8 @@ std::vector<street_lines::StreetSection> Vision::findStreets()
 
 
     //Takes the nearest line as the current section
-    float i_min_dist = std::min_element(street_lines_dists.begin(), street_lines_dists.end(),
-                                        street_lines::lineAbsDist);
+    //float i_min_dist = std::min_element(street_lines_dists.begin(), street_lines_dists.end(),
+      //                                  street_lines::lineAbsDist);
 
 
     //return ;//
