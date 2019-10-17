@@ -1,6 +1,7 @@
 import http.server
 import socketserver
 import ssl
+import sys
 import os
 import mimetypes
 import importlib
@@ -12,6 +13,7 @@ def main():
         httpd = socketserver.ThreadingTCPServer(("", PORT), HTTPRequestHandler)
         httpd.socket = ssl.wrap_socket(httpd.socket, keyfile = "./key.pem", certfile = "./cert.pem", server_side = True)
         print("Serving HTTPS on {0} port {1} (https://{0}:{1}/) ...".format(httpd.server_address[0], httpd.server_address[1]))
+        sys.path.append(os.getcwd())
         os.chdir("./public")
         httpd.serve_forever()
     except KeyboardInterrupt:
@@ -91,8 +93,17 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_error(500)
                 self.end_headers()
         else:
-            self.send_error(501)
-            self.end_headers()
+            path = "./" + self.path.strip("/")
+            if os.path.isdir(path) and os.path.isfile(path + "/forbidden"):
+                self.send_error(403)
+                self.end_headers()
+            else:
+                if os.path.exists(path):
+                    self.send_error(501)
+                    self.end_headers()
+                else:
+                    self.send_error(404)
+                    self.end_headers()
 
     def do_PUT(self):
         path = "./" + self.path.strip("/")
@@ -126,8 +137,17 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_error(500)
                 self.end_headers()
         else:
-            self.send_error(501)
-            self.end_headers()
+            path = "./" + self.path.strip("/")
+            if os.path.isdir(path) and os.path.isfile(path + "/forbidden"):
+                self.send_error(403)
+                self.end_headers()
+            else:
+                if os.path.exists(path):
+                    self.send_error(501)
+                    self.end_headers()
+                else:
+                    self.send_error(404)
+                    self.end_headers()
 
     def do_DELETE(self):
         path = "./" + self.path.strip("/")
@@ -161,8 +181,17 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_error(500)
                 self.end_headers()
         else:
-            self.send_error(501)
-            self.end_headers()
+            path = "./" + self.path.strip("/")
+            if os.path.isdir(path) and os.path.isfile(path + "/forbidden"):
+                self.send_error(403)
+                self.end_headers()
+            else:
+                if os.path.exists(path):
+                    self.send_error(501)
+                    self.end_headers()
+                else:
+                    self.send_error(404)
+                    self.end_headers()
 
 if __name__ == "__main__":
     main()

@@ -3,6 +3,7 @@ import connect
 import mysql.connector
 import os
 import hashlib
+import client
 
 def main(handler):
     if handler.command == "POST":
@@ -20,8 +21,9 @@ def main(handler):
                 try:
                     cursor.execute(query, values)
                     connection.commit()
-                    handler.wfile.write("true".encode("utf-8"))
-                except mysql.connector.Error:
+                    resp = client.sendJSON("https://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com/code/generate", {"email": data["email"]})
+                    handler.wfile.write(resp.read())
+                except Exception:
                     handler.wfile.write("false".encode("utf-8"))
                 cursor.close()
                 connection.close()
