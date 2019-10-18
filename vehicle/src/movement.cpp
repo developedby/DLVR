@@ -19,6 +19,7 @@ Movement::Movement() :
     balance = 0.0f;
     l_dir = 0;
     r_dir = 0;
+    turn_ticks = -1;
     iwflag = false;
     wheel_distance = constants::vehicle_wheel_distance;
 }
@@ -28,6 +29,7 @@ void Movement::turn(float degrees) {
     rr = 800;
     r_dir = 2*(degrees > 0) - 1;
     l_dir = -r_dir;
+    this->turn_ticks = (abs(degrees * 0.01745329252 *4.85)/(2*lr/constants::vehicle_wheel_distance)) / (constants::pid_T_ms/1000.0f);
 }
 
 void Movement::goStraight(int direction, float speed){ //mmps
@@ -78,6 +80,12 @@ void Movement::tick(void) {
         this->right_wheel.spin(r_dir, r_dc);
     }
     this->iwflag = !(this->iwflag);
+    if(this->turn_ticks >= 0) {
+        if(this->turn_ticks == 0) {
+            this->goStraight(0, 0);
+        }
+        --this->turn_ticks;
+    }
 }
 
 float Movement::getBalance(void) {
