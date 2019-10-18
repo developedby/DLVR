@@ -1,7 +1,7 @@
 //biblioteca criada para escrever para um radio transmissor
 
-#ifndef radiocommunication_hpp_
-#define radiocommunication_hpp_
+#ifndef radio_communication_hpp_
+#define radio_communication_hpp_
 
 #include <pigpio.h>
 #include "radio.hpp"
@@ -11,10 +11,10 @@
 class RadioCommunication{
     unsigned char received_data[constants::radio_width_data];
     uint8_t last_address[constants::radio_width_address];
-    
+
 public:
     SendedMessage last_sended_message;
-    pthread_t *radio_ack_thread; 
+    pthread_t *radio_ack_thread;
     int siz;
     int ack;
     int attemps;
