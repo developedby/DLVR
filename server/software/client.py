@@ -1,45 +1,49 @@
-import urllib.request
+#import urllib.request
+import requests
 import ssl
 import json
 
-def sendJSON(url, data_dict = None, method = "POST", cookie = None):
-    headers = {}
-    data = None
-    if data_dict:
-        data = json.dumps(data_dict).encode("utf-8")
-        headers["Content-Type"] = "application/json"
-    if cookie:
-        headers["Cookie"] = cookie
-    req = urllib.request.Request(url, data, headers = headers, method = method)
-    resp = urllib.request.urlopen(req, context = ssl._create_unverified_context())
-    return resp
+class ServerConnection:
+    def __init__(self, base_url):
+        self.session = requests.Session()
+        self.base_url = base_url
+
+    def send(self, path, data_dict = None, method = "POST"):
+        headers = {}
+        data = None
+        if data_dict:
+            data = json.dumps(data_dict).encode("utf-8")
+            headers["Content-Type"] = "application/json"
+        req = self.session.prepare_request(requests.Request(method, self.base_url + path, data = data, headers = headers))
+        resp = self.session.send(req, verify = False)
+        return resp
 
 def main():
+    server = ServerConnection("https://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com")
     data = {"email": "subject@example.com", "password": "Password123!", "first_name": "Subject", "last_name": "Subject"}
-    resp = sendJSON("https://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com/user/signup", data)
-    if resp.read().decode("utf-8") == "true":
+    resp = server.send("/user/signup", data)
+    if resp.content.decode("utf-8") == "true":
         print("Signup efetuado com sucesso")
         code = int(input())
         data = {"email": "subject@example.com", "number": code}
-        resp = sendJSON("https://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com/code/verify", data)
-        if resp.read().decode("utf-8") == "true":
+        resp = server.send("/code/verify", data)
+        if resp.content.decode("utf-8") == "true":
             print("Código verificado com sucesso")
             data = {"email": "subject@example.com"}
-            sendJSON("https://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com/code/generate", data)
+            server.send("/code/generate", data)
             code = int(input())
             data = {"email": "subject@example.com", "code": code, "password": "Password456!"}
-            resp = sendJSON("https://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com/user/reset", data)
-            if resp.read().decode("utf-8") == "true":
+            resp = server.send("/user/reset", data)
+            if resp.content.decode("utf-8") == "true":
                 print("Senha redefinida com sucesso")
                 data = {"email": "subject@example.com", "password": "Password456!"}
-                resp = sendJSON("https://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com/user/signin", data)
-                if resp.read().decode("utf-8") == "true":
+                resp = server.send("/user/signin", data)
+                if resp.content.decode("utf-8") == "true":
                     print("Signin efetuado com sucesso")
-                    cookie = resp.getheader("Set-Cookie")
-                    print("Cookie: {}".format(cookie))
+                    print("Cookie: {}".format(resp.cookies["token"]))
                     data = {"password": "Password456!"}
-                    resp = sendJSON("https://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com/user/delete", data, cookie = cookie)
-                    if resp.read().decode("utf-8") == "true":
+                    resp = server.send("/user/delete", data)
+                    if resp.content.decode("utf-8") == "true":
                         print("Conta deletada com sucesso")
                     else:
                         print("Erro em deletar a conta")

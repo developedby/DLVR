@@ -25,13 +25,13 @@ def main(handler):
                         cursor.execute(query, values)
                         query = "INSERT INTO Code(number, expiration, user) VALUES (%s, %s, %s)"
                         number = random.randint(0, 65535)
-                        print(number)
                         expiration = datetime.datetime.now() + datetime.timedelta(minutes = 5)
                         timestamp = datetime.datetime.fromtimestamp(expiration.timestamp()).strftime("%Y-%m-%d %H:%M:%S")
                         values = (number, timestamp, data["email"],)
                         try:
                             cursor.execute(query, values)
                             connection.commit()
+                            print(number)
                             handler.wfile.write("true".encode("utf-8"))
                         except mysql.connector.Error:
                             connection.rollback()
