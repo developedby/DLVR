@@ -12,8 +12,8 @@ def main(handler):
             if "email" in data and "code" in data and "password" in data:
                 handler.send_response(200)
                 handler.end_headers()
-                resp = client.sendJSON("https://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com/code/verify", {"email": data["email"], "number": data["code"]})
-                if resp.read().decode("utf-8") == "true":
+                resp = client.ServerConnection("https://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com").send("/code/verify", {"email": data["email"], "number": data["code"]})
+                if resp.content.decode("utf-8") == "true":
                     connection = connect.connect()
                     cursor = connection.cursor(prepared = True)
                     query = "UPDATE User SET salt = %s, hash = %s WHERE email = %s"

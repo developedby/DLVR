@@ -4,3 +4,4 @@ build/
 *.ppm
 img/
 *.pem
+__pycache__

@@ -21,8 +21,8 @@ def main(handler):
                 try:
                     cursor.execute(query, values)
                     connection.commit()
-                    resp = client.sendJSON("https://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com/code/generate", {"email": data["email"]})
-                    handler.wfile.write(resp.read())
+                    resp = client.ServerConnection("https://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com").send("/code/generate", {"email": data["email"]})
+                    handler.wfile.write(resp.content)
                 except Exception:
                     handler.wfile.write("false".encode("utf-8"))
                 cursor.close()
