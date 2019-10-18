@@ -24,19 +24,29 @@ def main():
         resp = sendJSON("https://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com/code/verify", data)
         if resp.read().decode("utf-8") == "true":
             print("Código verificado com sucesso")
-            data = {"email": "subject@example.com", "password": "Password123!"}
-            resp = sendJSON("https://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com/user/signin", data)
+            data = {"email": "subject@example.com"}
+            sendJSON("https://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com/code/generate", data)
+            code = int(input())
+            data = {"email": "subject@example.com", "code": code, "password": "Password456!"}
+            resp = sendJSON("https://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com/user/reset", data)
             if resp.read().decode("utf-8") == "true":
-                print("Signin efetuado com sucesso")
-                cookie = resp.getheader("Set-Cookie")
-                print("Cookie: {}".format(cookie))
-                resp = sendJSON("https://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com/user/signout", cookie = cookie)
+                print("Senha redefinida com sucesso")
+                data = {"email": "subject@example.com", "password": "Password456!"}
+                resp = sendJSON("https://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com/user/signin", data)
                 if resp.read().decode("utf-8") == "true":
-                    print("Signout efetuado com sucesso")
+                    print("Signin efetuado com sucesso")
+                    cookie = resp.getheader("Set-Cookie")
+                    print("Cookie: {}".format(cookie))
+                    data = {"password": "Password456!"}
+                    resp = sendJSON("https://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com/user/delete", data, cookie = cookie)
+                    if resp.read().decode("utf-8") == "true":
+                        print("Conta deletada com sucesso")
+                    else:
+                        print("Erro em deletar a conta")
                 else:
-                    print("Signout incorreto")
+                    print("Signin incorreto")
             else:
-                print("Signin incorreto")
+                print("Erro em redefinir senha")
         else:
             print("Código incorreto")
     else:
