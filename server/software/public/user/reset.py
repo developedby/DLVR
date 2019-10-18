@@ -13,7 +13,7 @@ def main(handler):
                 handler.send_response(200)
                 handler.end_headers()
                 resp = client.ServerConnection("https://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com").send("/code/verify", {"email": data["email"], "number": data["code"]})
-                if resp.content.decode("utf-8") == "true":
+                if resp.text == "true":
                     connection = connect.connect()
                     cursor = connection.cursor(prepared = True)
                     query = "UPDATE User SET salt = %s, hash = %s WHERE email = %s"

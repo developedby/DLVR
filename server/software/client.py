@@ -1,5 +1,5 @@
 import requests
-import ssl
+#import ssl
 import json
 
 class ServerConnection:
@@ -21,28 +21,28 @@ def main():
     server = ServerConnection("https://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com")
     data = {"email": "subject@example.com", "password": "Password123!", "first_name": "Subject", "last_name": "Subject"}
     resp = server.send("/user/signup", data)
-    if resp.content.decode("utf-8") == "true":
+    if resp.text == "true":
         print("Signup efetuado com sucesso")
         code = int(input())
         data = {"email": "subject@example.com", "number": code}
         resp = server.send("/code/verify", data)
-        if resp.content.decode("utf-8") == "true":
+        if resp.text == "true":
             print("Código verificado com sucesso")
             data = {"email": "subject@example.com"}
             server.send("/code/generate", data)
             code = int(input())
             data = {"email": "subject@example.com", "code": code, "password": "Password456!"}
             resp = server.send("/user/reset", data)
-            if resp.content.decode("utf-8") == "true":
+            if resp.text == "true":
                 print("Senha redefinida com sucesso")
                 data = {"email": "subject@example.com", "password": "Password456!"}
                 resp = server.send("/user/signin", data)
-                if resp.content.decode("utf-8") == "true":
+                if resp.text == "true":
                     print("Signin efetuado com sucesso")
                     print("Cookie: {}".format(resp.cookies["token"]))
                     data = {"password": "Password456!"}
                     resp = server.send("/user/delete", data)
-                    if resp.content.decode("utf-8") == "true":
+                    if resp.text == "true":
                         print("Conta deletada com sucesso")
                     else:
                         print("Erro em deletar a conta")
