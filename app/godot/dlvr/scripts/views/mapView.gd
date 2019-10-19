@@ -6,3 +6,9 @@ func _ready():
 
 func _on_sideMenuButton_pressed():
 	$leftBar.show()
+
+
+func _on_exit_pressed():
+	# warning-ignore: return_value_discarded
+	DLVR.logout()
+	get_tree().change_scene("res://scenes/views/loginView.tscn")

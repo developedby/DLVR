@@ -1,8 +1,9 @@
 #ifndef movement_hpp_
 #define movement_hpp_
 
+#include <cmath>
 #include "pidz.hpp"
-#include "wheel.hpp" 
+#include "wheel.hpp"
 
 class Movement {
     private:
@@ -29,6 +30,7 @@ class Movement {
         void goCurve(int direction, float curvature);
         float getBalance(void);
         float setBalance(float balance);
+        bool isTurning(void);
 };
 
 #endif

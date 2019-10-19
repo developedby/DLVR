@@ -12,3 +12,7 @@ func set_first_name(val:String):
 
 func set_surname(val:String):
 	user_surname = val.strip_edges()
+
+func logout():
+	user_first_name = "DL"
+	user_surname = "VR"
