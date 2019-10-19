@@ -6,7 +6,7 @@
 
 namespace street_lines
 {
-    // Finds the distance between two lines (x1, y1, x2, y2)
+    // Finds the distance between two line segments (x1, y1, x2, y2)
     // Reference: http://paulbourke.net/geometry/pointlineplane/
     float distLines(const cv::Vec4i& line1, const cv::Vec4i& line2)
     {

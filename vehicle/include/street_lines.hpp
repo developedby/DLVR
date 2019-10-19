@@ -13,12 +13,11 @@ namespace street_lines
 	cv::Vec4i linePxToDist(const cv::Vec4i& line);
 
 	float lineAbsDist(const cv::Vec4i& line);
+	
+	std::pair<cv::Vec2f, cv::Vec4f> undistortLine(const cv::Vec4i& line);
 
-<<<<<<< HEAD
 	std::vector<std::vector<int>> groupLinesByAngle(const std::vector<cv::Vec4i>& lines_angles);
-=======
-	std::vector<int> groupLinesByAngle(std::vector<float>& lines_angles);
->>>>>>> f4b8fc13fb3b902213a419c66cf387e07c907d29
+
 }
 
 #endif

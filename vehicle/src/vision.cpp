@@ -2,11 +2,15 @@
 #include <cassert>
 #include <limits>
 #include <algorithm>
+#include <tuple>
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include "reduce_lines.hpp"
 #include "constants.hpp"
 #include "street_lines.hpp"
+
+using constants::lane_width;
+using constants::max_theta_diff;
 
 Vision::Vision()
 {
@@ -38,29 +42,59 @@ std::vector<street_lines::StreetSection> Vision::findStreets()
     this->getYellowTapeMask(yellow_tape_mask);
     
     // Combines the masks
-    cv::Mat street_lines_mask;
-    cv::bitwise_and(blue_tape_mask, green_tape_mask, street_lines_mask);
-    cv::bitwise_and(street_lines_mask, yellow_tape_mask, street_lines_mask);
+    //cv::Mat street_lines_mask;
+    //cv::bitwise_and(blue_tape_mask, green_tape_mask, street_lines_mask);
+    //cv::bitwise_and(street_lines_mask, yellow_tape_mask, street_lines_mask);
 
     // Finds the lines passing through those masks
     std::vector<cv::Vec4i> lines;
-    street_lines::getStreetLines(street_lines_mask, lines);
-
-    // Finds the angle for each line
-    std::vector<float> lines_angles(lines.size());
-    std::transform(lines.begin(), lines.end(),
-                   lines_angles.begin(), street_lines::getStreetLineAngle);
     
-    // Finds the distance of both ends of each line to the vehicle
-    std::vector<cv::Vec4i> lines_dists(lines.size());
-    std::transform(lines.begin(), lines.end(),
-                   lines_dists.begin(), street_lines::linePxToDist);
+    enum class Colors {blue, green, yellow, red};
+    std::vector<Colors> line_colors;
+    
+    auto lines_aux = street_lines::getStreetLines(blue_tape_mask);
+    lines.insert(line.end(), lines_aux.begin(), lines_aux.end());
+    line_colors.insert(lines_aux.size(), Colors.blue);
+    
+    std::vector<cv::Vec2f> undistort_lines(lines.size());
+    std::vector<cv::Vec4f> undistort_segs(lines.size());
+    for (int i = lines.begin(); i != lines.end(); i++)
+    {
+        std::tie(undistort_lines[i], undistort_segs[i] = street_lines::undistortLine(lines[i]);
+    }
 
     // Group the lines together by their angle
-    auto line_grouping = street_lines::groupLinesByAngle(lines_angles);
+    auto line_grouping = street_lines::groupLinesByAngle(undistort_lines, max_theta_diff);
 
     // Find the street(s) that passes through each group
+    std::vector<cv::Vec2f> streets;
+    for (auto group: line_grouping)
+    {
+        // Separate each group into some lines
+        std::vector<std::vector<int>> some_indexes = street_lines::groupLinesByDistance(group, lane_width/2);
+        
+        // Infer where the streets should be
+        // If there's only one line, assume the street to be in the direction of the vehicle
+        if (some_indexes.size() == 1)
+        {
+            auto street = undistort_lines[group[some_indexes[0]]];
+            // Offset in the vehicle's direction
+            street[0] -= constants::lane_width / 2;
+            // If the distance is negative, invert the angle
+            if (street[0] < 0)
+            {
+                street[0] = -street[0].
+                if (street[1] > 0)
+                    street[1] -= M_PI;
+                else
+                    street[1] += M_PI;
+            }
+            streets.push_back(undistort_lines[group[some_indexes[0]]]);
+            
+        }
+    }
     
+    // Find the intersections between the streets
 
     // Contructs the StreetSection graph from the lines and the information about them
 

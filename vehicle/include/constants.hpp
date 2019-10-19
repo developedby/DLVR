@@ -1,7 +1,8 @@
 #ifndef constants_h_
 #define constants_h_
 
-#include<cstdint>
+#include <cstdint>
+#include <cmath>
 
 namespace constants
 {
@@ -9,9 +10,11 @@ namespace constants
 	int constexpr img_height = 960;
 	int constexpr img_width = 1280;
 	float constexpr img_y_horizon = 0.282;
-	float constexpr img_real_zero_deg = 4.647;
+	float constexpr img_real_zero_rad = 4.647 * M_PI/180;
 	float constexpr img_y_vehicle = 1.;
-	float constexpr img_theta_min = 29.12;
+	float constexpr img_theta_min = 29.12 * M_PI/180;
+	float constexpr lane_width = 0.26;
+	float constexpr max_theta_diff = 5 * M_PI/180;
 
 	// Radio
 	int constexpr radio_delay_transmitting = 0;
