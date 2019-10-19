@@ -86,7 +86,6 @@ texture = ExtResource( 4 )
 expand = true
 
 [node name="leftBar" type="Control" parent="."]
-editor/display_folded = true
 margin_left = -721.0
 margin_right = -1.0
 margin_bottom = 1280.0
@@ -108,6 +107,7 @@ margin_top = -1.22772
 margin_right = 720.0
 margin_bottom = 1278.77
 rect_min_size = Vector2( 100, 0 )
+shortcut_in_tooltip = false
 
 [node name="header" type="ColorRect" parent="leftBar"]
 editor/display_folded = true
@@ -131,5 +131,18 @@ margin_bottom = 163.0
 custom_fonts/font = ExtResource( 6 )
 custom_colors/font_color = Color( 1, 1, 1, 1 )
 text = "Nome Sobrenome"
+
+[node name="menu" type="VBoxContainer" parent="leftBar"]
+margin_top = 410.0
+margin_right = 600.0
+margin_bottom = 660.0
+
+[node name="exit" type="ToolButton" parent="leftBar/menu"]
+margin_right = 600.0
+margin_bottom = 53.2
+rect_min_size = Vector2( 150, 0 )
+shortcut_in_tooltip = false
+text = "EXIT_KS"
 [connection signal="pressed" from="toolBar/sideMenuButton" to="." method="_on_sideMenuButton_pressed"]
 [connection signal="pressed" from="leftBar/back" to="leftBar" method="_on_back_pressed"]
+[connection signal="pressed" from="leftBar/menu/exit" to="." method="_on_exit_pressed"]
