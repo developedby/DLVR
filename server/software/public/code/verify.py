@@ -15,7 +15,7 @@ def main(handler):
                 connection = connect.connect()
                 cursor = connection.cursor(prepared = True)
                 query = "DELETE FROM Code WHERE expiration < %s"
-                timestamp = datetime.datetime.fromtimestamp(datetime.datetime.now().timestamp()).strftime("%Y-%m-%d %H:%M:%S")
+                timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 values = (timestamp,)
                 try:
                     cursor.execute(query, values)

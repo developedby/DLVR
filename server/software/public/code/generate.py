@@ -15,7 +15,7 @@ def main(handler):
                 connection = connect.connect()
                 cursor = connection.cursor(prepared = True)
                 query = "DELETE FROM Code WHERE expiration < %s"
-                timestamp = datetime.datetime.fromtimestamp(datetime.datetime.now().timestamp()).strftime("%Y-%m-%d %H:%M:%S")
+                timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 values = (timestamp,)
                 try:
                     cursor.execute(query, values)
@@ -26,7 +26,7 @@ def main(handler):
                         query = "INSERT INTO Code(number, expiration, user) VALUES (%s, %s, %s)"
                         number = random.randint(0, 65535)
                         expiration = datetime.datetime.now() + datetime.timedelta(minutes = 5)
-                        timestamp = datetime.datetime.fromtimestamp(expiration.timestamp()).strftime("%Y-%m-%d %H:%M:%S")
+                        timestamp = expiration.strftime("%Y-%m-%d %H:%M:%S")
                         values = (number, timestamp, data["email"],)
                         try:
                             cursor.execute(query, values)
