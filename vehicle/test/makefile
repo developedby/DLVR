@@ -73,3 +73,10 @@ follow_road:  test_follow_road.cpp ../src/movement.cpp ../src/dc_motor.cpp ../sr
 #Turn test
 turn: ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/movement.cpp
 	gcc -Wall -o ./build/test_turn ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/movement.cpp ../src/pidz.cpp ./test_turn.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -I../include -I./
+
+# Teste acha linhas
+lines: test_camera_traffic_light.cpp
+	gcc -Wall -o ./build/test_camera_traffic_light test_camera_traffic_light.cpp \
+		-lstdc++ -std=c++17 \
+		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc \
+		-I../include -I/usr/local/include -I/usr/local/include/opencv4

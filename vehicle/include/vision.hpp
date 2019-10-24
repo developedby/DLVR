@@ -22,6 +22,7 @@ class Vision
 		void getCamImg();
 		std::vector<street_lines::StreetSection> findStreets();
 		Vision();
+		bool isTrafficLightRed();
 };
 
 #endif //vision_h_

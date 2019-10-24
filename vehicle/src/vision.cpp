@@ -165,3 +165,25 @@ void Vision::getGroundMask(cv::Mat& dst)
 {
     this->getColorMask(dst, 0, 180, 50, 120, 0, 30);
 }
+
+bool Vision::isTrafficLightRed()
+{
+    cv::Mat red_mask;
+    getRedTapeMask(red_mask);
+    std::vector<std::vector<cv::Point>> contours;
+    std::vector<cv::Vec4i> hierarchy;
+    cv::findContours(red_mask, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE);
+    if(hierarchy.size()>0)
+    {
+        for(int j=0; j>=0; j=hierarchy[j][0])
+        {
+            double area = cv::contourArea(contours[j]);
+            if(area < 20)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+    
+}
