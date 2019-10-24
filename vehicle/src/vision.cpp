@@ -3,6 +3,7 @@
 #include <limits>
 #include <algorithm>
 #include <tuple>
+#include <vector>
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include "reduce_lines.hpp"
@@ -33,6 +34,8 @@ void Vision::getCamImg()
 // Returns a graph of the StreetSections identified
 std::vector<street_lines::StreetSection> Vision::findStreets()
 {
+    // TODO: Cut the mask closer to the vehicle (~ 1 meter maybe), so that we don't waste time with far away things
+    
     // Finds the binary mask for each marker type
     cv::Mat blue_tape_mask;
     this->getBlueTapeMask(blue_tape_mask);
@@ -48,7 +51,6 @@ std::vector<street_lines::StreetSection> Vision::findStreets()
 
     // Finds the lines passing through those masks
     std::vector<cv::Vec4i> lines;
-    
     enum class Colors {blue, green, yellow, red};
     std::vector<Colors> line_colors;
     
@@ -56,45 +58,67 @@ std::vector<street_lines::StreetSection> Vision::findStreets()
     lines.insert(line.end(), lines_aux.begin(), lines_aux.end());
     line_colors.insert(lines_aux.size(), Colors.blue);
     
+    lines_aux = street_lines::getStreetLines(blue_tape_mask);
+    lines.insert(line.end(), lines_aux.begin(), lines_aux.end());
+    line_colors.insert(lines_aux.size(), Colors.blue);
+    
+    lines_aux = street_lines::getStreetLines(blue_tape_mask);
+    lines.insert(line.end(), lines_aux.begin(), lines_aux.end());
+    line_colors.insert(lines_aux.size(), Colors.blue);
+    
+    // Undo the projection distortion
     std::vector<cv::Vec2f> undistort_lines(lines.size());
     std::vector<cv::Vec4f> undistort_segs(lines.size());
     for (int i = lines.begin(); i != lines.end(); i++)
     {
-        std::tie(undistort_lines[i], undistort_segs[i] = street_lines::undistortLine(lines[i]);
+        std::tie(undistort_lines[i], undistort_segs[i]) = street_lines::undistortLine(lines[i]);
     }
 
     // Group the lines together by their angle
-    auto line_grouping = street_lines::groupLinesByAngle(undistort_lines, max_theta_diff);
+    auto angle_groups = street_lines::groupLinesByAngle(undistort_lines, max_theta_diff);
 
     // Find the street(s) that passes through each group
     std::vector<cv::Vec2f> streets;
-    for (auto group: line_grouping)
+    for (auto angle_group: angle_groups)
     {
-        // Separate each group into some lines
-        std::vector<std::vector<int>> some_indexes = street_lines::groupLinesByDistance(group, lane_width/2);
+        // Separate each group into groups that represent a unique line
+        std::vector<std::vector<int>> distance_groups = street_lines::groupLinesByDistance(angle_group, lane_width/3);
         
         // Infer where the streets should be
-        // If there's only one line, assume the street to be in the direction of the vehicle
-        if (some_indexes.size() == 1)
+        for (int i = distance_groups.begin(); i != distance_groups.end(); i++)
         {
-            auto street = undistort_lines[group[some_indexes[0]]];
-            // Offset in the vehicle's direction
-            street[0] -= constants::lane_width / 2;
-            // If the distance is negative, invert the angle
-            if (street[0] < 0)
+            // Compare each line with the others in the same angle group
+            bool unpaired_line = true;
+            cv::Vec2f line_i = undistort_lines[angle_group[distance_groups[0][i]]];
+            for (int j = i+1; j != distance_groups.end(); j++)
             {
-                street[0] = -street[0].
-                if (street[1] > 0)
-                    street[1] -= M_PI;
-                else
-                    street[1] += M_PI;
+                // If they are close to each other, a street is said to go between them
+                cv::Vec2f line_j = undistort_lines[angle_group[distance_groups[0][j]]][0];
+                if (abs(line_i[0] - line_j[0]) < lane_width*1.2)
+                {
+                    streets.push_back(cv::Vec2f((line_i[0]+line_j[0])/2, line_i[1]+line_j[1])/2));
+                }
             }
-            streets.push_back(undistort_lines[group[some_indexes[0]]]);
-            
+            // If the line has no pair, assume that it's pair is hidden in the direction of the vehicle
+            if (unpaired_line)
+                streets.push_back(cv::Vec2f(line[0] - street_width/2, line[1]);
         }
+        
     }
     
     // Find the intersections between the streets
+    std::vector<cv::Vec2f> intersections;
+    for (auto i = streets.begin(); i != streets.end(); i++)
+    {
+        for (auto j = i+1; j != streets.end(); j++)
+        {
+            auto intersection = street_lines::linesIntersection(streets[i], streets[j]);
+            // Discard far away intersections
+            if (intersection[0] < 1.0)
+            {
+            }
+        }
+    }
 
     // Contructs the StreetSection graph from the lines and the information about them
 

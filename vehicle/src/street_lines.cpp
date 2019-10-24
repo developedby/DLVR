@@ -2,6 +2,7 @@
 #include <cmath>
 #include <limits>
 #include <vector>
+#include <array>
 #include <algorithm>
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
@@ -53,7 +54,7 @@ namespace street_lines
         const float x = line[0] + u*(line[2] - line[0]);
         const float y = line[1] + u*(line[3] - line[1]);
         
-        return std::pair(cv::Vec2f(norm(x, y), atan2(x, y)), dist_extremities);
+        return std::pair(cv::Vec2f(norm(x, y), atan2(y, x)), undistort_seg_rt);
     }
 
     // Finds the line segment's angle relative to the vehicle
@@ -110,6 +111,8 @@ namespace street_lines
         return line_dists;
     }
 
+    // Finds the distance between the vehicle and a line segment
+    // Assumes that the segment doesn't cross the vehicle
     float lineAbsDist(const cv::Vec4i& line)
     {
         return std::min(sqrt(line[0]*line[0] + line[1]*line[1]),
@@ -132,12 +135,16 @@ namespace street_lines
                 for (auto j=i+1; j != lines.end()); j++)
                 {
                     // Group together if angles have difference less than max_theta_diff
-                    if ((line_grouping[j] == -1)
-                        && ((lines[i][1]-max_theta_diff) < lines[j][1])
-                        && (lines[j][1] < (lines[i][1]+max_theta_diff)))
+                    if (line_grouping[j] == -1)
                     {
-                        lines_angles[j] = group_counter;
-                        groups[group_counter].push_back(j);
+                        float delta_theta = abs(lines[i][1] - lines[j][1]);
+                        if (delta_theta > M_PI/2)
+                            delta_theta = M_PI - delta_theta;
+                        if (delta_theta > max_theta_diff)
+                        {
+                            lines_angles[j] = group_counter;
+                            groups[group_counter].push_back(j);
+                        }
                     }
                 }
                 group_counter++;
@@ -147,7 +154,7 @@ namespace street_lines
     }
     
     // From a group of maybe repeated lines, select only the unique ones, separating them by their distance (rho)
-    // Return the indexes of the unique lines
+    // Return the indexes of the unique lines in the input vector
     std::vector<std::vector<int>> groupLinesByDistance(const std::vector<cv::Vec2f>& lines, const float max_rho_diff)
     {
         std::vector<std::vector<int>> groups_of_unique_lines; // Each element has a group of lines that are repeated
