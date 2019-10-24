@@ -26,17 +26,17 @@ int main(void) {
     float dir = 1.0;
     float angle = 0.0f;
     while(1) {
-		for(int i = 0; i < 4; ++i) {
-			mov.turn(90 * dir);
-			gpioDelay(3000000.0f);
-			std::cout << "Angle: " << (angle += 90 * dir) << std::endl;
-		}
-		dir *= -1.0f;
-		for(int i = 0; i < 4; ++i) {
-			mov.turn(90 * dir);
-			gpioDelay(3000000.0f);
-			std::cout << "Angle: " << (angle += 90 * dir) << std::endl;
-		}
+		mov.turn(90);
+		gpioDelay(3000000);
+		mov.turn(-90);
+		gpioDelay(3000000);
+		mov.turn(180);
+		gpioDelay(3000000);
+		mov.turn(-180);
+		gpioDelay(3000000);
+		mov.turn(180);
+		gpioDelay(3000000);
+		mov.turn(-180);
 		break;
 	}
     std::cout << "Terminating" << std::endl;

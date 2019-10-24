@@ -28,8 +28,8 @@ void Movement::turn(float degrees) {
     lr = 450;
     rr = 450;
     r_dir = 2*(degrees > 0) - 1;
-    l_dir = -r_dir;
-    this->turn_ticks = roundf((abs(degrees * 83.775804096)/(2*lr/constants::vehicle_wheel_distance)) / constants::pid_T_ms);
+    l_dir = -r_dir;                    //83.775804096
+    this->turn_ticks = roundf((abs(degrees * 83.775804096)/(4*lr/constants::vehicle_wheel_distance)) / constants::pid_T_ms);
 }
 
 void Movement::goStraight(int direction, float speed){ //mmps
@@ -45,8 +45,8 @@ void Movement::goCurve(int direction, float curvature) {
     float v0 = (lr + rr) / 2.0f;
     float w0 = v0 / curvature;
 
-    this->lr = w0 * (curvature + wheel_distance / 2.0f) * LEFT_BALANCE;
-    this->rr = w0 * (curvature - wheel_distance / 2.0f) * RIGHT_BALANCE;
+    this->lr = w0 * (curvature + wheel_distance / 2.0f);
+    this->rr = w0 * (curvature - wheel_distance / 2.0f);
     
 }
 
@@ -60,7 +60,7 @@ void Movement::tick(void) {
     else if(aux > 1000.0) {
         aux /= 2.0f;
     }
-    float l_dc = this->limit(0, this->left_pid.push_error(lr * LEFT_BALANCE, aux), 1);
+    float l_dc = this->limit(0, this->left_pid.push_error(lr, aux), 1);
     // Right
     aux = this->right_wheel.getSpeed();
     if (aux < 3.7f) {
@@ -69,7 +69,7 @@ void Movement::tick(void) {
     else if(aux > 1000.0) {
         aux /= 2.0f;
     }
-    float r_dc = this->limit(0, this->right_pid.push_error(rr * RIGHT_BALANCE, aux), 1);
+    float r_dc = this->limit(0, this->right_pid.push_error(rr, aux), 1);
     // Adjust
     if(iwflag) {
         this->right_wheel.spin(r_dir, r_dc);
