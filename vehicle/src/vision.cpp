@@ -6,10 +6,13 @@
 #include <vector>
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
+#include <opencv2/aruco.hpp>
 #include "reduce_lines.hpp"
 #include "constants.hpp"
 #include "street_lines.hpp"
 
+using std::vector;
+using std::pair
 using constants::lane_width;
 using constants::max_theta_diff;
 
@@ -20,6 +23,7 @@ Vision::Vision()
     this->cam.set(cv::CAP_PROP_FRAME_WIDTH, constants::img_width);
     this->cam.set(cv::CAP_PROP_FRAME_HEIGHT, constants::img_height);
     auto success = this->cam.open();
+    auto aruco_dict = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_250);
     assert(success);
 }
 
@@ -32,7 +36,7 @@ void Vision::getCamImg()
 
 // Looks at the image and finds the streets
 // Returns a graph of the StreetSections identified
-std::vector<street_lines::StreetSection> Vision::findStreets()
+vector<street_lines::StreetSection> Vision::findStreets()
 {
     // TODO: Cut the mask closer to the vehicle (~ 1 meter maybe), so that we don't waste time with far away things
     
@@ -50,9 +54,9 @@ std::vector<street_lines::StreetSection> Vision::findStreets()
     //cv::bitwise_and(street_lines_mask, yellow_tape_mask, street_lines_mask);
 
     // Finds the lines passing through those masks
-    std::vector<cv::Vec4i> lines;
+    vector<cv::Vec4i> lines;
     enum class Colors {blue, green, yellow, red};
-    std::vector<Colors> line_colors;
+    vector<Colors> line_colors;
     
     auto lines_aux = street_lines::getStreetLines(blue_tape_mask);
     lines.insert(line.end(), lines_aux.begin(), lines_aux.end());
@@ -67,8 +71,8 @@ std::vector<street_lines::StreetSection> Vision::findStreets()
     line_colors.insert(lines_aux.size(), Colors.blue);
     
     // Undo the projection distortion
-    std::vector<cv::Vec2f> undistort_lines(lines.size());
-    std::vector<cv::Vec4f> undistort_segs(lines.size());
+    vector<cv::Vec2f> undistort_lines(lines.size());
+    vector<cv::Vec4f> undistort_segs(lines.size());
     for (int i = lines.begin(); i != lines.end(); i++)
     {
         std::tie(undistort_lines[i], undistort_segs[i]) = street_lines::undistortLine(lines[i]);
@@ -78,11 +82,11 @@ std::vector<street_lines::StreetSection> Vision::findStreets()
     auto angle_groups = street_lines::groupLinesByAngle(undistort_lines, max_theta_diff);
 
     // Find the street(s) that passes through each group
-    std::vector<cv::Vec2f> streets;
+    vector<cv::Vec2f> streets;
     for (auto angle_group: angle_groups)
     {
         // Separate each group into groups that represent a unique line
-        std::vector<std::vector<int>> distance_groups = street_lines::groupLinesByDistance(angle_group, lane_width/3);
+        vector<vector<int>> distance_groups = street_lines::groupLinesByDistance(angle_group, lane_width/3);
         
         // Infer where the streets should be
         for (int i = distance_groups.begin(); i != distance_groups.end(); i++)
@@ -107,7 +111,7 @@ std::vector<street_lines::StreetSection> Vision::findStreets()
     }
     
     // Find the intersections between the streets
-    std::vector<cv::Vec2f> intersections;
+    vector<cv::Vec2f> intersections;
     for (auto i = streets.begin(); i != streets.end(); i++)
     {
         for (auto j = i+1; j != streets.end(); j++)
@@ -170,8 +174,8 @@ bool Vision::isTrafficLightRed()
 {
     cv::Mat red_mask;
     getRedTapeMask(red_mask);
-    std::vector<std::vector<cv::Point>> contours;
-    std::vector<cv::Vec4i> hierarchy;
+    vector<vector<cv::Point>> contours;
+    vector<cv::Vec4i> hierarchy;
     cv::findContours(red_mask, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE);
     if(hierarchy.size()>0)
     {
@@ -186,4 +190,12 @@ bool Vision::isTrafficLightRed()
     }
     return false;
     
+}
+
+pair<vector<int>, vector<vector<cv::Point2f>>> Vision::findARMarkers()
+{
+    vector<int> ids;
+    vector<vector<cv::Point2f> corners;
+    cv::aruco::detectMarkers(this->img, this->aruco_dict, corners, ids);
+    return pair(ids, corners);
 }

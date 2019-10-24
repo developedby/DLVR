@@ -2,6 +2,7 @@
 #define vision_hpp_
 
 #include <vector>
+#include <tuple>
 #include <raspicam/raspicam_cv.h>
 #include <opencv2/core.hpp>
 #include "street_section.hpp"
@@ -23,6 +24,7 @@ class Vision
 		std::vector<street_lines::StreetSection> findStreets();
 		Vision();
 		bool isTrafficLightRed();
+		std::pair<std::vector<int>, std::vector<std::vector<cv::Point2f>>> findARMarkers();
 };
 
 #endif //vision_h_
