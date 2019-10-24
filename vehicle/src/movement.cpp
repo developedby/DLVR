@@ -3,8 +3,9 @@
 #include "constants.hpp"
 
 #define abs(a) ((a >= 0)?a:-a)
-#define LEFT_BALANCE    ((1 - balance)/2)
-#define RIGHT_BALANCE   ((1 + balance)/2) 
+#define LEFT_BALANCE    (1.0f - balance)
+#define RIGHT_BALANCE   (1.0f + balance) 
+#define CMATERIAL 1.0f
 
 float Movement::limit(float vmin, float v, float vmax) {
     return ((v > vmax)?(vmax):((v < vmin)?(vmin):(v)));
@@ -17,6 +18,8 @@ Movement::Movement() :
     lr = 0.0f;
     rr = 0.0f;
     balance = 0.0f;
+    lb = 1.0f;
+    rb = 1.0f;
     l_dir = 0;
     r_dir = 0;
     turn_ticks = -1;
@@ -29,7 +32,7 @@ void Movement::turn(float degrees) {
     rr = 450;
     r_dir = 2*(degrees > 0) - 1;
     l_dir = -r_dir;                    //83.775804096
-    this->turn_ticks = roundf((abs(degrees * 83.775804096)/(4*lr/constants::vehicle_wheel_distance)) / constants::pid_T_ms);
+    this->turn_ticks = roundf(CMATERIAL * (abs(degrees * 83.775804096)/(4*lr/constants::vehicle_wheel_distance)) / constants::pid_T_ms);
 }
 
 void Movement::goStraight(int direction, float speed){ //mmps
@@ -60,7 +63,7 @@ void Movement::tick(void) {
     else if(aux > 1000.0) {
         aux /= 2.0f;
     }
-    float l_dc = this->limit(0, this->left_pid.push_error(lr, aux), 1);
+    float l_dc = this->limit(0, this->left_pid.push_error(lr * lb, aux), 1);
     // Right
     aux = this->right_wheel.getSpeed();
     if (aux < 3.7f) {
@@ -69,7 +72,7 @@ void Movement::tick(void) {
     else if(aux > 1000.0) {
         aux /= 2.0f;
     }
-    float r_dc = this->limit(0, this->right_pid.push_error(rr, aux), 1);
+    float r_dc = this->limit(0, this->right_pid.push_error(rr * rb, aux), 1);
     // Adjust
     if(iwflag) {
         this->right_wheel.spin(r_dir, r_dc);
@@ -94,6 +97,14 @@ float Movement::getBalance(void) {
 
 float Movement::setBalance(float balance) {
     this->balance = ((balance < 1.0)?((balance > -1.0)?balance:(-1.0)):(1.0));
+    if(this->balance > 0) {
+        lb = (1.0f - balance);
+        rb = 1.0f;
+    }
+    else {
+        rb = (1.0f + balance);
+        lb = 1.0f;
+    }
     return (this->balance);
 }
 

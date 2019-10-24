@@ -27,16 +27,18 @@ int main(void) {
     float angle = 0.0f;
     while(1) {
 		mov.turn(90);
-		gpioDelay(3000000);
+		gpioDelay(10000000);
 		mov.turn(-90);
-		gpioDelay(3000000);
+		gpioDelay(10000000);
 		mov.turn(180);
-		gpioDelay(3000000);
+		gpioDelay(10000000);
 		mov.turn(-180);
-		gpioDelay(3000000);
+		gpioDelay(10000000);
 		mov.turn(180);
-		gpioDelay(3000000);
+		gpioDelay(10000000);
 		mov.turn(-180);
+		while(mov.isTurning());
+		gpioDelay(100);
 		break;
 	}
     std::cout << "Terminating" << std::endl;

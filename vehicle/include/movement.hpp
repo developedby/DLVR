@@ -15,6 +15,8 @@ class Movement {
         float lr;
         float rr;
         float balance;
+        float lb;
+        float rb;
         int l_dir;
         int r_dir;
         int turn_ticks;
