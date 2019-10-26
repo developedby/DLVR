@@ -6,19 +6,18 @@
 
 namespace street_lines
 {
-    enum StreetSectionType
-    {
-        SECTION_STREET, SECTION_HOUSE
-    };
+    enum class Color {blue, green, yellow, red};
 
     class StreetSection
     {
         public:
-            StreetSectionType type;
-            float direction;
-            float lane_offset;
-            float section_len;
-            std::vector<std::pair<StreetSection *,float>> connections;
+            Color type;
+            cv::Vec2f line;
+            cv::Vec4f end_points; 
+            std::vector<StreetSection *> connects_end_point1;
+            std::vector<StreetSection *> connects_end_point2;
+            StreetSection() {}
+            StreetSection(Color type_, cv::Vec2f line_, cv::Vec4f end_points_) : type(type_), line(line_), end_points(end_points_) {}
     };
 }
 
