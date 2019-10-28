@@ -46,16 +46,27 @@ async def handler():
                                     if resp["status_code"] == 200 and resp["message_body"] == "true":
                                         print("Signin efetuado com sucesso")
                                         print("Cookie: {}".format(resp["set_cookie"]))
-                                        data = {"cookie": resp["set_cookie"], "password": "Password456!"}
-                                        async with websockets.connect(uri + "/user/delete", ssl = ssl_context) as websocket6:
+                                        data = {"cookie": resp["set_cookie"], "email": "subject2@example.com", "password": "Password456!"}
+                                        async with websockets.connect(uri + "/user/update", ssl = ssl_context) as websocket6:
                                             await websocket6.send(json.dumps(data))
                                             resp = await websocket6.recv()
                                             resp = json.loads(resp)
                                             if resp["status_code"] == 200 and resp["message_body"] == "true":
-                                                print("Conta deletada com sucesso")
+                                                print("Conta atualizada com sucesso")
+                                                print("Cookie: {}".format(resp["set_cookie"]))
+                                                data = {"cookie": resp["set_cookie"], "password": "Password456!"}
+                                                async with websockets.connect(uri + "/user/delete", ssl = ssl_context) as websocket7:
+                                                    await websocket7.send(json.dumps(data))
+                                                    resp = await websocket7.recv()
+                                                    resp = json.loads(resp)
+                                                    if resp["status_code"] == 200 and resp["message_body"] == "true":
+                                                        print("Conta deletada com sucesso")
+                                                    else:
+                                                        print(resp)
+                                                        print("Erro em deletar conta")
                                             else:
                                                 print(resp)
-                                                print("Erro em deletar a conta")
+                                                print("Erro em atualizar conta")
                                     else:
                                         print(resp)
                                         print("Signin incorreto")

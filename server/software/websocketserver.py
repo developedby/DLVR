@@ -5,7 +5,7 @@ import sys
 import os
 import mimetypes
 import importlib
-import inspect
+import datetime
 
 script_cache = {}
 
@@ -24,6 +24,8 @@ def main():
         print("websocketserver.py:23: " + str(e))
 
 async def handler(websocket, path):
+    print("{0} - - [{1}] \"{2}\"".format(websocket.remote_address[0], datetime.datetime.now().strftime("%d/%b/%Y %H:%M:%S"), path))
+
     local_path = "./" + path.strip("/")
 
     if not os.path.exists(local_path):
