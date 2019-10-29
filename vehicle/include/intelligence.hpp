@@ -11,5 +11,7 @@ class Intelligence
         bool hasCommand();
         void followTheRoad();
         void avoidObstacle();
+        void decodeCommand();
+        void sendFeedback();
 };
 #endif

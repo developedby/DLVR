@@ -11,8 +11,9 @@ void Intelligence::mainLoop()
     {
         if (hasCommand())
         {
-            
+            decodeCommand();
         }
+        sendFeedback();
     }
     
 }
@@ -30,3 +31,10 @@ void Intelligence::avoidObstacle()
 {
 }
 
+void Intelligence::decodeCommand()
+{
+}
+
+void Intelligence::sendFeedback()
+{
+}
