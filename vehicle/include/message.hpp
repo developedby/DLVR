@@ -20,7 +20,7 @@ enum Commands{
 enum PossibleSensors{
     NO_SENSORS = 0,
     ITEM_DETECTOR,
-    ULTASOUND,
+    ULTRASOUND,
     LOCK
 };
 
@@ -53,7 +53,7 @@ class ReceivedMessage{
             path(_path), qr_code(_qr_code), command(_command), sensor_to_read(_sensor_to_read), required_status(_required_status) {}
 };
 
-class SendedMessage{
+class SentMessage{
     public:
         std::vector<uint16_t> qr_codes_read;
         float ultrassound_reading;
