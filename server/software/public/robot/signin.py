@@ -39,6 +39,23 @@ async def main(websocket, path):
                             connection.commit()
                             resp["message_body"] = "true"
                             await websocket.send(json.dumps(resp))
+                            async for message in websocket:
+                                data = json.loads(message)
+                                if "path" in data:
+                                    path = data["path"]
+                                    if path == "/robot/route":
+                                        import public.robot.route as script;
+                                        await script.main(websocket, path, data);
+                                    elif path == "/robot/signout":
+                                        import public.robot.signout as script;
+                                        await script.main(websocket, path, data);
+                                    elif path == "/robot/update":
+                                        import public.robot.update as script;
+                                        await script.main(websocket, path, data);
+                                    else:
+                                        await websocket.send("{\"status_code\": 404, \"reason_message\": \"Not Found\"}")
+                                else:
+                                    await websocket.send("{\"status_code\": 400, \"reason_message\": \"Bad Request\"}")
                         except mysql.connector.Error as e:
                             print("signin.py:43: " + str(e))
                             resp["message_body"] = "false"

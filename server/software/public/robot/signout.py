@@ -6,9 +6,10 @@ import connect
 import mysql.connector
 import asyncio
 
-async def main(websocket, path):
-    data = await websocket.recv()
-    data = json.loads(data)
+async def main(websocket, path, data = None):
+    if not data:
+        data = await websocket.recv()
+        data = json.loads(data)
     if "id" in data and "signature" in data and "timestamp" in data:
         resp = {
             "status_code": 200,
