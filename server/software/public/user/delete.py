@@ -6,7 +6,7 @@ import hashlib
 import http.cookies
 import asyncio
 
-async def main(websocket, path, data = None):
+async def main(websocket, path, open_sockets, data = None):
     if not data:
         data = await websocket.recv()
         data = json.loads(data)

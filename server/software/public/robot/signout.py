@@ -6,7 +6,7 @@ import connect
 import mysql.connector
 import asyncio
 
-async def main(websocket, path, data = None):
+async def main(websocket, path, open_sockets, data = None):
     if not data:
         data = await websocket.recv()
         data = json.loads(data)
@@ -40,6 +40,7 @@ async def main(websocket, path, data = None):
                             connection.commit()
                             resp["message_body"] = "true"
                             await websocket.send(json.dumps(resp))
+                            open_sockets["robots"].pop(data["id"])
                         except mysql.connector.Error as e:
                             print("signout.py:43: " + str(e))
                             resp["message_body"] = "false"

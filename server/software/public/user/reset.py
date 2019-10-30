@@ -7,7 +7,7 @@ import asyncio
 import websockets
 import ssl
 
-async def main(websocket, path):
+async def main(websocket, path, open_sockets):
     data = await websocket.recv()
     data = json.loads(data)
     if "email" in data and "code" in data and "password" in data:
