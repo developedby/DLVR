@@ -8,6 +8,7 @@ import importlib
 import datetime
 
 script_cache = {}
+open_sockets = {"users": {}, "robots": {}}
 
 def main():
     try:
@@ -51,12 +52,12 @@ async def handler(websocket, path):
             }
 
         try:
-            await script.main(websocket, path)
+            await script.main(websocket, path, open_sockets)
         except Exception as e:
             print("websocketserver.py:53(" + script.__name__ + "): " + str(e))
             await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
     else:
-        await websocket.send("{\"status_code\": 501, \"reason_message\": \"Not Implemented\"}")
+        await websocket.send("{\"status_code\": 404, \"reason_message\": \"Not Found\"}")
 
 if __name__ == "__main__":
     main()

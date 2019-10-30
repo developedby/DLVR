@@ -7,9 +7,10 @@ import http.cookies
 import os
 import asyncio
 
-async def main(websocket, path):
-    data = await websocket.recv()
-    data = json.loads(data)
+async def main(websocket, path, open_sockets, data = None):
+    if not data:
+        data = await websocket.recv()
+        data = json.loads(data)
     if "cookie" in data and "password" in data and ("email" in data or "first_name" in data or "last_name" in data or "new_password" in data):
         resp = {
             "status_code": 200,

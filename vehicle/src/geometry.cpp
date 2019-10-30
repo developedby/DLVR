@@ -100,20 +100,18 @@ namespace street_lines
                     + (pt1.x-pt2.x)*(pt1.x-pt2.x));
     }
 
-    // Converts (x1, y1, x2, y2) segments to (rho, theta) lines
-    void xySegmentsToLines(const std::vector<cv::Vec4f>& segs, std::vector<cv::Vec2f>& lines)
+    // Converts a (x1, y1, x2, y2) segment to a (rho, theta) line
+    cv::Vec2f xySegmentToLine(const cv::Vec4f& seg)
     {
-        for (auto i = segs.begin(); i != segs.end(); i++)
-        {
-            float theta = -atan2(segs[i][0]-segs[i][2], segs[i][1]-segs[i][3]);
-            if (theta > M_PI/2)
-                theta -= M_PI;
-            else if (theta <= -M_PI/2)
-                theta += M_PI;
-            float rho = abs(segs[i][2]*segs[i][1] - segs[i][3]*segs[i][0])
-                            / norm(segs[i][3]-segs[i][1], segs[i][2]-segs[i][0]);
-            lines[i] = Vec2f(theta, rho);
-        }
+        float theta = -atan2(seg[0]-seg[2], seg[1]-seg[3]);
+        if (theta < 0)
+            theta += M_PI;
+        if (seg[1] < theta - M_PI/2)
+            theta -= M_PI;
+            
+        const float rho = abs(segs[i][2]*segs[i][1] - segs[i][3]*segs[i][0])
+                        / norm(segs[i][3]-segs[i][1], segs[i][2]-segs[i][0]);
+        return cv::Vec2f(theta, rho);
     }
 
     // Calculates the intersection point of two (rho, theta) lines
@@ -158,6 +156,12 @@ namespace street_lines
     bool linesAreParallel(const cv::Vec2f& line1, const cv::Vec2f& line2, const float max_theta_diff)
     {
         return linesHaveAngle(line1, line2, 0, max_theta_diff);
+    }
+
+    bool linesAreCollinear(const cv::Vec2f& line1, const cv::Vec2f& line2, const float max_theta_diff, const float max_rho_diff)
+    {
+        return (linesAreParallel(line1, line2, max_theta_diff)
+                && (abs(line1[0] - line2[0]) <= max_rho_diff));
     }
 
     // Transforms a (rho1, theta1, rho2, theta2) segment to a (x1, y1, x2, y2) segment
