@@ -158,6 +158,12 @@ namespace street_lines
         return linesHaveAngle(line1, line2, 0, max_theta_diff);
     }
 
+    bool linesAreCollinear(const cv::Vec2f& line1, const cv::Vec2f& line2, const float max_theta_diff, const float max_rho_diff)
+    {
+        return (linesAreParallel(line1, line2, max_theta_diff)
+                && (abs(line1[0] - line2[0]) <= max_rho_diff));
+    }
+
     // Transforms a (rho1, theta1, rho2, theta2) segment to a (x1, y1, x2, y2) segment
     cv::Vec4f segmentRTToXY(const cv::Vec4f& rt_seg)
     {

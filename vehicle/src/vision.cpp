@@ -24,6 +24,7 @@ using street_lines::distXYPoints;
 using street_lines::distRTSegments;
 using street_lines::undistortLine;
 using street_lines::segmentHalfPoint;
+using street_lines::groupCollinearLines;
 
 Vision::Vision()
 {
@@ -48,7 +49,7 @@ void Vision::getCamImg()
 // Returns a graph of the StreetSections identified
 vector<StreetSection> Vision::findStreets()
 {
-    // TODO: Cut the mask closer to the vehicle (~ 1 meter maybe), so that we don't waste time with far away things
+    // TODO: Cut the mask closer to the vehicle (~1 meter maybe), so that we don't waste time with far away things
     
     // Finds the binary mask for each marker type
     cv::Mat blue_tape_mask;
@@ -156,6 +157,22 @@ vector<StreetSection> Vision::findStreets()
                                                  cv::Vec4f(mid_pt[0], mid_pt[1], pt2[0], pt2[1]));
             }
         }
+        // Check if the proposed sections are not crossing blue or yellow
+        for (auto section: imaginable_sections)
+        {
+            bool section_possible = true;
+            for (auto seg: connected_segs)
+            {
+                if ((seg.color != Color::green)
+                    && (distRTSegments(section.seg, seg.seg) < lane_width/5))
+                {
+                    section_possible = false;
+                    break;
+                }
+            }
+            if (section_possible)
+                possible_sections.push_back(section);
+        }   
         // If the 'i' segment is green, add a perpendicular section
         if (lines_color[i] == Color::green)
         {
@@ -167,18 +184,17 @@ vector<StreetSection> Vision::findStreets()
                                  mid_pt[0]*sin(mid_pt[1]) - translation[1]);
             const cv::Vec4f transl_half1 (pt1[0], pt1[1], mid_pt[0], mid_pt[1]);
             const cv::Vec4f transl_half2 (mid_pt[0], mid_pt[1], pt2[0], pt2[1]);
-            imaginable_sections.emplace_back(Color::green,
-                                            xySegmentToLine(segmentRTToXY(transl_half1)),
-                                            transl_half1);
-            imaginable_sections.emplace_back(Color::green,
-                                             xySegmentToLine(segmentRTToXY(transl_half2)),
-                                             transl_half2);
+            possible_sections.emplace_back(Color::green,
+                                           xySegmentToLine(segmentRTToXY(transl_half1)),
+                                           transl_half1);
+            possible_sections.emplace_back(Color::green,
+                                           xySegmentToLine(segmentRTToXY(transl_half2)),
+                                           transl_half2);
         }
         
         // If the segment is yellow and it is perpendicular to the vehicle, add a section crossing it
-        // TODO
-        if (lines_color[i] == Color::yellow
-            && linesAreParallel(undistort_lines[1], cv::Vec2f(0, M_PI/2), 3*max_theta_diff))
+        else if (lines_color[i] == Color::yellow
+                 && linesAreParallel(undistort_lines[1], cv::Vec2f(0, M_PI/2), 3*max_theta_diff))
         {
             const cv::Vec2f translation (lane_width/2 * cos(seg.line[1]), lane_width/2 * sin(seg.line[1]));
             const cv::Vec2f mid_pt = segmentHalfPoint(undistort_segs[i]);
@@ -188,24 +204,25 @@ vector<StreetSection> Vision::findStreets()
                                  mid_pt[0]*sin(mid_pt[1]) - translation[1]);
             const cv::Vec4f transl_half1 (pt1[0], pt1[1], mid_pt[0], mid_pt[1]);
             const cv::Vec4f transl_half2 (mid_pt[0], mid_pt[1], pt2[0], pt2[1]);
-            imaginable_sections.emplace_back(Color::green,
-                                            xySegmentToLine(segmentRTToXY(transl_half1),
-                                            transl_half1);
-            imaginable_sections.emplace_back(Color::green,
-                                             xySegmentToLine(segmentRTToXY(transl_half2),
-                                             transl_half2);
+            possible_sections.emplace_back(Color::yellow,
+                                           xySegmentToLine(segmentRTToXY(transl_half1)),
+                                           transl_half1);
+            possible_sections.emplace_back(Color::yellow,
+                                           xySegmentToLine(segmentRTToXY(transl_half2)),
+                                           transl_half2));
         }
-        
-        // Check if the proposed sections are not crossing blue or yellow (not coming from green)
-        for (auto seg: connected_segs) 
-        {
-            if (!(end_pt1_available || end_pt2_available))
-                break;
-            if (distRTSegments(transl_half1, seg.end_points) < lane_width/5)
-            {
-                end_pt1_available = false;
-            }
-        }   
+    }
+
+    // Transform the groups of maybe overlapping collinear sections into a group of non-overlapping sections
+    vector<StreetSection> short_sections;
+    vector<cv::Vec2f> possible_lines(possible_sections.size());
+    for (auto i = possible_sections.begin(); i != possible_sections.end(); i++)
+        possible_lines[i] = possible_sections[i].line;
+    const auto angle_groups = groupCollinearLines(possible_lines);
+    for (auto group: angle_groups)
+    {
+        // Todo: Implement. (Find the cut points, the edges and take the average of very close points)
+        for ()
     }
 
 }
