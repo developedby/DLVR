@@ -26,17 +26,16 @@ async def handler():
         resp = json.loads(resp)
         if resp["status_code"] == 200 and resp["message_body"] == "true":
             print("Signin efetuado com sucesso")
-            data = {"id": 0, "timestamp": datetime.datetime.now().timestamp()}
+            data = {"path": "/robot/signout", "id": 0, "timestamp": datetime.datetime.now().timestamp()}
             data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
-            async with websockets.connect(uri + "/robot/signout", ssl = ssl_context) as websocket:
-                await websocket.send(json.dumps(data))
-                resp = await websocket.recv()
-                resp = json.loads(resp)
-                if resp["status_code"] == 200 and resp["message_body"] == "true":
-                    print("Signout efetuado com sucesso")
-                else:
-                    print(resp)
-                    print("Signout incorreto")
+            await websocket.send(json.dumps(data))
+            resp = await websocket.recv()
+            resp = json.loads(resp)
+            if resp["status_code"] == 200 and resp["message_body"] == "true":
+                print("Signout efetuado com sucesso")
+            else:
+                print(resp)
+                print("Signout incorreto")
         else:
             print(resp)
             print("Signin incorreto")

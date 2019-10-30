@@ -56,7 +56,7 @@ async def handler(websocket, path):
             print("websocketserver.py:53(" + script.__name__ + "): " + str(e))
             await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
     else:
-        await websocket.send("{\"status_code\": 501, \"reason_message\": \"Not Implemented\"}")
+        await websocket.send("{\"status_code\": 404, \"reason_message\": \"Not Found\"}")
 
 if __name__ == "__main__":
     main()
