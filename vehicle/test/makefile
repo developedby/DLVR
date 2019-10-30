@@ -49,6 +49,13 @@ vision: test_vision.cpp ../src/vision.cpp ../src/street_lines.cpp ../src/reduce_
 		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lraspicam -lraspicam_cv \
 		-I../include -I/usr/local/include -I/usr/local/include/opencv4
 
+# Teste acha linhas
+lines: test_line_detection.cpp
+	gcc -Wall -o ./build/test_line_detection test_line_detection.cpp \
+		-lstdc++ -std=c++17 \
+		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc \
+		-I../include -I/usr/local/include -I/usr/local/include/opencv4
+
 #Teste vehicle
 vehicle: ../src/vehicle.cpp ../src/movement.cpp ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/pidz.cpp ../src/radio.cpp ../src/radio_communication.cpp ../src/servo.cpp ../src/lock.cpp ../src/item_detector.cpp ../src/delivery_box.cpp ../src/intelligence.cpp ../src/vision.cpp ../src/street_lines.cpp ../src/reduce_lines.cpp ../src/geometry.cpp
 	gcc -Wall -o ./build/vehicle ../src/movement.cpp ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/pidz.cpp ../src/vehicle.cpp ../src/radio.cpp ../src/radio_communication.cpp ../src/servo.cpp ../src/lock.cpp ../src/item_detector.cpp ../src/delivery_box.cpp ../src/intelligence.cpp ../src/vision.cpp ../src/street_lines.cpp ../src/reduce_lines.cpp ../src/geometry.cpp \
@@ -66,3 +73,10 @@ follow_road:  test_follow_road.cpp ../src/movement.cpp ../src/dc_motor.cpp ../sr
 #Turn test
 turn: ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/movement.cpp
 	gcc -Wall -o ./build/test_turn ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/movement.cpp ../src/pidz.cpp ./test_turn.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -I../include -I./
+
+# Teste acha linhas
+lines: test_camera_traffic_light.cpp
+	gcc -Wall -o ./build/test_camera_traffic_light test_camera_traffic_light.cpp \
+		-lstdc++ -std=c++17 \
+		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc \
+		-I../include -I/usr/local/include -I/usr/local/include/opencv4

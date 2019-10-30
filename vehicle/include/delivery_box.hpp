@@ -9,11 +9,13 @@ class DeliveryBox
     private:
         ItemDetector detector;
         Lock lock_obj;
+        bool box_closed;
     public:
         DeliveryBox();
         void lock();
         void unlock();
-        bool hasItem();     
+        bool hasItem(); 
+        bool isBoxClose();    
 };
 
 #endif

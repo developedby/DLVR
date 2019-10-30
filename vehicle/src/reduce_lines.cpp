@@ -70,16 +70,16 @@ namespace street_lines
     bool extendedBoundingRectangleLineEquivalence(const cv::Vec4i& _l1, const cv::Vec4i& _l2, float extensionLengthFraction,
                                                   float maxAngleDiff, float boundingRectangleThickness)
     {
-        cv::Vec4i l1(_l1), l2(_l2);
+        //cv::Vec4i l1(_l1), l2(_l2);
         // extend lines by percentage of line width
-        float len1 = sqrtf((l1[2] - l1[0])*(l1[2] - l1[0]) + (l1[3] - l1[1])*(l1[3] - l1[1]));
-        float len2 = sqrtf((l2[2] - l2[0])*(l2[2] - l2[0]) + (l2[3] - l2[1])*(l2[3] - l2[1]));
-        cv::Vec4i el1 = extendedLine(l1, len1 * extensionLengthFraction);
-        cv::Vec4i el2 = extendedLine(l2, len2 * extensionLengthFraction);
+        //float len1 = sqrtf((l1[2] - l1[0])*(l1[2] - l1[0]) + (l1[3] - l1[1])*(l1[3] - l1[1]));
+        //float len2 = sqrtf((l2[2] - l2[0])*(l2[2] - l2[0]) + (l2[3] - l2[1])*(l2[3] - l2[1]));
+        //cv::Vec4i el1 = extendedLine(l1, len1 * extensionLengthFraction);
+        //cv::Vec4i el2 = extendedLine(l2, len2 * extensionLengthFraction);
 
         // reject the lines that have wide difference in angles
-        float a1 = atan(linearParameters(el1)[0]);
-        float a2 = atan(linearParameters(el2)[0]);
+        const float a1 = atan(linearParameters(_l1)[0]);
+        const float a2 = atan(linearParameters(_l2)[0]);
         if(fabs(a1 - a2) > maxAngleDiff * M_PI / 180.0)
         {
             return false;
@@ -87,9 +87,9 @@ namespace street_lines
 
         // calculate window around extended line
         // at least one point needs to inside extended bounding rectangle of other line,
-        std::vector<cv::Point2i> lineBoundingContour = boundingRectangleContour(el1, boundingRectangleThickness/2);
-        return (pointPolygonTest(lineBoundingContour, cv::Point(el2[0], el2[1]), false) == 1 ||
-                pointPolygonTest(lineBoundingContour, cv::Point(el2[2], el2[3]), false) == 1);
+        std::vector<cv::Point2i> lineBoundingContour = boundingRectangleContour(_l1, boundingRectangleThickness/2);
+        return (pointPolygonTest(lineBoundingContour, cv::Point(_l2[0], _l2[1]), false) == 1 ||
+                pointPolygonTest(lineBoundingContour, cv::Point(_l2[2], _l2[3]), false) == 1);
     }
 
     cv::Vec4i extendedLine(cv::Vec4i line, double d)
@@ -98,10 +98,10 @@ namespace street_lines
         cv::Vec4d _line = (line[2] - line[0] < 0) ? 
                           cv::Vec4d(line[2], line[3], line[0], line[1]) :
                           cv::Vec4d(line[0], line[1], line[2], line[3]);
-        double m = linearParameters(_line)[0];
+        const double m = linearParameters(_line)[0];
         // solution of pythagorean theorem and m = yd/xd
-        double xd = sqrt(d * d / (m * m + 1));
-        double yd = xd * m;
+        const double xd = sqrt(d * d / (m * m + 1));
+        const double yd = xd * m;
         return cv::Vec4d(_line[0] - xd, _line[1] - yd , _line[2] + xd, _line[3] + yd);
     }
 

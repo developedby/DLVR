@@ -4,60 +4,65 @@ import mysql.connector
 import os
 import datetime
 import random
+import asyncio
 
-def main(handler):
-    if handler.command == "POST":
-        if "Content-Type" in handler.headers and handler.headers["Content-Type"] == "application/json":
-            data = json.loads(handler.rfile.read(int(handler.headers["Content-Length"])).decode("utf-8"))
-            if "email" in data and "number" in data:
-                handler.send_response(200)
-                handler.end_headers()
-                connection = connect.connect()
-                cursor = connection.cursor(prepared = True)
-                query = "DELETE FROM Code WHERE expiration < %s"
-                timestamp = datetime.datetime.fromtimestamp(datetime.datetime.now().timestamp()).strftime("%Y-%m-%d %H:%M:%S")
-                values = (timestamp,)
-                try:
-                    cursor.execute(query, values)
-                    connection.commit()
-                    query = "SELECT user FROM Code WHERE number = %s"
+async def main(websocket, path):
+    data = await websocket.recv()
+    data = json.loads(data)
+    if "email" in data and "number" in data:
+        resp = {
+            "status_code": 200,
+            "reason_message": "OK"
+        }
+        connection = connect.connect()
+        cursor = connection.cursor(prepared = True)
+        query = "DELETE FROM Code WHERE expiration < %s"
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        values = (timestamp,)
+        try:
+            cursor.execute(query, values)
+            connection.commit()
+            query = "SELECT user FROM Code WHERE number = %s"
+            values = (data["number"],)
+            try:
+                cursor.execute(query, values)
+                result = cursor.fetchone()
+                if result and result[0] == data["email"]:
+                    query = "DELETE FROM Code WHERE number = %s"
                     values = (data["number"],)
                     try:
                         cursor.execute(query, values)
-                        result = cursor.fetchone()
-                        if result and result[0] == data["email"]:
-                            query = "DELETE FROM Code WHERE number = %s"
-                            values = (data["number"],)
-                            try:
-                                cursor.execute(query, values)
-                                query = "UPDATE User SET verified = 1 WHERE email = %s"
-                                values = (data["email"],)
-                                try:
-                                    cursor.execute(query, values)
-                                    connection.commit()
-                                    handler.wfile.write("true".encode("utf-8"))
-                                except mysql.connector.Error:
-                                    connection.rollback()
-                                    handler.wfile.write("false".encode("utf-8"))
-                            except mysql.connector.Error:
-                                connection.rollback()
-                                handler.wfile.write("false".encode("utf-8"))
-                        else:
-                            handler.wfile.write("false".encode("utf-8"))
-                    except mysql.connector.Error:
+                        query = "UPDATE User SET verified = 1 WHERE email = %s"
+                        values = (data["email"],)
+                        try:
+                            cursor.execute(query, values)
+                            connection.commit()
+                            resp["message_body"] = "true"
+                            await websocket.send(json.dumps(resp))
+                        except mysql.connector.Error as e:
+                            print("verify.py:43: " + str(e))
+                            connection.rollback()
+                            resp["message_body"] = "false"
+                            await websocket.send(json.dumps(resp))
+                    except mysql.connector.Error as e:
+                        print("verify.py:48: " + str(e))
                         connection.rollback()
-                        handler.wfile.write("false".encode("utf-8"))
-                except mysql.connector.Error:
-                    connection.rollback()
-                    handler.wfile.write("false".encode("utf-8"))
-                cursor.close()
-                connection.close()
-            else:
-                handler.send_error(400)
-                handler.end_headers()
-        else:
-            handler.send_error(400)
-            handler.end_headers()
+                        resp["message_body"] = "false"
+                        await websocket.send(json.dumps(resp))
+                else:
+                    resp["message_body"] = "false"
+                    await websocket.send(json.dumps(resp))
+            except mysql.connector.Error as e:
+                print("verify.py:56: " + str(e))
+                connection.rollback()
+                resp["message_body"] = "false"
+                await websocket.send(json.dumps(resp))
+        except mysql.connector.Error as e:
+            print("verify.py:61: " + str(e))
+            connection.rollback()
+            resp["message_body"] = "false"
+            await websocket.send(json.dumps(resp))
+        cursor.close()
+        connection.close()
     else:
-        handler.send_error(501)
-        handler.end_headers()
+        await websocket.send("{\"status_code\": 400, \"reason_message\": \"Bad Request\"}")

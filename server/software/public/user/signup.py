@@ -3,36 +3,41 @@ import connect
 import mysql.connector
 import os
 import hashlib
-import client
+import asyncio
+import websockets
+import ssl
 
-def main(handler):
-    if handler.command == "POST":
-        if "Content-Type" in handler.headers and handler.headers["Content-Type"] == "application/json":
-            data = json.loads(handler.rfile.read(int(handler.headers["Content-Length"])).decode("utf-8"))
-            if "email" in data and "first_name" in data and "last_name" in data and "password" in data:
-                handler.send_response(200)
-                handler.end_headers()
-                connection = connect.connect()
-                cursor = connection.cursor(prepared = True)
-                query = "INSERT INTO User(email, verified, first_name, last_name, salt, hash) VALUES (%s, %s, %s, %s, %s, %s)"
-                salt = os.urandom(32)
-                hash = hashlib.pbkdf2_hmac("sha256", data["password"].encode("utf-8"), salt, 100000)
-                values = (data["email"], 0, data["first_name"], data["last_name"], salt.hex(), hash.hex(),)
-                try:
-                    cursor.execute(query, values)
-                    connection.commit()
-                    resp = client.ServerConnection("https://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com").send("/code/generate", {"email": data["email"]})
-                    handler.wfile.write(resp.content)
-                except Exception:
-                    handler.wfile.write("false".encode("utf-8"))
-                cursor.close()
-                connection.close()
-            else:
-                handler.send_error(400)
-                handler.end_headers()
-        else:
-            handler.send_error(400)
-            handler.end_headers()
+async def main(websocket, path):
+    data = await websocket.recv()
+    data = json.loads(data)
+    if "email" in data and "first_name" in data and "last_name" in data and "password" in data:
+        resp = {
+            "status_code": 200,
+            "reason_message": "OK"
+        }
+        connection = connect.connect()
+        cursor = connection.cursor(prepared = True)
+        query = "INSERT INTO User(email, verified, first_name, last_name, salt, hash) VALUES (%s, %s, %s, %s, %s, %s)"
+        salt = os.urandom(32)
+        hash = hashlib.pbkdf2_hmac("sha256", data["password"].encode("utf-8"), salt, 100000)
+        values = (data["email"], 0, data["first_name"], data["last_name"], salt.hex(), hash.hex(),)
+        try:
+            cursor.execute(query, values)
+            connection.commit()
+            CERT_PEM_PATH = '../cert.pem'
+            ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+            ssl_context.load_verify_locations(CERT_PEM_PATH)
+            uri = "wss://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com"
+            async with websockets.connect(uri + "/code/generate", ssl = ssl_context) as websocket2:
+                data2 = {"email": data["email"]}
+                await websocket2.send(json.dumps(data2))
+                resp2 = await websocket2.recv()
+                await websocket.send(resp2)
+        except Exception as e:
+            print("signup.py:37: " + str(e))
+            resp["message_body"] = "false"
+            await websocket.send(json.dumps(resp))
+        cursor.close()
+        connection.close()
     else:
-        handler.send_error(501)
-        handler.end_headers()
+        await websocket.send("{\"status_code\": 400, \"reason_message\": \"Bad Request\"}")

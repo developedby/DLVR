@@ -124,7 +124,7 @@ bool RadioCommunication::receiveFromRadio()
 ReceivedMessage RadioCommunication::getData()
 {
     std::vector<uint8_t> path;
-    uint16_t qr_code;
+    uint16_t qr_code = 0;
     Commands command; 
     PossibleSensors sensor_to_read;
     PossibleStatus required_status;
