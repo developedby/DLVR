@@ -101,7 +101,7 @@ vector<StreetSection> Vision::findStreets()
             }
             // If the segments are parallel, a lane's distance apart, but not collinear
             else if (linesAreParallel(undistort_lines[i], undistort_lines[j], max_theta_diff)
-                     && (lane_width*0.8 < dist && dist < lane_width*1.2)
+                     && (lane_width*0.7 < dist && dist < lane_width*1.3)
                      && (abs(undistort_lines[i][0] - undistort_lines[j][0]) > lane_width/5))
             {
                 opposite_segs.emplace_back(line_colors[j], undistort_line[i], undistort_seg[j]);
@@ -118,10 +118,10 @@ vector<StreetSection> Vision::findStreets()
             const cv::Vec4f transl_half1 (translated[0], translated[1], mid_pt_transl[0], mid_pt_transl[1]);
             const cv::Vec4f transl_half2 (mid_pt_transl[0], mid_pt_transl[1], translated[2], translated[3]);
             imaginable_sections.emplace_back(Color::blue,
-                                            cv::Vec2f(undistort_lines[i][0]-lane_width/2, undistort_lines[i][1]),
+                                            xySegmentToLine(segmentRTToXY(transl_half1)),
                                             transl_half1);
             imaginable_sections.emplace_back(Color::blue,
-                                             cv::Vec2f(undistort_lines[i][0]-lane_width/2, undistort_lines[i][1]),
+                                             xySegmentToLine(segmentRTToXY(transl_half2)),
                                              transl_half2);
         }
         // If there are opposite segments, try to create sections between them
@@ -159,19 +159,40 @@ vector<StreetSection> Vision::findStreets()
         // If the 'i' segment is green, add a perpendicular section
         if (lines_color[i] == Color::green)
         {
-            // Todo: This is for translating a segment, but should be translating the mid point in both directions
-            const cv::Vec2f translation (lane_width/2 * cos(seg.line[1]+M_PI), lane_width/2 * sin(seg_line[1]+M_PI));
-            const cv::Vec4f translated_xy (xy_seg[0]+translation[0], xy_seg[1]+translation[1],
-                                           xy_seg[2]+translation[0], xy_seg[3]+translation[1]);
-            const cv::Vec4f translated = segmentXYToRt(translated_xy);
-            const cv::Vec2f mid_pt_transl = segmentHalfPoint(translated);
-            const cv::Vec4f transl_half1 (translated[0], translated[1], mid_pt_transl[0], mid_pt_transl[1]);
-            const cv::Vec4f transl_half2 (mid_pt_transl[0], mid_pt_transl[1], translated[2], translated[3]);
-            imaginable_sections.emplace_back(Color::blue,
-                                            cv::Vec2f(undistort_lines[i][0]-lane_width/2, undistort_lines[i][1]),
+            const cv::Vec2f translation (lane_width/2 * cos(seg.line[1]), lane_width/2 * sin(seg.line[1]));
+            const cv::Vec2f mid_pt = segmentHalfPoint(undistort_segs[i]);
+            const cv::Vec2f pt1 (mid_pt[0]*cos(mid_pt[1]) + translation[0],
+                                 mid_pt[0]*sin(mid_pt[1]) + translation[1]);
+            const cv::Vec2f pt2 (mid_pt[0]*cos(mid_pt[1]) - translation[0],
+                                 mid_pt[0]*sin(mid_pt[1]) - translation[1]);
+            const cv::Vec4f transl_half1 (pt1[0], pt1[1], mid_pt[0], mid_pt[1]);
+            const cv::Vec4f transl_half2 (mid_pt[0], mid_pt[1], pt2[0], pt2[1]);
+            imaginable_sections.emplace_back(Color::green,
+                                            xySegmentToLine(segmentRTToXY(transl_half1)),
                                             transl_half1);
-            imaginable_sections.emplace_back(Color::blue,
-                                             cv::Vec2f(undistort_lines[i][0]-lane_width/2, undistort_lines[i][1]),
+            imaginable_sections.emplace_back(Color::green,
+                                             xySegmentToLine(segmentRTToXY(transl_half2)),
+                                             transl_half2);
+        }
+        
+        // If the segment is yellow and it is perpendicular to the vehicle, add a section crossing it
+        // TODO
+        if (lines_color[i] == Color::yellow
+            && linesAreParallel(undistort_lines[1], cv::Vec2f(0, M_PI/2), 3*max_theta_diff))
+        {
+            const cv::Vec2f translation (lane_width/2 * cos(seg.line[1]), lane_width/2 * sin(seg.line[1]));
+            const cv::Vec2f mid_pt = segmentHalfPoint(undistort_segs[i]);
+            const cv::Vec2f pt1 (mid_pt[0]*cos(mid_pt[1]) + translation[0],
+                                 mid_pt[0]*sin(mid_pt[1]) + translation[1]);
+            const cv::Vec2f pt2 (mid_pt[0]*cos(mid_pt[1]) - translation[0],
+                                 mid_pt[0]*sin(mid_pt[1]) - translation[1]);
+            const cv::Vec4f transl_half1 (pt1[0], pt1[1], mid_pt[0], mid_pt[1]);
+            const cv::Vec4f transl_half2 (mid_pt[0], mid_pt[1], pt2[0], pt2[1]);
+            imaginable_sections.emplace_back(Color::green,
+                                            xySegmentToLine(segmentRTToXY(transl_half1),
+                                            transl_half1);
+            imaginable_sections.emplace_back(Color::green,
+                                             xySegmentToLine(segmentRTToXY(transl_half2),
                                              transl_half2);
         }
         
