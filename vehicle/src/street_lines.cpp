@@ -222,4 +222,15 @@ namespace street_lines
                                 + distXYPoints(cv::Point(seg1_xy[2], seg1_xy[3]), cv::Point(seg2_xy[0], seg2_xy[1]))));
         return dist < threshold;
     }
+
+    // Does a stable in-place sort of collinear points
+    void orderCollinearPoints(const vector<Vec2f>& pts, const float angle)
+    {
+        int used_axis;
+        if ((angle < M_PI/4) || ((M_PI - M_PI/4) < angle < (M_PI - M_PI/4)) || (angle > (2*M_PI - M_PI/4)))
+            used_axis = 1;
+        else
+            used_axis = 0;
+        std::stable_sort(pts.begin(), pt.end(), [](auto pt1, auto pt2){return pt1[used_axis] < pt2[used_axis]});
+    }
 }

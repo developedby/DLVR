@@ -6,7 +6,7 @@
 
 namespace street_lines
 {
-    enum class Color {blue, green, yellow, red};
+    enum class Color {none ,blue, green, yellow, red};
 
     class StreetSection
     {

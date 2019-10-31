@@ -120,7 +120,7 @@ namespace street_lines
         // If the lines are parallel, intersection is said to be at infinity
         if (abs(sin(line1[1]) - sin(line2[1])) < 0.01)
         {
-            return {std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}
+            return cv::Vec2f(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
         }
         // The lines can be defined as vectors '(rho*cos(theta), rho*sin(theta)) + u*(-sin(theta), cos(theta))'
         // By saying these two vectors are equal, we can isolate u
@@ -131,7 +131,7 @@ namespace street_lines
         //const auto u = (line1[0]*sin(line1[1]) - line2[0]*sin(line2[1]))
                        / (cos(line2[1]) - cos(line1[1]));
 
-        return cv::Vec2f(line1[0] - u*sin(line1[1]), line1[0]*sin(line1[1]) + u*cos(line1[1]));
+        return cv::Vec2f(line1[0]*cos(line1[1]) - u*sin(line1[1]), line1[0]*sin(line1[1]) + u*cos(line1[1]));
     }
 
     // Decides whether or not two lines make a certain angle between them

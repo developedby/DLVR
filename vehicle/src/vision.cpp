@@ -213,18 +213,91 @@ vector<StreetSection> Vision::findStreets()
         }
     }
 
-    // Transform the groups of maybe overlapping collinear sections into a group of non-overlapping sections
-    vector<StreetSection> short_sections;
+    // Transform the groups of maybe overlapping collinear sections into a single section
+    vector<StreetSection> long_sections;
     vector<cv::Vec2f> possible_lines(possible_sections.size());
     for (auto i = possible_sections.begin(); i != possible_sections.end(); i++)
         possible_lines[i] = possible_sections[i].line;
     const auto angle_groups = groupCollinearLines(possible_lines);
     for (auto group: angle_groups)
     {
-        // Todo: Implement. (Find the cut points, the edges and take the average of very close points)
-        for ()
+        // Choose the axis used to order the points on the line
+        int used_axis;
+        const float group_angle = possible_sections[group[0]].line[1];
+        if ((group_angle < M_PI/4) || ((M_PI - M_PI/4) < group_angle < (M_PI - M_PI/4)) || (group_angle > (2*M_PI - M_PI/4)))
+            used_axis = 1;
+        else
+            used_axis = 0;
+        cv::Vec4f result_seg = segmentRTToXY(possible_sections[group[0]].seg);
+        if (result_seg[used_axis] > result_seg[used_axis+2])
+        {
+            result_seg = cv::Vec4f(result_seg[2], result_seg[3], result_seg[0], result_seg[1]);
+        }
+        // Find the min and max points
+        for (auto i: group)
+        {
+            const cv::Vec4f xy_seg = segmentRTToXY(possible_sections[group[i]].seg);
+            if (xy_seg[used_axis] < result_seg[used_axis])
+            {
+                result_seg[0] = xy_seg[0];
+                result_seg[1] = xy_seg[1];
+            }
+            else if (xy_seg[used_axis+2] < result_seg[used_axis])
+            {
+                result_seg[0] = xy_seg[2];
+                result_seg[1] = xy_seg[3];
+            }
+            if (xy_seg[used_axis] > result_seg[used_axis+2])
+            {
+                result_seg[2] = xy_seg[0];
+                result_seg[3] = xy_seg[1];
+            }
+            else if (xy_seg[used_axis+2] > result_seg[used_axis+2])
+            {
+                result_seg[2] = xy_seg[2];
+                result_seg[3] = xy_seg[3];
+            }
+        }
+        long_sections.emplace_back(Color::none, xySegmentToLine(result_seg), result_seg);
     }
 
+    // Break the sections where they intersect
+    vector<StreetSection> final_sections;
+    for (auto i = long_sections.begin(); i != long_sections.end(); i++)
+    {
+        // Find the cut points
+        vector<Vec2f> cut_points;
+        cut_points.emplace_back(long_sections[i].seg[0], long_sections[i].seg[1]);
+        cut_points.emplace_back(long_sections[i].seg[2], long_sections[i].seg[3]);
+        for (auto j = long_sections.begin(); j != long_sections.end(); j++)
+        {
+            if (i == j)
+                continue;
+            // If the long sections are connected
+            if (distRTSegments(long_sections[i].seg, long_sections[j].seg) < lane_width/4)
+            {
+                // Break the i section at the projected intersection point
+                cut_points.place_back(linesIntersection(long_sections[i].line, long_sections[j].line));
+            }
+        }
+        // Order the cutpoints
+        orderCollinearPoints(cut_points, long_sections[i].line[1]);
+        // Remove points that are too close
+        vector<int> pts_to_remove;
+        for (auto i = cut_points.begin()+1; i != cut_points.end(); i++)
+        {
+            if (distXYPoints(cut_point[i-1], cut_points[1]) < lane_width/4)
+            {
+                pts_to_remove.place_back(i-1);
+            }
+        }
+        vector<Vec2f> cut_points_filtered;
+        for (auto i = cut_points.begin(); i != cut_points.end(); i++)
+        {
+            # TODO
+            if (i
+        }
+    }
 }
 
 void Vision::getColorMask(cv::Mat& dst, int const h_min, int const h_max, int const l_min, int const l_max, int const s_min, int const s_max)
