@@ -17,8 +17,8 @@ def main():
 async def handler():
     uri = "wss://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com"
     data = {"id": 0, "timestamp": datetime.datetime.now().timestamp()}
-    with open(ROBOT_DER_PATH, "r") as f:
-        private_key = Crypto.PublicKey.RSA.importKey(bytes.fromhex(f.read()))
+    with open(ROBOT_DER_PATH, "r") as file:
+        private_key = Crypto.PublicKey.RSA.importKey(bytes.fromhex(file.read()))
     data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
     async with websockets.connect(uri + "/robot/signin", ssl = ssl_context) as websocket:
         await websocket.send(json.dumps(data))
