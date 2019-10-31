@@ -7,7 +7,7 @@ import asyncio
 import websockets
 import ssl
 
-async def main(websocket, path):
+async def main(websocket, path, open_sockets):
     data = await websocket.recv()
     data = json.loads(data)
     if "email" in data and "first_name" in data and "last_name" in data and "password" in data:
@@ -28,8 +28,8 @@ async def main(websocket, path):
             ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
             ssl_context.load_verify_locations(CERT_PEM_PATH)
             uri = "wss://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com"
+            data2 = {"email": data["email"]}
             async with websockets.connect(uri + "/code/generate", ssl = ssl_context) as websocket2:
-                data2 = {"email": data["email"]}
                 await websocket2.send(json.dumps(data2))
                 resp2 = await websocket2.recv()
                 await websocket.send(resp2)

@@ -3,7 +3,7 @@ import http.cookies
 import json
 import asyncio
 
-async def main(websocket, path, data = None):
+async def main(websocket, path, open_sockets, data = None):
     if not data:
         data = await websocket.recv()
         data = json.loads(data)
@@ -19,6 +19,7 @@ async def main(websocket, path, data = None):
             session.signout(cookie["token"].value)
             resp["message_body"] = "true"
             await websocket.send(json.dumps(resp))
+            open_sockets["users"].pop(cookie["token"].value)
         else:
             resp["message_body"] = "false"
             await websocket.send(json.dumps(resp))

@@ -6,7 +6,7 @@ import connect
 import mysql.connector
 import asyncio
 
-async def main(websocket, path):
+async def main(websocket, path, open_sockets):
     data = await websocket.recv()
     data = json.loads(data)
     if "id" in data and "signature" in data and "timestamp" in data:
@@ -39,19 +39,20 @@ async def main(websocket, path):
                             connection.commit()
                             resp["message_body"] = "true"
                             await websocket.send(json.dumps(resp))
+                            open_sockets["robots"][data["id"]] = websocket
                             async for message in websocket:
                                 data = json.loads(message)
                                 if "path" in data:
                                     path = data["path"]
                                     if path == "/robot/route":
-                                        import public.robot.route as script;
-                                        await script.main(websocket, path, data);
+                                        import public.robot.route as script
+                                        await script.main(websocket, path, open_sockets, data)
                                     elif path == "/robot/signout":
-                                        import public.robot.signout as script;
-                                        await script.main(websocket, path, data);
+                                        import public.robot.signout as script
+                                        await script.main(websocket, path, open_sockets, data)
                                     elif path == "/robot/update":
-                                        import public.robot.update as script;
-                                        await script.main(websocket, path, data);
+                                        import public.robot.update as script
+                                        await script.main(websocket, path, open_sockets, data)
                                     else:
                                         await websocket.send("{\"status_code\": 404, \"reason_message\": \"Not Found\"}")
                                 else:

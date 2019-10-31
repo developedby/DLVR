@@ -26,6 +26,21 @@ class SerialInterface:
 
     def close(self):
         self.ser.close()
+    
+    def write(self, packet_to_send):
+        packet_to_send.append(self.START_BYTE)
+        packet_to_send.insert(0, self.START_BYTE)
+        self.ser.write(packet_to_send)
+
+    def read(self):
+        byte = self.ser.read()
+        received_packet = []
+        start_byte_byte = self.START_BYTE.to_bytes(1, byteorder='big')
+        if byte == start_byte_byte:
+            received_packet = self.ser.read_until(start_byte_byte, 50)
+            if received_packet[-1] != self.START_BYTE:
+                received_packet = []
+        return received_packet
 
     def test_echo(self):
         #server
@@ -168,7 +183,51 @@ class VehicleServerInterface:
         self.serial_interface = SerialInterface()
 
     def handle_server_request(self, robot_id, msg):
+        #nao sei o que fazer
+        packet_to_send, sensor_to_read, required_status = self.decodeMessageFromServer()
+        self.serial_interface.write(packet_to_send)
+        packet_received = self.serial_interface.read()
+        if (packet_received and packet_received[0] == robot_id):
+            dict_to_server = self.decodeMessageFromVehicle(msg, sensor_to_read, required_status)
+            self.server_interface.send_update(dict_to_server)
+
+    def decodeMessageFromServer(self):
         pass
+
+    def decodeMessageFromVehicle(self, msg, sensor_to_read, required_status, json):
+        current_address = 1
+        sensor_read = 0
+        status = 0
+        qr_codes_read = 0
+        dict_from_vehicle = {}
+        possible_status_from_vehicle = {1 : "stopped", 2 : "moving forward", 3 :"moving backway", 4 : "avoiding obstacle", 5 : "waiting semaphore", 6 : "waiting route"}
+        if sensor_to_read == "ultrasound":
+            sensor_read = struct.unpack('f', msg[current_address:(current_address+4)])
+            dict_from_vehicle["ultrasound"] = sensor_read
+            current_address += 4
+        else:
+            sensor_read = msg[current_address]
+            if sensor_to_read == "item detector":
+                dict_from_vehicle["item"] = sensor_read
+            else:
+                pass
+            current_address += 1
+        if required_status == "movement":
+            speed = struct.unpack('f', msg[current_address:(current_address+4)])
+            current_address += 4
+            curve_radius = struct.unpack('f',msg[current_address:(current_address+4)])
+            current_address += 4
+            dict_from_vehicle["speed"] = speed
+            dict_from_vehicle["curve_radius"] = curve_radius
+        elif required_status == "status_robot":
+            status = possible_status_from_vehicle[msg[current_address]]
+            dict_from_vehicle["state"] = status
+            current_address += 1
+        qr_codes_read += msg[current_address : -1]
+        dict_from_vehicle["qr"] = qr_codes_read
+        return dict_from_vehicle
+
+        return sensor_read, status, qr_codes_read
 
     def run(self):
         while True:
