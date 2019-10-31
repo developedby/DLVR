@@ -46,13 +46,25 @@ async def main(websocket, path, open_sockets):
                                         path = data["path"]
                                         if path == "/robot/route":
                                             import public.robot.route as script
-                                            await script.main(websocket, path, open_sockets, data)
+                                            try:
+                                                await script.main(websocket, path, open_sockets, data)
+                                            except Exception as e:
+                                                print("signin.py:52(" + script.__name__ + "): " + str(e))
+                                                await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                                         elif path == "/robot/signout":
                                             import public.robot.signout as script
-                                            await script.main(websocket, path, open_sockets, data)
+                                            try:
+                                                await script.main(websocket, path, open_sockets, data)
+                                            except Exception as e:
+                                                print("signin.py:59(" + script.__name__ + "): " + str(e))
+                                                await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                                         elif path == "/robot/update":
                                             import public.robot.update as script
-                                            await script.main(websocket, path, open_sockets, data)
+                                            try:
+                                                await script.main(websocket, path, open_sockets, data)
+                                            except Exception as e:
+                                                print("signin.py:66(" + script.__name__ + "): " + str(e))
+                                                await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                                         else:
                                             await websocket.send("{\"status_code\": 404, \"reason_message\": \"Not Found\"}")
                                     else:
