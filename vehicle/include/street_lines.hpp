@@ -7,7 +7,7 @@
 
 namespace street_lines
 {
-	void getStreetLines(const cv::Mat& lines_mask, std::vector<cv::Vec4i>& street_lines);
+	std::vector<cv::Vec4i> getStreetLines(const cv::Mat& lines_mask);
 
 	float getStreetLineAngle(const cv::Vec4i& line);
 	
@@ -21,7 +21,7 @@ namespace street_lines
 	
 	std::vector<std::vector<int>> groupLinesByDistance(const std::vector<cv::Vec2f>& lines, const float max_rho_diff);
 	
-	std::vector<std::vector<int>> groupCollinearLines(const std::vector<cv::Vec2f>& lines, const float max_theta_diff, const float max_rho_diff)
+	std::vector<std::vector<int>> groupCollinearLines(const std::vector<cv::Vec2f>& lines, const float max_theta_diff, const float max_rho_diff);
 	
 	bool rtSegmentsAreSimilar(const cv::Vec4f& seg1, const cv::Vec4f& seg2, const float threshold);
 }

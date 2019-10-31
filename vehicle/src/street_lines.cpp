@@ -15,7 +15,8 @@ using constants::img_height;
 using constants::img_width;
 using constants::img_theta_min;
 using constants::dist_theta_min_m;
-using constants::img_real_zero_deg;
+using constants::img_real_zero_rad;
+using constants::max_theta_diff;
 using std::vector;
 using std::pair;
 using cv::Vec4i;
@@ -105,7 +106,7 @@ namespace street_lines
         // Finds the angle
         float angle = std::atan2(img_height*(1 - img_y_horizon), (x_horizon - img_width/2));
         // Corrects the angle to the vehicle
-        angle -= img_real_zero_deg;
+        angle -= img_real_zero_rad;
         
         return angle;
     }

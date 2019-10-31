@@ -6,12 +6,6 @@
 
 namespace street_lines
 {
-    inline auto square (auto num)
-        return num*num;
-
-    inline auto norm (auto x, auto y)
-        return sqrt(square(x) + square(x));
-
     cv::Vec2f segmentHalfPoint(const cv::Vec4f& seg)
     {
         const float a = seg[0];
