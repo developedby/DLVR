@@ -25,24 +25,23 @@ async def main(websocket, path, open_sockets):
             resp2 = await websocket2.recv()
             resp2 = json.loads(resp2)
             if resp2["message_body"] == "true":
-                connection = connect.connect()
-                cursor = connection.cursor(prepared = True)
-                query = "UPDATE User SET salt = %s, hash = %s WHERE email = %s"
-                salt = os.urandom(32)
-                hash = hashlib.pbkdf2_hmac("sha256", data["password"].encode("utf-8"), salt, 100000)
-                values = (salt.hex(), hash.hex(), data["email"],)
-                try:
-                    cursor.execute(query, values)
-                    connection.commit()
-                    resp["message_body"] = "true"
-                    await websocket.send(json.dumps(resp))
-                except mysql.connector.Error as e:
-                    print("reset.py:40: " + str(e))
-                    connection.rollback()
-                    resp["message_body"] = "false"
-                    await websocket.send(json.dumps(resp))
-                cursor.close()
-                connection.close()
+                with connect.connect() as connection:
+                    cursor = connection.cursor(prepared = True)
+                    query = "UPDATE User SET salt = %s, hash = %s WHERE email = %s"
+                    salt = os.urandom(32)
+                    hash = hashlib.pbkdf2_hmac("sha256", data["password"].encode("utf-8"), salt, 100000)
+                    values = (salt.hex(), hash.hex(), data["email"],)
+                    try:
+                        cursor.execute(query, values)
+                        connection.commit()
+                        resp["message_body"] = "true"
+                        await websocket.send(json.dumps(resp))
+                    except mysql.connector.Error as e:
+                        print("reset.py:40: " + str(e))
+                        connection.rollback()
+                        resp["message_body"] = "false"
+                        await websocket.send(json.dumps(resp))
+                    cursor.close()
             else:
                 resp["message_body"] = "false"
                 await websocket.send(json.dumps(resp))
