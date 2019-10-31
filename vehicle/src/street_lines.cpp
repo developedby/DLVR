@@ -217,7 +217,7 @@ namespace street_lines
         const auto seg2_xy = segmentRTToXY(seg2);
         // The score for how different they are is the distance between the end points
         // Takes the min because we don't know how the end points are oriented
-        const float dist = min((distXYPoints(cv::Point(seg1_xy[0], seg1_xy[1]), cv::Point(seg2_xy[0], seg2_xy[1]))
+        const float dist = std::min((distXYPoints(cv::Point(seg1_xy[0], seg1_xy[1]), cv::Point(seg2_xy[0], seg2_xy[1]))
                                 + distXYPoints(cv::Point(seg1_xy[2], seg1_xy[3]), cv::Point(seg2_xy[2], seg2_xy[3]))),
                                (distXYPoints(cv::Point(seg1_xy[0], seg1_xy[1]), cv::Point(seg2_xy[2], seg2_xy[3]))
                                 + distXYPoints(cv::Point(seg1_xy[2], seg1_xy[3]), cv::Point(seg2_xy[0], seg2_xy[1]))));

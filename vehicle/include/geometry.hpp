@@ -36,6 +36,8 @@ namespace street_lines
     bool linesArePerpendicular(const cv::Vec2f& line1, const cv::Vec2f& line2, const float max_theta_diff);
     
     bool linesAreParallel(const cv::Vec2f& line1, const cv::Vec2f& line2, const float max_theta_diff);
+
+    bool linesAreCollinear(const cv::Vec2f& line1, const cv::Vec2f& line2, const float max_theta_diff, const float max_rho_diff);
     
     cv::Vec4f segmentRTToXY(const cv::Vec4f& rt_seg);
     
