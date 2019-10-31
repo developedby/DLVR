@@ -67,7 +67,7 @@ namespace street_lines
         float constexpr px_per_rad = (img_y_horizon - y_theta_min)/img_theta_min;
         float constexpr y_vehicle = M_PI/2 * px_per_rad; // Where 90º would be if we extended the image
         float constexpr meter_per_px = dist_theta_min_m / (y_vehicle - y_theta_min); // Using a known distance
-        Vec4i line_dists;
+        Vec4f line_dists;
         
         // First point
         float y_angle = (line[1] - img_y_horizon) / px_per_rad;
@@ -126,13 +126,13 @@ namespace street_lines
         int group_counter = 0;
         vector<int> line_grouping(lines.size(), -1);
         vector<vector<int>> groups;
-        for (auto i=lines.begin(); i != lines.end(); i++)
+        for (int i = 0; i < lines.size(); i++)
         {
             if (line_grouping[i] == -1)
             {
                 groups.push_back(vector({i}));
                 line_grouping[i] = group_counter;
-                for (auto j=i+1; j != lines.end(); j++)
+                for (int j=i+1; j < lines.size(); j++)
                 {
                     // Group together if angles have difference less than max_theta_diff
                     if (line_grouping[j] == -1)
@@ -142,7 +142,7 @@ namespace street_lines
                             delta_theta = M_PI - delta_theta;
                         if (delta_theta > max_theta_diff)
                         {
-                            lines_angles[j] = group_counter;
+                            line_grouping[j] = group_counter;
                             groups[group_counter].push_back(j);
                         }
                     }
@@ -160,13 +160,13 @@ namespace street_lines
         vector<vector<int>> groups_of_unique_lines; // Each element has a group of lines that are repeated
         vector<int> classification(lines.size(), -1); // Which group a line is part of
         int counter = 0;
-        for (auto i = lines.begin(); i != lines.end(); i++)
+        for (int i = 0; i < lines.size(); i++)
         {
             if (classification[i] == -1)
             {
-                unique_lines_index.push_back({i});
+                groups_of_unique_lines.push_back(vector{i});
                 classification[i] = counter;
-                for (auto j = i+1; j != lines.end(); j++)
+                for (int j = i+1; j < lines.size(); j++)
                 {
                     if ((classification[j] == -1)
                         && ((lines[i][0]-max_rho_diff) < lines[j][0])
@@ -179,7 +179,7 @@ namespace street_lines
                 counter++;
             }
         }
-        return unique_lines_index;
+        return groups_of_unique_lines;
     }
 
     // Separate the lines in different groups of collinear lines
@@ -188,13 +188,13 @@ namespace street_lines
         vector<int> classification(lines.size(), -1);
         vector<vector<int>> groups;
         int counter = 0;
-        for (auto i = lines.begin(); i != lines.end(); i++)
+        for (int i = 0; i < lines.size(); i++)
         {
             if (classification[i] == -1)
             {
                 classification[i] = counter;
                 groups.push_back(vector({counter}));
-                for (auto j = i+1; j != lines.end(); j++)
+                for (int j = i+1; j < lines.size(); j++)
                 {
                     if (classification[j] == -1
                         && linesAreCollinear(lines[i], lines[j], max_theta_diff, max_rho_diff))
@@ -232,6 +232,6 @@ namespace street_lines
             used_axis = 1;
         else
             used_axis = 0;
-        std::stable_sort(pts.begin(), pt.end(), [](auto pt1, auto pt2){return pt1[used_axis] < pt2[used_axis]});
+        std::stable_sort(pts.begin(), pts.end(), [](auto pt1, auto pt2){return pt1[used_axis] < pt2[used_axis]});
     }
 }

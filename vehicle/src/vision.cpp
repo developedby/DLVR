@@ -411,7 +411,7 @@ bool Vision::isTrafficLightRed()
 pair<vector<int>, vector<vector<cv::Point2f>>> Vision::findARMarkers()
 {
     vector<int> ids;
-    vector<vector<Point2f> corners;
+    vector<vector<Point2f>> corners;
     cv::aruco::detectMarkers(this->img, this->aruco_dict, corners, ids);
     return pair(ids, corners);
 }
