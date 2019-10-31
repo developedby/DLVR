@@ -178,21 +178,61 @@ class ServerInterface:
     
 
 class VehicleServerInterface:
+    #dictionaries to vehicle
+    vehicle_sensors_code = {"item detector" : 1, "ultrasound" : 2, "lock" : 3}
+    possible_commands = {"force_go_ahead" : 1, "open_box" : 2, "close_box" : 3, "get qr_code" : 4}
+    possible_status_to_vehicle = {"movement" : 1, "status_robot" : 2}
+    #dictionaries from vehicle
+    possible_status_from_vehicle = {1 : "stopped", 2 : "moving forward", 3 :"moving backway", 4 : "avoiding obstacle", 5 : "waiting semaphore", 6 : "waiting route"}
+    
     def __init__(self, serial_port, server_address):
         self.server_interface = ServerInterface(server_address, self.handle_server_request)
         self.serial_interface = SerialInterface()
-
+        
     def handle_server_request(self, robot_id, msg):
-        #nao sei o que fazer
-        packet_to_send, sensor_to_read, required_status = self.decodeMessageFromServer()
+        packet_to_send, sensor_to_read, required_status = self.decodeMessageFromServer(robot_id, msg)
         self.serial_interface.write(packet_to_send)
         packet_received = self.serial_interface.read()
         if (packet_received and packet_received[0] == robot_id):
-            dict_to_server = self.decodeMessageFromVehicle(msg, sensor_to_read, required_status)
+            dict_to_server = self.decodeMessageFromVehicle(packet_received, sensor_to_read, required_status)
             self.server_interface.send_update(dict_to_server)
 
-    def decodeMessageFromServer(self):
-        pass
+    def decodeMessageFromServer(self, robot_id, msg):
+        packet_to_vehicle = []
+        radio_address = "DLVR1"
+        packet_to_vehicle.extend(list(radio_address.encode("ascii")))
+        packet_to_vehicle.append(robot_id)
+        route = ""
+        command = ""
+        sensor_to_read = ""
+        required_status = ""
+        qr_code_destination = 0
+        if("route" in msg):
+            route = msg["route"]
+            qr_code_destination = msg["qr"]
+        if("command" in msg):
+            command = msg["command"]
+        if("sensor_to_read" in msg):
+            sensor_to_read = msg["sensor_to_read"]
+        if("required_status" in msg):
+            required_status = msg["required_status"]
+        packet_content = (1 if route else 0) << 3
+        packet_content += (1 if command else 0) << 2
+        packet_content += (1 if sensor_to_read else 0) << 1
+        packet_content += (1 if required_status else 0) << 0
+        packet_to_vehicle.append(packet_content)
+        if route:
+            packet_to_vehicle.append(len(route))
+            packet_to_vehicle.extend(route)
+            packet_to_vehicle.append((qr_code_destination & 0xff00) >> 8)
+            packet_to_vehicle.append((qr_code_destination & 0xff))
+        if command:
+            packet_to_vehicle.append(self.possible_commands[command])
+        if sensor_to_read:
+            packet_to_vehicle.append(self.vehicle_sensors_code[sensor_to_read])
+        if required_status:
+            packet_to_vehicle.append(self.possible_status_to_vehicle[required_status])
+
 
     def decodeMessageFromVehicle(self, msg, sensor_to_read, required_status, json):
         current_address = 1
@@ -200,7 +240,6 @@ class VehicleServerInterface:
         status = 0
         qr_codes_read = 0
         dict_from_vehicle = {}
-        possible_status_from_vehicle = {1 : "stopped", 2 : "moving forward", 3 :"moving backway", 4 : "avoiding obstacle", 5 : "waiting semaphore", 6 : "waiting route"}
         if sensor_to_read == "ultrasound":
             sensor_read = struct.unpack('f', msg[current_address:(current_address+4)])
             dict_from_vehicle["ultrasound"] = sensor_read
@@ -220,7 +259,7 @@ class VehicleServerInterface:
             dict_from_vehicle["speed"] = speed
             dict_from_vehicle["curve_radius"] = curve_radius
         elif required_status == "status_robot":
-            status = possible_status_from_vehicle[msg[current_address]]
+            status = self.possible_status_from_vehicle[msg[current_address]]
             dict_from_vehicle["state"] = status
             current_address += 1
         qr_codes_read += msg[current_address : -1]
