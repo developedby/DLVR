@@ -11,8 +11,8 @@ namespace street_lines
         const float a = seg[0];
         const float b = seg[3];
         const float c = sqrt(square(a) + square(b) - 2*a*b*cos(abs(seg[1]-seg[3])));
-        return cv::Vec2f((sqrt((a*b)*(a+b+c)*(a+b-c)) / (a+b),
-                         seg[1] + seg[3])/2);
+        return cv::Vec2f(sqrt((a*b)*(a+b+c)*(a+b-c)) / (a+b),
+                         (seg[1] + seg[3])/2);
     }
 
     // Finds the distance between two line segments (x1, y1, x2, y2)

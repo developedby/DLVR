@@ -27,7 +27,7 @@ namespace street_lines
     
     float distXYPoints(const cv::Point& pt1, const cv::Point& pt2);
     
-    void xySegmentsToLines(const std::vector<cv::Vec4f>& segs, std::vector<cv::Vec2f>& lines);
+    cv::Vec2f xySegmentToLine(const cv::Vec4f& seg);
     
     cv::Vec2f linesIntersection(const cv::Vec2f& line1, const cv::Vec2f& line2);
     

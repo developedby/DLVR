@@ -14,7 +14,7 @@ class Vision
 		raspicam::RaspiCam_Cv cam;
 		cv::Mat img;
 		cv::Ptr<cv::aruco::Dictionary> aruco_dict;
-		void getColorMask(cv::Mat& dst, int const h_min, int const h_max, int const l_min, int const l_max, int const s_min, int const s_max);
+		void getColorMask(cv::Mat& dst, const cv::Scalar min, const cv::Scalar max);
 		void getRedTapeMask(cv::Mat& dst);
 		void getGreenTapeMask(cv::Mat& dst);
 		void getBlueTapeMask(cv::Mat& dst);
