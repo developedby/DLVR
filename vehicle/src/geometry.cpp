@@ -6,19 +6,13 @@
 
 namespace street_lines
 {
-    inline auto square (auto num)
-        return num*num;
-
-    inline auto norm (auto x, auto y)
-        return sqrt(square(x) + square(x));
-
     cv::Vec2f segmentHalfPoint(const cv::Vec4f& seg)
     {
         const float a = seg[0];
         const float b = seg[3];
-        const float c = sqrt(square(a) + square(b) - 2*a*b*cos(abs(seg[1]-seg[3]));
+        const float c = sqrt(square(a) + square(b) - 2*a*b*cos(abs(seg[1]-seg[3])));
         return cv::Vec2f(sqrt((a*b)*(a+b+c)*(a+b-c)) / (a+b),
-                         seg[1] + seg[3])/2);
+                         (seg[1] + seg[3])/2);
     }
 
     // Finds the distance between two line segments (x1, y1, x2, y2)
@@ -46,7 +40,7 @@ namespace street_lines
     bool xySegmentsIntersect(const cv::Vec4f& seg1, const cv::Vec4f& seg2)
     {
         // If they're the same line
-        if (seg1 == line2)
+        if (seg1 == seg2)
             return true;
 
         const float uan = (seg2[2]-seg2[0]) * (seg1[1]-seg2[1])
@@ -109,8 +103,8 @@ namespace street_lines
         if (seg[1] < theta - M_PI/2)
             theta -= M_PI;
             
-        const float rho = abs(segs[i][2]*segs[i][1] - segs[i][3]*segs[i][0])
-                        / norm(segs[i][3]-segs[i][1], segs[i][2]-segs[i][0]);
+        const float rho = abs(seg[2]*seg[1] - seg[3]*seg[0])
+                        / norm(seg[3]-seg[1], seg[2]-seg[0]);
         return cv::Vec2f(theta, rho);
     }
 
@@ -129,7 +123,7 @@ namespace street_lines
                        / (sin(line2[1]) - sin(line1[1]));
         // Using y dimension to find u (equivalent formula)
         //const auto u = (line1[0]*sin(line1[1]) - line2[0]*sin(line2[1]))
-                       / (cos(line2[1]) - cos(line1[1]));
+        //               / (cos(line2[1]) - cos(line1[1]));
 
         return cv::Vec2f(line1[0]*cos(line1[1]) - u*sin(line1[1]), line1[0]*sin(line1[1]) + u*cos(line1[1]));
     }
@@ -138,7 +132,7 @@ namespace street_lines
     // Considers a certain precision and that angles are always between [-M_PI/2, M_PI/2]
     bool linesHaveAngle(const cv::Vec2f& line1, const cv::Vec2f& line2, const float angle, const float max_theta_diff)
     {
-        float angle_diff = abs(line[1] - line2[1]);
+        float angle_diff = abs(line1[1] - line2[1]);
         if (angle_diff > M_PI/2)
             angle_diff = abs(angle_diff - M_PI);
             

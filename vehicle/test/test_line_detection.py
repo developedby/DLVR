@@ -17,8 +17,8 @@ def draw_lines(img, lines, color=(0, 255, 0), thickness=1):
     return img
 
 path = "./img/street/"
-img_in = "cruzamento"
-extension = ".png"
+img_in = "rua"
+extension = ".jpg"
 
 img = cv2.imread(path + img_in + extension)
 if img is None:

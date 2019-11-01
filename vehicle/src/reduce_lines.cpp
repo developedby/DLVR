@@ -1,7 +1,8 @@
 #include "reduce_lines.hpp"
+#include <cmath>
 #include <vector>
 #include <numeric>
-#include <cmath>
+#include <tuple>
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 

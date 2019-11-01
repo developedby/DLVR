@@ -45,8 +45,9 @@ radio: test_nrf24l01+.cpp ../src/radio.cpp ../src/radio_communication.cpp
 #Teste visão
 vision: test_vision.cpp ../src/vision.cpp ../src/street_lines.cpp ../src/reduce_lines.cpp ../src/geometry.cpp
 	gcc -Wall -o ./build/test_vision test_vision.cpp ../src/vision.cpp ../src/street_lines.cpp ../src/reduce_lines.cpp ../src/geometry.cpp \
-		-lpigpio -lrt -lm -lpthread -lstdc++ -lrf24-bcm \
-		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lraspicam -lraspicam_cv \
+		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
+		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lopencv_aruco\
+		-lraspicam -lraspicam_cv \
 		-I../include -I/usr/local/include -I/usr/local/include/opencv4
 
 # Teste acha linhas
@@ -74,8 +75,8 @@ follow_road:  test_follow_road.cpp ../src/movement.cpp ../src/dc_motor.cpp ../sr
 turn: ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/movement.cpp
 	gcc -Wall -o ./build/test_turn ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/movement.cpp ../src/pidz.cpp ./test_turn.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -I../include -I./
 
-# Teste acha linhas
-lines: test_camera_traffic_light.cpp
+# Teste semaforo
+traffic_light: test_camera_traffic_light.cpp
 	gcc -Wall -o ./build/test_camera_traffic_light test_camera_traffic_light.cpp \
 		-lstdc++ -std=c++17 \
 		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc \
