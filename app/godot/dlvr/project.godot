@@ -60,6 +60,10 @@ window/stretch/aspect="keep"
 
 translations=PoolStringArray( "res://lang/lang.en.translation", "res://lang/lang.pt.translation" )
 
+[network]
+
+ssl/certificates="res://cert/cert.pem"
+
 [rendering]
 
 quality/2d/use_pixel_snap=true

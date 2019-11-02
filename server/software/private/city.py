@@ -48,8 +48,8 @@ UP = 1
 DOWN = 2
 LEFT = 3
 RIGHT = 4
-TLD = 500
-TRD = 600
+TLD = 5000
+TRD = 6000
 
 city_movements = pd.DataFrame({
     "NID":[i for i in range(1, MAX_NODES+1)],

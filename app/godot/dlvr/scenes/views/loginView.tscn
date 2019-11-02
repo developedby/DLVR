@@ -45,8 +45,6 @@ texture = ExtResource( 2 )
 centered = false
 
 [node name="emailSubview" type="Control" parent="."]
-editor/display_folded = true
-visible = false
 margin_top = 435.0
 margin_right = 720.0
 margin_bottom = 635.0
@@ -83,6 +81,7 @@ text = "CONTINUE_KS"
 
 [node name="signinSubview" type="Control" parent="."]
 editor/display_folded = true
+visible = false
 margin_right = 40.0
 margin_bottom = 40.0
 theme = ExtResource( 3 )

@@ -3,34 +3,51 @@
 #include <iostream>
 #include <pigpio.h>
 
+
+void goAhead(std::vector<street_lines::StreetSection> found_streets, Movement movement)
+{
+    street_lines::StreetSection closed_street;
+    int min_dist = 999999;
+    for(int i = 0; i<found_streets.size(); i++)
+    {
+        if(distXYPointXYSegment(cv::Point(0, 0), found_streets[i].end_points) < min_dist)
+        {
+            min_dist = distXYPointXYSegment(cv::Point(0, 0), found_streets[i].end_points);
+            closed_street = found_streets[i];
+        }
+    }
+    movement.goStraight(1, 0.2);
+    if(closed_street.line[1] > 10)
+    {
+        movement.goStraight(0, 0);
+        movement.turn(found_streets[0].line[1]);
+        //movement.goCurve(1, found_streets[0].direction);
+    }
+    else if(closed_street.line[1] < -10)
+    {
+        movement.goStraight(0, 0);
+        movement.turn(-found_streets[0].line[1]);
+        //movement.goCurve(1, -found_streets[0].direction);
+    }
+}
+
 int main ()
 {
-    Vision vision = Vision();
-    Movement movement = Movement();
-    std::vector<street_lines::StreetSection> found_streets;
     if (gpioInitialise() == PI_INIT_FAILED)
     {
         std::cout << "Erro ao inicializar!" << std::endl;
         exit(PI_INIT_FAILED);
     }
+    Vision vision = Vision();
+    Movement movement = Movement();
+    std::vector<street_lines::StreetSection> found_streets;
     while(1)
     {
+        vision.getCamImg();
         found_streets = vision.findStreets();
-        if(!found_streets.empty() && (found_streets[0].type == street_lines::SECTION_STREET))
+        if(!found_streets.empty())
         {
-            movement.goStraight(1, 0.2);
-            if(found_streets[0].direction > 10)
-            {
-                movement.goStraight(0, 0);
-                movement.turn(found_streets[0].direction);
-                //movement.goCurve(1, found_streets[0].direction);
-            }
-            else if(found_streets[0].direction < -10)
-            {
-                movement.goStraight(0, 0);
-                movement.turn(-found_streets[0].direction);
-                //movement.goCurve(1, -found_streets[0].direction);
-            }
+            goAhead(found_streets)
         }
         else
         {
