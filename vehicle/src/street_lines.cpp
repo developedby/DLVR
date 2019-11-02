@@ -59,7 +59,7 @@ namespace street_lines
     }
 
     // Finds the distance of the line segment's extremities to the vehicle
-    // Return the two point in the (rho1, theta1, rho2, theta2) format
+    // Return the two points in the (rho1, theta1, rho2, theta2) format
     Vec4f linePxToDist(const Vec4i& line)
     {
         float constexpr x_center = img_width / 2;
@@ -121,33 +121,33 @@ namespace street_lines
 
     // Groups together lines with similar angles
     // Returns a vector with the index to the members of each group
-    vector<vector<int>> groupLinesByAngle(const vector<Vec2f>& lines, const float max_theta_diff)
+    vector<vector<unsigned int>> groupLinesByAngle(const vector<Vec2f>& lines, const float max_theta_diff)
     {
-        int group_counter = 0;
-        vector<int> line_grouping(lines.size(), -1);
-        vector<vector<int>> groups;
-        for (int i = 0; i < lines.size(); i++)
+        int counter = 0;
+        vector<int> classification(lines.size(), -1);
+        vector<vector<unsigned int>> groups;
+        for (unsigned int i = 0; i < lines.size(); i++)
         {
-            if (line_grouping[i] == -1)
+            if (classification[i] == -1)
             {
-                groups.push_back(vector({i}));
-                line_grouping[i] = group_counter;
-                for (int j=i+1; j < lines.size(); j++)
+                groups.push_back(vector{i});
+                classification[i] = counter;
+                for (unsigned int j=i+1; j < lines.size(); j++)
                 {
                     // Group together if angles have difference less than max_theta_diff
-                    if (line_grouping[j] == -1)
+                    if (classification[j] == -1)
                     {
                         float delta_theta = abs(lines[i][1] - lines[j][1]);
                         if (delta_theta > M_PI/2)
                             delta_theta = M_PI - delta_theta;
                         if (delta_theta > max_theta_diff)
                         {
-                            line_grouping[j] = group_counter;
-                            groups[group_counter].push_back(j);
+                            classification[j] = counter;
+                            groups[counter].push_back(j);
                         }
                     }
                 }
-                group_counter++;
+                counter++;
             }
         }
         return groups;
@@ -155,46 +155,46 @@ namespace street_lines
 
     // From a group of maybe repeated lines, select only the unique ones, separating them by their distance (rho)
     // Return the indexes of the unique lines in the input vector
-    vector<vector<int>> groupLinesByDistance(const vector<Vec2f>& lines, const float max_rho_diff)
+    vector<vector<unsigned int>> groupLinesByDistance(const vector<Vec2f>& lines, const float max_rho_diff)
     {
-        vector<vector<int>> groups_of_unique_lines; // Each element has a group of lines that are repeated
+        vector<vector<unsigned int>> groups; // Each element has a group of lines that are repeated
         vector<int> classification(lines.size(), -1); // Which group a line is part of
         int counter = 0;
-        for (int i = 0; i < lines.size(); i++)
+        for (unsigned int i = 0; i < lines.size(); i++)
         {
             if (classification[i] == -1)
             {
-                groups_of_unique_lines.push_back(vector{i});
+                groups.push_back(vector{i});
                 classification[i] = counter;
-                for (int j = i+1; j < lines.size(); j++)
+                for (unsigned int j = i+1; j < lines.size(); j++)
                 {
                     if ((classification[j] == -1)
                         && ((lines[i][0]-max_rho_diff) < lines[j][0])
                         && (lines[j][0] < (lines[i][0]+max_rho_diff)))
                     {
                         classification[j] = counter;
-                        groups_of_unique_lines[counter].push_back(j);
+                        groups[counter].push_back(j);
                     }
                 }
                 counter++;
             }
         }
-        return groups_of_unique_lines;
+        return groups;
     }
 
     // Separate the lines in different groups of collinear lines
-    vector<vector<int>> groupCollinearLines(const vector<Vec2f>& lines, const float max_theta_diff, const float max_rho_diff)
+    vector<vector<unsigned int>> groupCollinearLines(const vector<Vec2f>& lines, const float max_theta_diff, const float max_rho_diff)
     {
         vector<int> classification(lines.size(), -1);
-        vector<vector<int>> groups;
+        vector<vector<unsigned int>> groups;
         int counter = 0;
-        for (int i = 0; i < lines.size(); i++)
+        for (unsigned int i = 0; i < lines.size(); i++)
         {
             if (classification[i] == -1)
             {
                 classification[i] = counter;
-                groups.push_back(vector({counter}));
-                for (int j = i+1; j < lines.size(); j++)
+                groups.push_back(vector{i});
+                for (unsigned int j = i+1; j < lines.size(); j++)
                 {
                     if (classification[j] == -1
                         && linesAreCollinear(lines[i], lines[j], max_theta_diff, max_rho_diff))
@@ -225,13 +225,15 @@ namespace street_lines
     }
 
     // Does a stable in-place sort of collinear points
-    void orderCollinearPoints(const vector<Vec2f>& pts, const float angle)
+    void orderCollinearPoints(vector<Vec2f>& pts, const float angle)
     {
         int used_axis;
-        if ((angle < M_PI/4) || ((M_PI - M_PI/4) < angle < (M_PI - M_PI/4)) || (angle > (2*M_PI - M_PI/4)))
+        if ((angle < M_PI/4)
+            || (((M_PI - M_PI/4) < angle) && (angle < (M_PI - M_PI/4)))
+            || (angle > (2*M_PI - M_PI/4)))
             used_axis = 1;
         else
             used_axis = 0;
-        std::stable_sort(pts.begin(), pts.end(), [](auto pt1, auto pt2){return pt1[used_axis] < pt2[used_axis]});
+        std::stable_sort(pts.begin(), pts.end(), [used_axis](auto pt1, auto pt2){return pt1[used_axis] < pt2[used_axis];});
     }
 }
