@@ -2,8 +2,8 @@ import numpy as np
 import cv2
 
 path = "./img/street/"
-img_in = "cruzamento"
-extension = ".png"
+img_in = "semaforos"
+extension = ".jpg"
 
 img = cv2.imread(path + img_in + extension)
 if img is None:
