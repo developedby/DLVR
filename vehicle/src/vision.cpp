@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <tuple>
 #include <vector>
+#include <iostream>
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/aruco.hpp>
@@ -15,6 +16,8 @@
 
 using std::vector;
 using std::pair;
+using std::cout;
+using std::endl;
 using cv::Vec2f;
 using cv::Vec4f;
 using cv::Vec4i;
@@ -33,14 +36,19 @@ using street_lines::distRTSegments;
 using street_lines::segmentHalfPoint;
 using street_lines::xySegmentToLine;
 
-Vision::Vision() : cam(), img(), aruco_dict(cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_250))
+Vision::Vision() : cam(), aruco_dict(cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_250)), img()
 {
     this->cam.set(cv::CAP_PROP_FORMAT, CV_8UC3);
-    this->cam.setRotation(3);
+    //this->cam.setRotation(3);
     this->cam.set(cv::CAP_PROP_FRAME_WIDTH, constants::img_width);
     this->cam.set(cv::CAP_PROP_FRAME_HEIGHT, constants::img_height);
+    this->cam.setAWB(10);
     auto success = this->cam.open();
     assert(success);
+    for (int i = 0; i < 5; i++)
+    {
+        this->cam.grab();
+    }
 }
 
 void Vision::getCamImg()
@@ -59,26 +67,45 @@ vector<StreetSection> Vision::findStreets()
     // Finds the binary mask for each marker type
     Mat blue_tape_mask;
     this->getBlueTapeMask(blue_tape_mask);
+    cv::imwrite("teste_linhas_blue.jpg", blue_tape_mask);
     Mat green_tape_mask;
     this->getGreenTapeMask(green_tape_mask);
+    cv::imwrite("teste_linhas_green.jpg", green_tape_mask);
     Mat yellow_tape_mask;
     this->getYellowTapeMask(yellow_tape_mask);
+    cv::imwrite("teste_linhas_yellow.jpg", yellow_tape_mask);
+
+    cout << "Calculou as mascaras de cor." << endl;
 
     // Finds the lines passing through those masks
     vector<Vec4i> lines;
     vector<Color> line_colors;
     
     auto lines_aux = street_lines::getStreetLines(blue_tape_mask);
+    cout << "Achou linhas azuis." << endl;
     lines.insert(lines.end(), lines_aux.begin(), lines_aux.end());
+    //cout << "insert lines." << endl;
     line_colors.insert(line_colors.end(), lines_aux.size(), Color::blue);
+    //cout << "insert line_colors." << endl;
     
     lines_aux = street_lines::getStreetLines(green_tape_mask);
+    cout << "Achou linhas verdes." << endl;
     lines.insert(lines.end(), lines_aux.begin(), lines_aux.end());
     line_colors.insert(line_colors.end(), lines_aux.size(), Color::green);
     
     lines_aux = street_lines::getStreetLines(yellow_tape_mask);
+    cout << "Achou linhas amarelas." << endl;
     lines.insert(lines.end(), lines_aux.begin(), lines_aux.end());
     line_colors.insert(line_colors.end(), lines_aux.size(), Color::yellow);
+    
+    Mat img_lines = street_lines::drawLines(lines, this->img);
+    cv::imwrite("teste_linhas_linhas.jpg", img_lines);
+    
+    cout << "Calculou as linhas. Encontradas: " << lines.size() << endl;
+    for (unsigned int i = 0; i < lines.size(); i++)
+    {
+        cout << lines[i] << ' ' << int(line_colors[i]) << endl;
+    }
     
     // Undo the projection distortion
     vector<Vec2f> undistort_lines(lines.size());
@@ -86,6 +113,12 @@ vector<StreetSection> Vision::findStreets()
     for (unsigned int i = 0; i < lines.size(); i++)
     {
         std::tie(undistort_lines[i], undistort_segs[i]) = street_lines::undistortLine(lines[i]);
+    }
+
+    cout << "Reverteu a distorcao de perspectiva" << endl;
+    for (unsigned int i = 0; i < undistort_lines.size(); i++)
+    {
+        cout << undistort_lines[i] << ' ' << undistort_segs[i] << endl;
     }
 
     // Find all the possible street sections
@@ -221,12 +254,19 @@ vector<StreetSection> Vision::findStreets()
         }
     }
 
+    cout << "Calculou todas as mini seções. Encontradas: " << possible_sections.size() << endl;
+    for (unsigned int i = 0; i < possible_sections.size(); i++)
+    {
+        cout << possible_sections[i].line << ' ' << possible_sections[i].end_points << ' ' << int(possible_sections[i].type) << endl;
+    }
+
     // Transform the groups of maybe overlapping collinear sections into a single section
     vector<StreetSection> long_sections;
     vector<Vec2f> possible_lines(possible_sections.size());
     for (unsigned int i = 0; i < possible_sections.size(); i++)
         possible_lines[i] = possible_sections[i].line;
     const auto angle_groups = street_lines::groupCollinearLines(possible_lines, max_theta_diff, lane_width/3);
+    //cout << "Agrupou as linhas colineares" << endl;
     for (auto group: angle_groups)
     {
         // Choose the axis used to order the points on the line
@@ -240,15 +280,18 @@ vector<StreetSection> Vision::findStreets()
         }
         else
             used_axis = 0;
+        //cout << "Escolheu eixo pra juntar linhas" << endl;
         Vec4f result_seg = segmentRTToXY(possible_sections[group[0]].end_points);
+        //cout << "Construiu o segmentos de um das seções longas" << endl;
         if (result_seg[used_axis] > result_seg[used_axis+2])
         {
             result_seg = Vec4f(result_seg[2], result_seg[3], result_seg[0], result_seg[1]);
         }
+        //cout << "Ordenou o pontos do segmento longo" << endl;
         // Find the min and max points
         for (auto i: group)
         {
-            const Vec4f xy_seg = segmentRTToXY(possible_sections[group[i]].end_points);
+            const Vec4f xy_seg = segmentRTToXY(possible_sections[i].end_points);
             if (xy_seg[used_axis] < result_seg[used_axis])
             {
                 result_seg[0] = xy_seg[0];
@@ -270,7 +313,14 @@ vector<StreetSection> Vision::findStreets()
                 result_seg[3] = xy_seg[3];
             }
         }
+        //cout << "Montou o segmento longo" << endl;
         long_sections.emplace_back(Color::none, xySegmentToLine(result_seg), result_seg);
+    }
+
+    cout << "Calculou todas as seções longas. Encontradas: " << long_sections.size() << endl;
+    for (unsigned int i = 0; i < long_sections.size(); i++)
+    {
+        cout << long_sections[i].line << ' ' << long_sections[i].end_points << ' ' << int(long_sections[i].type) << endl;
     }
 
     // Break the sections where they intersect
@@ -305,7 +355,7 @@ vector<StreetSection> Vision::findStreets()
             }
         }
         vector<Vec2f> cut_pts_filtered;
-        for (unsigned int j = 0; j != cut_pts.size(); j++)
+        for (unsigned int j = 0; j < cut_pts.size(); j++)
         {
             if (std::find(pts_to_remove.begin(), pts_to_remove.end(), j) == pts_to_remove.end())
             {
@@ -319,6 +369,12 @@ vector<StreetSection> Vision::findStreets()
                        cut_pts_filtered[j][0], cut_pts_filtered[j][1]);
             final_sections.emplace_back(Color::none, xySegmentToLine(seg), seg); 
         }
+    }
+    
+    cout << "Calculou as seções finais. Encontradas: " << final_sections.size() << endl;
+    for (unsigned int i = 0; i < final_sections.size(); i++)
+    {
+        cout << final_sections[i].line << ' ' << final_sections[i].end_points << ' ' << int(final_sections[i].type) << endl;
     }
     
     // Link the sections
@@ -352,17 +408,17 @@ vector<StreetSection> Vision::findStreets()
             }
         }
     }
-    
+    cout << "Juntou as seções."<< endl;
     return final_sections;
 }
 
 void Vision::getColorMask(Mat& dst, const cv::Scalar min, const cv::Scalar max)
 {
-    cv::inRange(img, min, max, dst);
-    Mat mask = Mat::zeros(img.size(), CV_8U);
+    cv::inRange(this->img, min, max, dst);
+    //Mat mask = Mat::zeros(img.size(), CV_8U);
     // TODO: Cortar a imagem em ~1m de distancia
-    mask(cv::Rect(0, img_y_horizon, img.cols, img.rows)) = 255;
-    cv::bitwise_and(img, mask, img);
+    //mask(cv::Rect(0, img_y_horizon, img.cols, img.rows)) = 255;
+    //cv::bitwise_and(img, mask, img);
 }
 
 void Vision::getRedTapeMask(Mat& dst)
@@ -372,12 +428,12 @@ void Vision::getRedTapeMask(Mat& dst)
 
 void Vision::getBlueTapeMask(Mat& dst)
 {
-    this->getColorMask(dst, cv::Scalar(100, 70, 25), cv::Scalar(120, 200, 170));
+    this->getColorMask(dst, cv::Scalar(90, 200, 100), cv::Scalar(110, 245, 255));
 }
 
 void Vision::getGreenTapeMask(Mat& dst)
 {
-    this->getColorMask(dst, cv::Scalar(60, 70, 30), cv::Scalar(90, 150, 120));
+    this->getColorMask(dst, cv::Scalar(70, 40, 40), cv::Scalar(90, 250, 255));
 }
 
 void Vision::getYellowTapeMask(Mat& dst)

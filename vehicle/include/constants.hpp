@@ -9,9 +9,8 @@ namespace constants
 	// Vision
 	int constexpr img_height = 960;
 	int constexpr img_width = 1280;
-	float constexpr img_y_horizon = 0.282;
+	float constexpr img_y_horizon = 0.0;
 	float constexpr img_real_zero_rad = 4.647 * M_PI/180;
-	float constexpr img_y_vehicle = 1.;
 	float constexpr img_theta_min = 29.12 * M_PI/180; // Could be calculated from the below distance and the camera height
 	float constexpr dist_theta_min_m = 0.145; // Distance from the vehicle to the bottom point of the image
 	float constexpr lane_width = 0.26;

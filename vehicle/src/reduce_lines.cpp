@@ -21,7 +21,7 @@ namespace street_lines
 
         // build point clouds out of each equivalence classes
         std::vector<std::vector<cv::Point2i>> pointClouds(equilavenceClassesCount);
-        for (int i = 0; i < int(in_lines.size()); i++)
+        for (unsigned int i = 0; i < in_lines.size(); i++)
         {
             const cv::Vec4i& detectedLine = in_lines[i];
             pointClouds[labels[i]].push_back(cv::Point2i(detectedLine[0], detectedLine[1]));

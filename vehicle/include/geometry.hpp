@@ -1,6 +1,7 @@
 #ifndef geometry_hpp_
 #define geometry_hpp_
 
+#include <cmath>
 #include <opencv2/core.hpp>
 
 namespace street_lines
@@ -13,6 +14,14 @@ namespace street_lines
     inline float norm (float x, float y)
     {
         return sqrt(square(x) + square(x));
+    }
+    
+    inline float my_atan2(float y, float x)
+    {
+        float angle = atan2(y, x);
+        if (angle < 0)
+            angle += 2*M_PI;
+        return angle;
     }
     
     cv::Vec2f segmentHalfPoint(const cv::Vec4f& seg);

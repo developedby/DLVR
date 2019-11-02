@@ -26,6 +26,8 @@ namespace street_lines
 	bool rtSegmentsAreSimilar(const cv::Vec4f& seg1, const cv::Vec4f& seg2, const float threshold);
 	
 	void orderCollinearPoints(std::vector<cv::Vec2f>& pts, const float angle);
+	
+	cv::Mat drawLines(const std::vector<cv::Vec4i>& lines, const cv::Mat& img);
 }
 
 #endif

@@ -1,5 +1,6 @@
 #include "street_lines.hpp"
 #include <cmath>
+#include <iostream>
 #include <limits>
 #include <vector>
 #include <array>
@@ -22,15 +23,19 @@ using std::pair;
 using cv::Vec4i;
 using cv::Vec4f;
 using cv::Vec2f;
+using cv::Mat;
+using cv::Scalar;
+using cv::Point;
 
 namespace street_lines
 {
     // Finds the lines in the mask representing the street lane markers
-    vector<Vec4i> getStreetLines(const cv::Mat& lines_mask)
+    vector<Vec4i> getStreetLines(const Mat& lines_mask)
     {
         vector<Vec4i> lines;
-        cv::HoughLinesP(lines_mask, lines, 1, max_theta_diff-0.01, 80, 20, 10);
-        reduceLines(lines, lines, 0.2, 2.0, 10.0);
+        cv::HoughLinesP(lines_mask, lines, 1, max_theta_diff-0.01, 90, 40, 8);
+        std::cout << "Linhas: " << lines.size() << std::endl;
+        reduceLines(lines, lines, 0.2, 7.0, 10.0);
         return lines;
     }
 
@@ -42,26 +47,16 @@ namespace street_lines
         // Undistorted segment in rho theta format
         const Vec4f undistort_seg_rt = linePxToDist(line);
         // Undistorted segment in x y format
-        const Vec4f undistort_seg_xy(undistort_seg_rt[0] * sin(undistort_seg_rt[1]),
-                                     undistort_seg_rt[0] * cos(undistort_seg_rt[1]),
-                                     undistort_seg_rt[2] * sin(undistort_seg_rt[3]),
-                                     undistort_seg_rt[2] * cos(undistort_seg_rt[3]));
-
-        const float u_num = (0-line[0]) * (line[2]-line[0])
-                             + (0-line[1]) * (line[3]-line[1]);
-        const float u_den = (line[2] - line[0]) * (line[2] - line[0])
-                             + (line[3] - line[1]) * (line[3] - line[1]);
-        const float u = u_num / u_den;
-        const float x = line[0] + u*(line[2] - line[0]);
-        const float y = line[1] + u*(line[3] - line[1]);
-        
-        return pair(Vec2f(norm(x, y), atan2(y, x)), undistort_seg_rt);
+        const Vec4f undistort_seg_xy = segmentRTToXY(undistort_seg_rt);
+        std::cout << "undistort: " << undistort_seg_rt << ' ' << undistort_seg_xy << std::endl;
+        return pair(xySegmentToLine(segmentRTToXY(undistort_seg_rt)), undistort_seg_rt);
     }
 
     // Finds the distance of the line segment's extremities to the vehicle
     // Return the two points in the (rho1, theta1, rho2, theta2) format
     Vec4f linePxToDist(const Vec4i& line)
     {
+        // TODO
         float constexpr x_center = img_width / 2;
         float constexpr y_theta_min = img_height;
         float constexpr px_per_rad = (img_y_horizon - y_theta_min)/img_theta_min;
@@ -73,17 +68,21 @@ namespace street_lines
         float y_angle = (line[1] - img_y_horizon) / px_per_rad;
         float stretch_factor = tan(M_PI/2 - y_angle);
         float x_dist = (line[0] - x_center) * meter_per_px * stretch_factor;
-        float y_dist = (line[1] - img_y_horizon) * meter_per_px * stretch_factor;
+        float y_dist = (y_vehicle - line[1]) * meter_per_px * stretch_factor;
         line_dists[1] = atan2(x_dist, y_dist) - img_real_zero_rad;
+        if (line_dists[1] < 0)
+            line_dists[1] += 2*M_PI;
         line_dists[0] = norm(x_dist, y_dist);
 
         // Second point
         y_angle = (line[3] - img_y_horizon) / px_per_rad;
         stretch_factor = tan(M_PI/2 - y_angle);
         x_dist = (line[2] - x_center) * meter_per_px * stretch_factor;
-        y_dist = (line[3] - img_y_horizon) * meter_per_px * stretch_factor;
-        line_dists[3] = atan2(x_dist, y_dist) - img_real_zero_rad;
-        line_dists[2] = norm(x_dist, y_dist);
+        y_dist = (y_vehicle - line[3]) * meter_per_px * stretch_factor;
+        line_dists[3] = atan2(y_dist, x_dist) - img_real_zero_rad;
+        if (line_dists[3] < 0)
+            line_dists[3] += 2*M_PI;
+        line_dists[2] = norm(y_dist, x_dist);
         return line_dists;
     }
 
@@ -235,5 +234,17 @@ namespace street_lines
         else
             used_axis = 0;
         std::stable_sort(pts.begin(), pts.end(), [used_axis](auto pt1, auto pt2){return pt1[used_axis] < pt2[used_axis];});
+    }
+
+    // Draw the lines on the image
+    Mat drawLines(const vector<Vec4i>& lines, const Mat& img)
+    {
+        Mat img_lines;
+        cv::cvtColor(img, img_lines, cv::COLOR_HLS2RGB);
+        for (auto line: lines)
+        {
+            cv::line(img_lines, Point(line[0], line[1]), Point(line[2], line[3]), Scalar(0, 255, 0), 1, cv::LINE_AA);
+        }
+        return img_lines;
     }
 }
