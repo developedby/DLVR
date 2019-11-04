@@ -4,7 +4,7 @@ import mysql.connector
 def get_available_robots():
     with connect.connect() as connection:
         cursor = connection.cursor(prepared = True)
-        query = "SELECT id, position, state FROM Robot WHERE alive = true"
+        query = "SELECT id, position FROM Robot WHERE alive = true AND state = 0"
         try:
             cursor.execute(query)
             result = cursor.fetchall()
