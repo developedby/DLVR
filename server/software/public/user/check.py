@@ -1,7 +1,6 @@
 import json
-import connect
-import mysql.connector
 import asyncio
+import objects
 
 async def main(websocket, path, open_sockets):
     data = await websocket.recv()
@@ -11,19 +10,11 @@ async def main(websocket, path, open_sockets):
             "status_code": 200,
             "reason_message": "OK"
         }
-        with connect.connect() as connection:
-            cursor = connection.cursor(prepared = True)
-            query = "SELECT email FROM User WHERE email = %s"
-            values = (data["email"],)
-            try:
-                cursor.execute(query, values)
-                result = cursor.fetchone()
-                resp["message_body"] = "true" if result else "false"
-                await websocket.send(json.dumps(resp))
-            except mysql.connector.Error as e:
-                print("check.py:24: " + str(e))
-                resp["message_body"] = "false"
-                await websocket.send(json.dumps(resp))
-            cursor.close()
+        if objects.User.check(data["email"]):
+            resp["message_body"] = "true"
+            await websocket.send(json.dumps(resp))
+        else:
+            resp["message_body"] = "false"
+            await websocket.send(json.dumps(resp))
     else:
         await websocket.send("{\"status_code\": 400, \"reason_message\": \"Bad Request\"}")

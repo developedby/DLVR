@@ -1,7 +1,6 @@
-import session
-import http.cookies
 import json
 import asyncio
+import objects
 
 async def main(websocket, path, open_sockets, data = None):
     if not data:
@@ -12,14 +11,11 @@ async def main(websocket, path, open_sockets, data = None):
             "status_code": 200,
             "reason_message": "OK"
         }
-        cookie = http.cookies.SimpleCookie()
-        cookie.load(data["cookie"])
-        email = session.user_email(cookie["token"].value)
-        if email:
-            session.signout(cookie["token"].value)
+        login = objects.Login(data["cookie"])
+        if login.signout():
             resp["message_body"] = "true"
             await websocket.send(json.dumps(resp))
-            open_sockets["users"].pop(cookie["token"].value)
+            open_sockets["users"].pop(login.cookie)
         else:
             resp["message_body"] = "false"
             await websocket.send(json.dumps(resp))

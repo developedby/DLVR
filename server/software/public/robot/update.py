@@ -1,9 +1,7 @@
 import json
 import hashlib
-import Crypto.PublicKey.RSA
-import connect
-import mysql.connector
 import asyncio
+import objects
 
 async def main(websocket, path, open_sockets, data = None):
     if not data:
@@ -14,106 +12,58 @@ async def main(websocket, path, open_sockets, data = None):
             "status_code": 200,
             "reason_message": "OK"
         }
-        with connect.connect() as connection:
-            cursor = connection.cursor(prepared = True)
-            query = "SELECT public_key FROM Robot WHERE id = %s AND alive = true"
-            values = (data["id"],)
-            try:
-                cursor.execute(query, values)
-                result = cursor.fetchone()
-                if result:
-                    public_key = Crypto.PublicKey.RSA.importKey(bytes.fromhex(result[0]))
-                    data_no_sign = data.copy()
-                    data_no_sign.pop("signature")
-                    data_no_sign = json.dumps(data_no_sign, sort_keys = True).encode("utf-8")
-                    hash = hashlib.sha256(data_no_sign).hexdigest().encode("utf-8")
-                    if public_key.verify(hash, (data["signature"],)):
-                        errors = 0
+        robot = objects.Robot(data["id"])
+        public_key = robot.get_public_key()
+        if public_key:
+            data_no_sign = data.copy()
+            data_no_sign.pop("signature")
+            data_no_sign = json.dumps(data_no_sign, sort_keys = True).encode("utf-8")
+            hash = hashlib.sha256(data_no_sign).hexdigest().encode("utf-8")
+            if public_key.verify(hash, (data["signature"],)):
+                errors = 0
 
-                        if "state" in data:
-                            query = "UPDATE Robot SET state = %s WHERE id = %s"
-                            values = (data["state"], data["id"],)
-                            try:
-                                cursor.execute(query, values)
-                            except mysql.connector.Error as e:
-                                print("update.py:39: " + str(e))
-                                errors += 1
+                if "state" in data:
+                    if not robot.set_state(data["state"]):
+                        errors += 1
 
-                        if "item" in data:
-                            query = "UPDATE Robot SET item = %s WHERE id = %s"
-                            values = (data["item"], data["id"],)
-                            try:
-                                cursor.execute(query, values)
-                            except mysql.connector.Error as e:
-                                print("update.py:48: " + str(e))
-                                errors += 1
+                if "item" in data:
+                    if not robot.set_item(data["item"]):
+                        errors += 1
 
-                        if "qr" in data:
-                            pass
+                if "qr" in data:
+                    pass
 
-                        if "speed" in data:
-                            query = "UPDATE Robot SET speed = %s WHERE id = %s"
-                            values = (data["speed"], data["id"],)
-                            try:
-                                cursor.execute(query, values)
-                            except mysql.connector.Error as e:
-                                print("update.py:60: " + str(e))
-                                errors += 1
+                if "speed" in data:
+                    if not robot.set_speed(data["speed"]):
+                        errors += 1
 
-                        if "curve_radius" in data:
-                            query = "UPDATE Robot SET curve_radius = %s WHERE id = %s"
-                            values = (data["curve_radius"], data["id"],)
-                            try:
-                                cursor.execute(query, values)
-                            except mysql.connector.Error as e:
-                                print("update.py:69: " + str(e))
-                                errors += 1
+                if "curve_radius" in data:
+                    if not robot.set_curve_radius(data["curve_radius"]):
+                        errors += 1
 
-                        if "left_encoder" in data:
-                            query = "UPDATE Robot SET left_encoder = %s WHERE id = %s"
-                            values = (data["left_encoder"], data["id"],)
-                            try:
-                                cursor.execute(query, values)
-                            except mysql.connector.Error as e:
-                                print("update.py:78: " + str(e))
-                                errors += 1
+                if "left_encoder" in data:
+                    if not robot.set_left_encoder(data["left_encoder"]):
+                        errors += 1
 
-                        if "right_encoder" in data:
-                            query = "UPDATE Robot SET right_encoder = %s WHERE id = %s"
-                            values = (data["right_encoder"], data["id"],)
-                            try:
-                                cursor.execute(query, values)
-                            except mysql.connector.Error as e:
-                                print("update.py:87: " + str(e))
-                                errors += 1
+                if "right_encoder" in data:
+                    if not robot.set_right_encoder(data["right_encoder"]):
+                        errors += 1
 
-                        if "ultrasound" in data:
-                            query = "UPDATE Robot SET ultrasound = %s WHERE id = %s"
-                            values = (data["ultrasound"], data["id"],)
-                            try:
-                                cursor.execute(query, values)
-                            except mysql.connector.Error as e:
-                                print("update.py:96: " + str(e))
-                                errors += 1
+                if "ultrasound" in data:
+                    if not robot.set_ultrasound(data["ultrasound"]):
+                        errors += 1
 
-                        if errors == 0:
-                            connection.commit()
-                            resp["message_body"] = "true"
-                            await websocket.send(json.dumps(resp))
-                        else:
-                            connection.rollback()
-                            resp["message_body"] = "false"
-                            await websocket.send(json.dumps(resp))
-                    else:
-                        resp["message_body"] = "false"
-                        await websocket.send(json.dumps(resp))
+                if errors == 0:
+                    resp["message_body"] = "true"
+                    await websocket.send(json.dumps(resp))
                 else:
                     resp["message_body"] = "false"
                     await websocket.send(json.dumps(resp))
-            except mysql.connector.Error as e:
-                print("update.py:114: " + str(e))
+            else:
                 resp["message_body"] = "false"
                 await websocket.send(json.dumps(resp))
-            cursor.close()
+        else:
+            resp["message_body"] = "false"
+            await websocket.send(json.dumps(resp))
     else:
         await websocket.send("{\"status_code\": 400, \"reason_message\": \"Bad Request\"}")
