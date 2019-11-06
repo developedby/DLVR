@@ -47,7 +47,7 @@ namespace street_lines
     {
         // Undistorted segment in rho theta format
         const Vec4f undistort_seg = imgSegToRealSeg(line);
-        std::cout << "undistort: " << undistort_seg << std::endl;
+        //std::cout << "undistort: " << undistort_seg << std::endl;
         return pair(xySegmentToLine(undistort_seg), undistort_seg);
     }
 
@@ -55,9 +55,9 @@ namespace street_lines
     // Return the two points in the (x1, y1, x2, y2) format, in meters
     Vec4f imgSegToRealSeg(const Vec4i& line)
     {
-        // TODO
         float constexpr x_center = img_width / 2;
-        float constexpr px_per_rad = img_height/(img_theta_min - img_theta_max); // Theta max e menor que theta min porque é theta da distancia maxima
+        // Theta max e menor que theta min porque é theta da distancia maxima (mais perto do horizonte)
+        float constexpr px_per_rad = img_height/(img_theta_min - img_theta_max);
         
         const float theta1 = (line[1] - img_y_horizon) / px_per_rad; // TODO: Desnormalizar img_y_horizon
         const float y1_m = cam_height_m / tan(theta1);

@@ -13,7 +13,7 @@ namespace street_lines
         
     inline float norm (float x, float y)
     {
-        return sqrt(square(x) + square(x));
+        return sqrt(square(x) + square(y));
     }
     
     inline float my_atan2(float y, float x)

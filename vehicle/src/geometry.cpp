@@ -1,5 +1,6 @@
 #include "geometry.hpp"
 #include <cmath>
+#include <iostream>
 #include <algorithm>
 #include <numeric>
 #include <opencv2/core.hpp>
@@ -105,16 +106,17 @@ namespace street_lines
         float line_theta = atan2((seg[3] - seg[1]), (seg[2] - seg[0]));
         if (line_theta < 0)
             line_theta += M_PI;
-        // TODO: Arrumar
         const float x1 = seg[0];
         const float y1 = seg[1];
         const float x2 = 0;
         const float y2 = 0;
         const float theta1 = line_theta;
         const float theta2 = line_theta - M_PI/2;
-        const float u = ((y1-y2) + (x2-x1)*tan(theta1)) / (sin(theta2) - tan(theta1)*cos(theta2));
+        const float u = ((y1-y2) + (x2-x1)*tan(theta1))
+                         / (sin(theta2) - tan(theta1)*cos(theta2));
         const float x_intersect = x2 + u*cos(theta2);
         const float y_intersect = y2 + u*sin(theta2);
+        //std::cout << "Convertendo segmento pra linha: " << seg << " -> " << cv::Vec2f(x_intersect, y_intersect) << std::endl;
         const float rho = norm(x_intersect, y_intersect);
         const float theta = my_atan2(y_intersect, x_intersect);
         return cv::Vec2f(rho, theta);
@@ -129,14 +131,19 @@ namespace street_lines
             return cv::Vec2f(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
         }
         
+        // (x1, y1) + u1(cos(theta1) + sin(theta1)) = (x2, y2) + u2(cos(theta2), sin(theta2))
+        // x1 + u1*cos(theta1) = x2 + u2*cos(theta2)
+        // y1 + u1*sin(theta1) = y2 + u2*sin(theta2)
         const float x1 = line1[0] * cos(line1[1]);
         const float y1 = line1[0] * sin(line1[1]);
         const float x2 = line2[0] * cos(line2[1]);
         const float y2 = line2[0] * sin(line2[1]);
         const float theta1 = line1[1] + M_PI/2;
         const float theta2 = line2[1] + M_PI/2;
-        const float u = ((y1-y2) + (x2-x1)*tan(theta1)) / (sin(theta2) - tan(theta1)*cos(theta2));
-        return cv::Vec2f(x2 + u*cos(theta2), y1 + u*sin(theta2));
+        // isolating u1, substituting it into the second equation and isolating u2
+        const float u2 = ((y1-y2) + (x2-x1)*tan(theta1)) / (sin(theta2) - tan(theta1)*cos(theta2));
+        // Applying u2 back to the original equation, we find the intersection point
+        return cv::Vec2f(x2 + u2*cos(theta2), y2 + u2*sin(theta2));
     }
 
     // Decides whether or not two lines make a certain angle between them
