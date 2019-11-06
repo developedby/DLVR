@@ -12,9 +12,8 @@ async def main(websocket, path, open_sockets, data = None):
             "reason_message": "OK"
         }
         login = objects.Login(data["cookie"])
-        email = login.get_email()
-        if email != None:
-            user = objects.User(email)
+        user = login.get_user()
+        if user:
             if user.check_password(data["password"]) and login.signout() and user.delete():
                 resp["message_body"] = "true"
                 await websocket.send(json.dumps(resp))

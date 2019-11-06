@@ -12,12 +12,12 @@ async def main(websocket, path, open_sockets, data = None):
             "status_code": 200,
             "reason_message": "OK"
         }
-        email = objects.Login(data["cookie"]).get_email()
-        if email != None:
+        user = objects.Login(data["cookie"]).get_user()
+        if user:
             delivery = objects.Delivery(data["id"])
             sender = delivery.get_sender()
-            if sender != None:
-                cookies = objects.Login.get_cookies(sender)
+            if sender:
+                cookies = objects.Login.get_cookies(sender.email)
                 if len(cookies) > 0:
                     if data["accept"]:
                         origin = delivery.get_origin()

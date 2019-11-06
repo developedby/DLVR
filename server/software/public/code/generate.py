@@ -5,12 +5,12 @@ import objects
 async def main(websocket, path, open_sockets):
     data = await websocket.recv()
     data = json.loads(data)
-    if "email" in data:
+    if "user" in data:
         resp = {
             "status_code": 200,
             "reason_message": "OK"
         }
-        code = objects.Code.generate(data["email"])
+        code = objects.Code.generate(data["user"])
         if code:
             print(code.number)
             resp["message_body"] = "true"

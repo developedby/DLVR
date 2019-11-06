@@ -11,7 +11,7 @@ class Code:
         self.number = number
 
     @classmethod
-    def generate(cls, email):
+    def cleanup(cls):
         with connect.connect() as connection:
             cursor = connection.cursor(prepared = True)
             query = "DELETE FROM Code WHERE expiration < %s"
@@ -20,15 +20,29 @@ class Code:
             try:
                 cursor.execute(query, values)
                 connection.commit()
-                query = "DELETE FROM Code WHERE user = %s"
-                values = (email,)
+                return True
+            except mysql.connector.Error as e:
+                print(e)
+                connection.rollback()
+            finally:
+                cursor.close()
+        return False
+
+    @classmethod
+    def generate(cls, user):
+        cls.cleanup()
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "DELETE FROM Code WHERE user = %s"
+            values = (user,)
+            try:
                 cursor.execute(query, values)
                 connection.commit()
                 query = "INSERT INTO Code(number, expiration, user) VALUES (%s, %s, %s)"
                 number = random.randint(0, 65535)
                 expiration = datetime.datetime.now() + datetime.timedelta(minutes = 5)
                 timestamp = expiration.strftime("%Y-%m-%d %H:%M:%S")
-                values = (number, timestamp, email)
+                values = (number, timestamp, user)
                 cursor.execute(query, values)
                 connection.commit()
                 return cls(number)
@@ -38,30 +52,54 @@ class Code:
             finally:
                 cursor.close()
 
-    def verify(self, email):
-        with connect.connect() as connection:
-            cursor = connection.cursor(prepared = True)
-            query = "DELETE FROM Code WHERE expiration < %s"
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            values = (timestamp,)
-            try:
-                cursor.execute(query, values)
-                connection.commit()
-                query = "SELECT user FROM Code WHERE number = %s"
+    def verify(self, user):
+        Code.cleanup()
+        real_user = self.get_user()
+        if real_user and real_user.email == user:
+            with connect.connect() as connection:
+                cursor = connection.cursor(prepared = True)
+                query = "DELETE FROM Code WHERE number = %s"
                 values = (self.number,)
-                cursor.execute(query, values)
-                result = cursor.fetchone()
-                if result and result[0] == email:
-                    query = "DELETE FROM Code WHERE number = %s"
+                try:
                     cursor.execute(query, values)
                     connection.commit()
                     return True
+                except mysql.connector.Error as e:
+                    print(e)
+                    connection.rollback()
+                finally:
+                    cursor.close()
+        return False
+
+    def get_user(self):
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "SELECT user FROM Code WHERE number = %s"
+            values = (self.number,)
+            try:
+                cursor.execute(query, values)
+                result = cursor.fetchone()
+                if result:
+                    return User(result[0])
             except mysql.connector.Error as e:
                 print(e)
-                connection.rollback()
             finally:
                 cursor.close()
-        return False
+
+    def get_expiration(self):
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "SELECT expiration FROM Code WHERE number = %s"
+            values = (self.number,)
+            try:
+                cursor.execute(query, values)
+                result = cursor.fetchone()
+                if result:
+                    return datetime.datetime.fromtimestamp(result[0])
+            except mysql.connector.Error as e:
+                print(e)
+            finally:
+                cursor.close()
 
 class Delivery:
     def __init__(self, id):
@@ -120,6 +158,22 @@ class Delivery:
                 cursor.close()
         return False
 
+    def set_path(self, path):
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "UPDATE Delivery SET path = %s WHERE id = %s"
+            values = (path, self.id)
+            try:
+                cursor.execute(query, values)
+                connection.commit()
+                return True
+            except mysql.connector.Error as e:
+                print(e)
+                connection.rollback()
+            finally:
+                cursor.close()
+        return False
+
     def get_sender(self):
         with connect.connect() as connection:
             cursor = connection.cursor(prepared = True)
@@ -129,7 +183,7 @@ class Delivery:
                 cursor.execute(query, values)
                 result = cursor.fetchone()
                 if result:
-                    return result[0]
+                    return User(result[0])
             except mysql.connector.Error as e:
                 print(e)
             finally:
@@ -159,7 +213,7 @@ class Delivery:
                 cursor.execute(query, values)
                 result = cursor.fetchone()
                 if result:
-                    return result[0]
+                    return Robot(result[0])
             except mysql.connector.Error as e:
                 print(e)
             finally:
@@ -174,7 +228,7 @@ class Delivery:
                 cursor.execute(query, values)
                 result = cursor.fetchone()
                 if result:
-                    return result[0]
+                    return User(result[0])
             except mysql.connector.Error as e:
                 print(e)
             finally:
@@ -195,9 +249,83 @@ class Delivery:
             finally:
                 cursor.close()
 
+    def get_path(self):
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "SELECT path FROM Delivery WHERE id = %s"
+            values = (self.id,)
+            try:
+                cursor.execute(query, values)
+                result = cursor.fetchone()
+                if result:
+                    return result[0]
+            except mysql.connector.Error as e:
+                print(e)
+            finally:
+                cursor.close()
+
+    def get_state(self):
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "SELECT state FROM Delivery WHERE id = %s"
+            values = (self.id,)
+            try:
+                cursor.execute(query, values)
+                result = cursor.fetchone()
+                if result:
+                    return result[0]
+            except mysql.connector.Error as e:
+                print(e)
+            finally:
+                cursor.close()
+
+    def get_start_time(self):
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "SELECT start_time FROM Delivery WHERE id = %s"
+            values = (self.id,)
+            try:
+                cursor.execute(query, values)
+                result = cursor.fetchone()
+                if result:
+                    return datetime.datetime.fromtimestamp(result[0])
+            except mysql.connector.Error as e:
+                print(e)
+            finally:
+                cursor.close()
+
+    def get_finish_time(self):
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "SELECT finish_time FROM Delivery WHERE id = %s"
+            values = (self.id,)
+            try:
+                cursor.execute(query, values)
+                result = cursor.fetchone()
+                if result:
+                    return datetime.datetime.fromtimestamp(result[0])
+            except mysql.connector.Error as e:
+                print(e)
+            finally:
+                cursor.close()
+
 class Robot:
     def __init__(self, id):
         self.id = id
+
+    @classmethod
+    def verify(cls, public_key, data):
+        data_no_sign = data.copy()
+        data_no_sign.pop("signature")
+        data_no_sign = json.dumps(data_no_sign, sort_keys = True).encode("utf-8")
+        hash = hashlib.sha256(data_no_sign).hexdigest().encode("utf-8")
+        if public_key.verify(hash, (data["signature"],)):
+            timestamp = datetime.datetime.fromtimestamp(data["timestamp"])
+            now = datetime.datetime.now()
+            diff = min((now - timestamp).seconds, (timestamp - now).seconds)
+            if diff < 60:
+                return True
+        return False
 
     def signin(self):
         with connect.connect() as connection:
@@ -220,6 +348,38 @@ class Robot:
             cursor = connection.cursor(prepared = True)
             query = "UPDATE Robot SET alive = false WHERE id = %s"
             values = (self.id,)
+            try:
+                cursor.execute(query, values)
+                connection.commit()
+                return True
+            except mysql.connector.Error as e:
+                print(e)
+                connection.rollback()
+            finally:
+                cursor.close()
+        return False
+
+    def set_position(self, position):
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "UPDATE Robot SET position = %s WHERE id = %s"
+            values = (position, self.id)
+            try:
+                cursor.execute(query, values)
+                connection.commit()
+                return True
+            except mysql.connector.Error as e:
+                print(e)
+                connection.rollback()
+            finally:
+                cursor.close()
+        return False
+
+    def set_route(self, route):
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "UPDATE Robot SET route = %s WHERE id = %s"
+            values = (route, self.id)
             try:
                 cursor.execute(query, values)
                 connection.commit()
@@ -358,6 +518,141 @@ class Robot:
             finally:
                 cursor.close()
 
+    def get_position(self):
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "SELECT position FROM Robot WHERE id = %s"
+            values = (self.id,)
+            try:
+                cursor.execute(query, values)
+                result = cursor.fetchone()
+                if result:
+                    return result[0]
+            except mysql.connector.Error as e:
+                print(e)
+            finally:
+                cursor.close()
+
+    def get_route(self):
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "SELECT route FROM Robot WHERE id = %s"
+            values = (self.id,)
+            try:
+                cursor.execute(query, values)
+                result = cursor.fetchone()
+                if result:
+                    return result[0]
+            except mysql.connector.Error as e:
+                print(e)
+            finally:
+                cursor.close()
+
+    def get_item(self):
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "SELECT item FROM Robot WHERE id = %s"
+            values = (self.id,)
+            try:
+                cursor.execute(query, values)
+                result = cursor.fetchone()
+                if result:
+                    return result[0]
+            except mysql.connector.Error as e:
+                print(e)
+            finally:
+                cursor.close()
+
+    def get_speed(self):
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "SELECT speed FROM Robot WHERE id = %s"
+            values = (self.id,)
+            try:
+                cursor.execute(query, values)
+                result = cursor.fetchone()
+                if result:
+                    return result[0]
+            except mysql.connector.Error as e:
+                print(e)
+            finally:
+                cursor.close()
+
+    def get_curve_radius(self):
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "SELECT curve_radius FROM Robot WHERE id = %s"
+            values = (self.id,)
+            try:
+                cursor.execute(query, values)
+                result = cursor.fetchone()
+                if result:
+                    return result[0]
+            except mysql.connector.Error as e:
+                print(e)
+            finally:
+                cursor.close()
+
+    def get_left_encoder(self):
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "SELECT left_encoder FROM Robot WHERE id = %s"
+            values = (self.id,)
+            try:
+                cursor.execute(query, values)
+                result = cursor.fetchone()
+                if result:
+                    return result[0]
+            except mysql.connector.Error as e:
+                print(e)
+            finally:
+                cursor.close()
+
+    def get_right_encoder(self):
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "SELECT right_encoder FROM Robot WHERE id = %s"
+            values = (self.id,)
+            try:
+                cursor.execute(query, values)
+                result = cursor.fetchone()
+                if result:
+                    return result[0]
+            except mysql.connector.Error as e:
+                print(e)
+            finally:
+                cursor.close()
+
+    def get_ultrasound(self):
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "SELECT ultrasound FROM Robot WHERE id = %s"
+            values = (self.id,)
+            try:
+                cursor.execute(query, values)
+                result = cursor.fetchone()
+                if result:
+                    return result[0]
+            except mysql.connector.Error as e:
+                print(e)
+            finally:
+                cursor.close()
+
+    def get_state(self):
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "SELECT state FROM Robot WHERE id = %s"
+            values = (self.id,)
+            try:
+                cursor.execute(query, values)
+                result = cursor.fetchone()
+                if result:
+                    return result[0]
+            except mysql.connector.Error as e:
+                print(e)
+            finally:
+                cursor.close()
+
 class User:
     def __init__(self, email):
         self.email = email
@@ -383,14 +678,14 @@ class User:
     def signup(cls, email, first_name, last_name, password):
         with connect.connect() as connection:
             cursor = connection.cursor(prepared = True)
-            query = "INSERT INTO User(email, verified, first_name, last_name, salt, hash) VALUES (%s, 0, %s, %s, %s, %s)"
-            salt = os.urandom(32)
-            hash = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, 100000)
-            values = (email, first_name, last_name, salt.hex(), hash.hex())
+            query = "INSERT INTO User(email, verified, first_name, last_name) VALUES (%s, 0, %s, %s)"
+            values = (email, first_name, last_name)
             try:
                 cursor.execute(query, values)
                 connection.commit()
-                return cls(email)
+                user = cls(email)
+                if user.set_password(password):
+                    return user
             except mysql.connector.Error as e:
                 print(e)
                 connection.rollback()
@@ -530,17 +825,47 @@ class User:
             finally:
                 cursor.close()
 
+    def get_first_name(self):
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "SELECT first_name FROM User WHERE email = %s"
+            values = (self.email,)
+            try:
+                cursor.execute(query, values)
+                result = cursor.fetchone()
+                if result:
+                    return result[0]
+            except mysql.connector.Error as e:
+                print(e)
+            finally:
+                cursor.close()
+
+    def get_last_name(self):
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "SELECT last_name FROM User WHERE email = %s"
+            values = (self.email,)
+            try:
+                cursor.execute(query, values)
+                result = cursor.fetchone()
+                if result:
+                    return result[0]
+            except mysql.connector.Error as e:
+                print(e)
+            finally:
+                cursor.close()
+
 class Login:
     def __init__(self, cookie):
         self.cookie = cookie
 
     @classmethod
-    def signin(cls, email):
+    def signin(cls, user):
         with connect.connect() as connection:
             cursor = connection.cursor(prepared = True)
-            query = "INSERT INTO Login(cookie, email) VALUES (%s, %s)"
+            query = "INSERT INTO Login(cookie, user) VALUES (%s, %s)"
             cookie = os.urandom(32).hex()
-            values = (cookie, email)
+            values = (cookie, user)
             try:
                 cursor.execute(query, values)
                 connection.commit()
@@ -552,11 +877,11 @@ class Login:
                 cursor.close()
 
     @classmethod
-    def get_cookies(cls, email):
+    def get_cookies(cls, user):
         with connect.connect() as connection:
             cursor = connection.cursor(prepared = True)
-            query = "SELECT cookie FROM Login WHERE email = %s"
-            values = (email,)
+            query = "SELECT cookie FROM Login WHERE user = %s"
+            values = (user,)
             try:
                 cursor.execute(query, values)
                 result = cursor.fetchall()
@@ -583,16 +908,16 @@ class Login:
                 cursor.close()
         return False
 
-    def get_email(self):
+    def get_user(self):
         with connect.connect() as connection:
             cursor = connection.cursor(prepared = True)
-            query = "SELECT email FROM Login WHERE cookie = %s"
+            query = "SELECT user FROM Login WHERE cookie = %s"
             values = (self.cookie,)
             try:
                 cursor.execute(query, values)
                 result = cursor.fetchone()
                 if result:
-                    return result[0]
+                    return User(result[0])
             except mysql.connector.Error as e:
                 print(e)
             finally:
@@ -603,7 +928,7 @@ class QRCode:
         self.number = number
 
     @classmethod
-    def generate(cls, user, delivery):
+    def cleanup(cls):
         with connect.connect() as connection:
             cursor = connection.cursor(prepared = True)
             query = "DELETE FROM QRCode WHERE expiration < %s"
@@ -612,8 +937,22 @@ class QRCode:
             try:
                 cursor.execute(query, values)
                 connection.commit()
-                query = "DELETE FROM QRCode WHERE delivery = %s"
-                values = (delivery,)
+                return True
+            except mysql.connector.Error as e:
+                print(e)
+                connection.rollback()
+            finally:
+                cursor.close()
+        return False
+
+    @classmethod
+    def generate(cls, user, delivery):
+        cls.cleanup()
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "DELETE FROM QRCode WHERE delivery = %s"
+            values = (delivery,)
+            try:
                 cursor.execute(query, values)
                 connection.commit()
                 query = "INSERT INTO QRCode(number, expiration, user, delivery) VALUES (%s, %s, %s, %s)"
@@ -631,26 +970,66 @@ class QRCode:
                 cursor.close()
 
     def verify(self, user, delivery):
-        with connect.connect() as connection:
-            cursor = connection.cursor(prepared = True)
-            query = "DELETE FROM QRCode WHERE expiration < %s"
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            values = (timestamp,)
-            try:
-                cursor.execute(query, values)
-                connection.commit()
-                query = "SELECT user, delivery FROM QRCode WHERE number = %s"
+        QRCode.cleanup()
+        real_user = self.get_user()
+        real_delivery = self.get_delivery()
+        if real_user and real_delivery and real_user.email == user and real_delivery.id == delivery:
+            with connect.connect() as connection:
+                cursor = connection.cursor(prepared = True)
+                query = "DELETE FROM QRCode WHERE number = %s"
                 values = (self.number,)
-                cursor.execute(query, values)
-                result = cursor.fetchone()
-                if result and result[0] == user and result[1] == delivery:
-                    query = "DELETE FROM QRCode WHERE number = %s"
+                try:
                     cursor.execute(query, values)
                     connection.commit()
                     return True
+                except mysql.connector.Error as e:
+                    print(e)
+                    connection.rollback()
+                finally:
+                    cursor.close()
+        return False
+
+    def get_user(self):
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "SELECT user FROM QRCode WHERE number = %s"
+            values = (self.number,)
+            try:
+                cursor.execute(query, values)
+                result = cursor.fetchone()
+                if result:
+                    return User(result[0])
             except mysql.connector.Error as e:
                 print(e)
-                connection.rollback()
             finally:
                 cursor.close()
-        return False
+
+    def get_delivery(self):
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "SELECT delivery FROM QRCode WHERE number = %s"
+            values = (self.number,)
+            try:
+                cursor.execute(query, values)
+                result = cursor.fetchone()
+                if result:
+                    return Delivery(result[0])
+            except mysql.connector.Error as e:
+                print(e)
+            finally:
+                cursor.close()
+
+    def get_expiration(self):
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "SELECT expiration FROM QRCode WHERE number = %s"
+            values = (self.number,)
+            try:
+                cursor.execute(query, values)
+                result = cursor.fetchone()
+                if result:
+                    return datetime.datetime.fromtimestamp(result[0])
+            except mysql.connector.Error as e:
+                print(e)
+            finally:
+                cursor.close()

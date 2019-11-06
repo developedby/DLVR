@@ -11,12 +11,13 @@ async def main(websocket, path, open_sockets):
             "reason_message": "OK"
         }
         login = objects.Login(data["cookie"])
-        email = login.get_email()
-        if email != None:
-            code = objects.QRCode.generate(email, data["id"])
+        user = login.get_user()
+        if user:
+            code = objects.QRCode.generate(user.email, data["id"])
             if code:
                 print(code.number)
-                resp["message_body"] = "true"
+
+                resp["message_body"] = code.number
                 await websocket.send(json.dumps(resp))
             else:
                 resp["message_body"] = "false"

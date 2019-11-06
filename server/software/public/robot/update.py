@@ -7,7 +7,7 @@ async def main(websocket, path, open_sockets, data = None):
     if not data:
         data = await websocket.recv()
         data = json.loads(data)
-    if "id" in data and "signature" in data and ("state" in data or "item" in data or "qr" in data or "speed" in data or "curve_radius" in data or "left_encoder" in data or "right_encoder" in data or "ultrasound" in data):
+    if "id" in data and "signature" in data and "timestamp" in data and ("state" in data or "item" in data or "qr" in data or "speed" in data or "curve_radius" in data or "left_encoder" in data or "right_encoder" in data or "ultrasound" in data):
         resp = {
             "status_code": 200,
             "reason_message": "OK"
@@ -15,11 +15,7 @@ async def main(websocket, path, open_sockets, data = None):
         robot = objects.Robot(data["id"])
         public_key = robot.get_public_key()
         if public_key:
-            data_no_sign = data.copy()
-            data_no_sign.pop("signature")
-            data_no_sign = json.dumps(data_no_sign, sort_keys = True).encode("utf-8")
-            hash = hashlib.sha256(data_no_sign).hexdigest().encode("utf-8")
-            if public_key.verify(hash, (data["signature"],)):
+            if objects.Robot.verify(public_key, data):
                 errors = 0
 
                 if "state" in data:
