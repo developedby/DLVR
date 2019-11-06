@@ -24,7 +24,9 @@ namespace street_lines
         return angle;
     }
     
-    cv::Vec2f segmentHalfPoint(const cv::Vec4f& seg);
+    cv::Vec2f xySegmentHalfPoint(const cv::Vec4f& seg);
+    
+    cv::Vec2f rtSegmentHalfPoint(const cv::Vec4f& seg);
     
     float distXYSegments(const cv::Vec4f& seg1, const cv::Vec4f& seg2);
     

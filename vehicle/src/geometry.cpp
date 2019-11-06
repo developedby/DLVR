@@ -6,13 +6,18 @@
 
 namespace street_lines
 {
-    cv::Vec2f segmentHalfPoint(const cv::Vec4f& seg)
+    cv::Vec2f rtSegmentHalfPoint(const cv::Vec4f& seg)
     {
         const float a = seg[0];
         const float b = seg[3];
         const float c = sqrt(square(a) + square(b) - 2*a*b*cos(abs(seg[1]-seg[3])));
         return cv::Vec2f(sqrt((a*b)*(a+b+c)*(a+b-c)) / (a+b),
                          (seg[1] + seg[3])/2);
+    }
+
+    cv::Vec2f xySegmentHalfPoint(const cv::Vec4f& seg)
+    {
+        return cv::Vec2f((seg[0]+seg[2])/2, (seg[1]+seg[3])/2);
     }
 
     // Finds the distance between two line segments (x1, y1, x2, y2)
@@ -100,7 +105,7 @@ namespace street_lines
         float line_theta = atan2((seg[3] - seg[1]), (seg[2] - seg[0]));
         if (line_theta < 0)
             line_theta += M_PI;
-        
+        // TODO: Arrumar
         const float x1 = seg[0];
         const float y1 = seg[1];
         const float x2 = 0;

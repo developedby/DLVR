@@ -28,12 +28,9 @@ using constants::max_theta_diff;
 using constants::img_y_horizon;
 using street_lines::StreetSection;
 using street_lines::Color;
-using street_lines::segmentRTToXY;
-using street_lines::segmentXYToRT;
 using street_lines::distXYPoints;
 using street_lines::distXYSegments;
-using street_lines::distRTSegments;
-using street_lines::segmentHalfPoint;
+using street_lines::xySegmentHalfPoint;
 using street_lines::xySegmentToLine;
 
 Vision::Vision() : cam(), aruco_dict(cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_250)), img()
@@ -128,11 +125,10 @@ vector<StreetSection> Vision::findStreets()
         vector<StreetSection> connected_segs;
         vector<StreetSection> opposite_segs;
         vector<StreetSection> imaginable_sections;
-        const Vec4f xy_seg = segmentRTToXY(undistort_segs[i]);
         // Separate the relevant segments
         for (unsigned int j = i+1; j < undistort_segs.size(); j++)
         {
-            float dist = distXYSegments(xy_seg, segmentRTToXY(undistort_segs[j]));
+            const float dist = distXYSegments(undistort_segs[i], undistort_segs[j]);
             // If the segments are right next to each other
             if (dist < lane_width/5)
             {
@@ -149,18 +145,18 @@ vector<StreetSection> Vision::findStreets()
         // If there are no segments opposite to the 'i' segment, try to insert a section parallel to it, closer to the vehicle
         if (opposite_segs.empty())
         {
-            const Vec2f translation (lane_width/2 * cos(undistort_lines[i][1]+M_PI), lane_width/2 * sin(undistort_lines[i][1]+M_PI));
-            const Vec4f translated_xy (xy_seg[0]+translation[0], xy_seg[1]+translation[1],
-                                       xy_seg[2]+translation[0], xy_seg[3]+translation[1]);
-            const Vec4f translated = segmentXYToRT(translated_xy);
-            const Vec2f mid_pt_transl = segmentHalfPoint(translated);
-            const Vec4f transl_half1 (translated[0], translated[1], mid_pt_transl[0], mid_pt_transl[1]);
-            const Vec4f transl_half2 (mid_pt_transl[0], mid_pt_transl[1], translated[2], translated[3]);
+            const Vec2f translation(lane_width/2 * cos(undistort_lines[i][1]+M_PI),
+                                     lane_width/2 * sin(undistort_lines[i][1]+M_PI));
+            const Vec4f translated(undistort_segs[i][0]+translation[0], undistort_segs[i][1]+translation[1],
+                                   undistort_segs[i][2]+translation[0], undistort_segs[i][3]+translation[1]);
+            const Vec2f mid_pt_transl = xySegmentHalfPoint(translated);
+            const Vec4f transl_half1(translated[0], translated[1], mid_pt_transl[0], mid_pt_transl[1]);
+            const Vec4f transl_half2(mid_pt_transl[0], mid_pt_transl[1], translated[2], translated[3]);
             imaginable_sections.emplace_back(Color::blue,
-                                            xySegmentToLine(segmentRTToXY(transl_half1)),
+                                            xySegmentToLine(transl_half1),
                                             transl_half1);
             imaginable_sections.emplace_back(Color::blue,
-                                             xySegmentToLine(segmentRTToXY(transl_half2)),
+                                             xySegmentToLine(transl_half2),
                                              transl_half2);
         }
         // If there are opposite segments, try to create sections between them
@@ -168,25 +164,27 @@ vector<StreetSection> Vision::findStreets()
         {
             for (auto seg: opposite_segs)
             {
-                float dist11 = distXYPoints(Point(xy_seg[0], xy_seg[1]), Point(seg.end_points[0], seg.end_points[1]));
-                float dist12 = distXYPoints(Point(xy_seg[0], xy_seg[1]), Point(seg.end_points[2], seg.end_points[3]));
+                float dist11 = distXYPoints(Point(undistort_segs[i][0], undistort_segs[i][1]),
+                                            Point(seg.end_points[0], seg.end_points[1]));
+                float dist12 = distXYPoints(Point(undistort_segs[i][0], undistort_segs[i][1]),
+                                            Point(seg.end_points[2], seg.end_points[3]));
                 Vec2f pt1;
                 Vec2f pt2;
                 if (dist11 < dist12)
                 {
-                    pt1 = segmentHalfPoint(Vec4f(undistort_segs[i][0], undistort_segs[i][1],
+                    pt1 = xySegmentHalfPoint(Vec4f(undistort_segs[i][0], undistort_segs[i][1],
                                                  seg.end_points[0], seg.end_points[1]));
-                    pt2 = segmentHalfPoint(Vec4f(undistort_segs[i][2], undistort_segs[i][3],
+                    pt2 = xySegmentHalfPoint(Vec4f(undistort_segs[i][2], undistort_segs[i][3],
                                                  seg.end_points[2], seg.end_points[3]));
                 }
                 else
                 {
-                    pt1 = segmentHalfPoint(Vec4f(undistort_segs[i][0], undistort_segs[i][1],
+                    pt1 = xySegmentHalfPoint(Vec4f(undistort_segs[i][0], undistort_segs[i][1],
                                                  seg.end_points[2], seg.end_points[2]));
-                    pt2 = segmentHalfPoint(Vec4f(undistort_segs[i][2], undistort_segs[i][3],
+                    pt2 = xySegmentHalfPoint(Vec4f(undistort_segs[i][2], undistort_segs[i][3],
                                                  seg.end_points[0], seg.end_points[1]));
                 }
-                const Vec2f mid_pt = segmentHalfPoint(Vec4f(pt1[0], pt1[1], pt2[0], pt2[1]));
+                const Vec2f mid_pt = xySegmentHalfPoint(Vec4f(pt1[0], pt1[1], pt2[0], pt2[1]));
                 imaginable_sections.emplace_back(Color::blue,
                                                  Vec2f((undistort_lines[i][0]+seg.end_points[0])/2,
                                                        (undistort_lines[i][1]+seg.end_points[1])/2),
@@ -204,7 +202,7 @@ vector<StreetSection> Vision::findStreets()
             for (auto seg: connected_segs)
             {
                 if ((seg.type != Color::green)
-                    && (distRTSegments(section.end_points, seg.end_points) < lane_width/5))
+                    && (distXYSegments(section.end_points, seg.end_points) < lane_width/5))
                 {
                     section_possible = false;
                     break;
@@ -216,20 +214,20 @@ vector<StreetSection> Vision::findStreets()
         // If the 'i' segment is green, add a perpendicular section
         if (line_colors[i] == Color::green)
         {
-            const Vec2f translation (lane_width/2 * cos(undistort_lines[i][1]),
-                                     lane_width/2 * sin(undistort_lines[i][1]));
-            const Vec2f mid_pt = segmentHalfPoint(undistort_segs[i]);
-            const Vec2f pt1 (mid_pt[0]*cos(mid_pt[1]) + translation[0],
-                             mid_pt[0]*sin(mid_pt[1]) + translation[1]);
-            const Vec2f pt2 (mid_pt[0]*cos(mid_pt[1]) - translation[0],
-                             mid_pt[0]*sin(mid_pt[1]) - translation[1]);
+            const Vec2f translation(lane_width/2 * cos(undistort_lines[i][1]),
+                                    lane_width/2 * sin(undistort_lines[i][1]));
+            const Vec2f mid_pt = xySegmentHalfPoint(undistort_segs[i]);
+            const Vec2f pt1 (mid_pt[0] + translation[0],
+                             mid_pt[1] + translation[1]);
+            const Vec2f pt2 (mid_pt[0] - translation[0],
+                             mid_pt[1] - translation[1]);
             const Vec4f transl_half1 (pt1[0], pt1[1], mid_pt[0], mid_pt[1]);
             const Vec4f transl_half2 (mid_pt[0], mid_pt[1], pt2[0], pt2[1]);
             possible_sections.emplace_back(Color::green,
-                                           xySegmentToLine(segmentRTToXY(transl_half1)),
+                                           xySegmentToLine(transl_half1),
                                            transl_half1);
             possible_sections.emplace_back(Color::green,
-                                           xySegmentToLine(segmentRTToXY(transl_half2)),
+                                           xySegmentToLine(transl_half2),
                                            transl_half2);
         }
         // If the segment is yellow and it is perpendicular to the vehicle, add a section crossing it
@@ -238,18 +236,18 @@ vector<StreetSection> Vision::findStreets()
         {
             const Vec2f translation (lane_width/2 * cos(undistort_lines[i][1]),
                                      lane_width/2 * sin(undistort_lines[i][1]));
-            const Vec2f mid_pt = segmentHalfPoint(undistort_segs[i]);
-            const Vec2f pt1 (mid_pt[0]*cos(mid_pt[1]) + translation[0],
-                             mid_pt[0]*sin(mid_pt[1]) + translation[1]);
-            const Vec2f pt2 (mid_pt[0]*cos(mid_pt[1]) - translation[0],
-                             mid_pt[0]*sin(mid_pt[1]) - translation[1]);
+            const Vec2f mid_pt = xySegmentHalfPoint(undistort_segs[i]);
+            const Vec2f pt1 (mid_pt[0] + translation[0],
+                             mid_pt[1] + translation[1]);
+            const Vec2f pt2 (mid_pt[0] - translation[0],
+                             mid_pt[1] - translation[1]);
             const Vec4f transl_half1 (pt1[0], pt1[1], mid_pt[0], mid_pt[1]);
             const Vec4f transl_half2 (mid_pt[0], mid_pt[1], pt2[0], pt2[1]);
             possible_sections.emplace_back(Color::yellow,
-                                           xySegmentToLine(segmentRTToXY(transl_half1)),
+                                           xySegmentToLine(transl_half1),
                                            transl_half1);
             possible_sections.emplace_back(Color::yellow,
-                                           xySegmentToLine(segmentRTToXY(transl_half2)),
+                                           xySegmentToLine(transl_half2),
                                            transl_half2);
         }
     }
@@ -281,7 +279,7 @@ vector<StreetSection> Vision::findStreets()
         else
             used_axis = 0;
         //cout << "Escolheu eixo pra juntar linhas" << endl;
-        Vec4f result_seg = segmentRTToXY(possible_sections[group[0]].end_points);
+        Vec4f result_seg = possible_sections[group[0]].end_points;
         //cout << "Construiu o segmentos de um das seções longas" << endl;
         if (result_seg[used_axis] > result_seg[used_axis+2])
         {
@@ -291,7 +289,7 @@ vector<StreetSection> Vision::findStreets()
         // Find the min and max points
         for (auto i: group)
         {
-            const Vec4f xy_seg = segmentRTToXY(possible_sections[i].end_points);
+            const Vec4f xy_seg = possible_sections[i].end_points;
             if (xy_seg[used_axis] < result_seg[used_axis])
             {
                 result_seg[0] = xy_seg[0];
@@ -336,7 +334,7 @@ vector<StreetSection> Vision::findStreets()
             if (i == j)
                 continue;
             // If the long sections are connected
-            if (distRTSegments(long_sections[i].end_points, long_sections[j].end_points) < lane_width/4)
+            if (distXYSegments(long_sections[i].end_points, long_sections[j].end_points) < lane_width/4)
             {
                 // Break the i section at the projected intersection point
                 cut_pts.push_back(street_lines::linesIntersection(long_sections[i].line, long_sections[j].line));

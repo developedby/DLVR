@@ -14,8 +14,9 @@
 using constants::img_y_horizon;
 using constants::img_height;
 using constants::img_width;
+using constants::cam_height_m;
+using constants::img_theta_max;
 using constants::img_theta_min;
-using constants::dist_theta_min_m;
 using constants::img_real_zero_rad;
 using constants::max_theta_diff;
 using std::vector;
@@ -41,49 +42,34 @@ namespace street_lines
 
     // Reverte a distorção de perspectiva
     // Retornando uma linha (rho, theta) em relação ao veiculo
-    // e os dois extremos do segmento no formato (rho1, theta1, rho2, theta2)
+    // e os dois extremos do segmento no formato (x1, y1, x2, y2)
     pair<Vec2f, Vec4f> undistortLine(const Vec4i& line)
     {
         // Undistorted segment in rho theta format
-        const Vec4f undistort_seg_rt = linePxToDist(line);
-        // Undistorted segment in x y format
-        const Vec4f undistort_seg_xy = segmentRTToXY(undistort_seg_rt);
-        std::cout << "undistort: " << undistort_seg_rt << ' ' << undistort_seg_xy << std::endl;
-        return pair(xySegmentToLine(segmentRTToXY(undistort_seg_rt)), undistort_seg_rt);
+        const Vec4f undistort_seg = imgSegToRealSeg(line);
+        std::cout << "undistort: " << undistort_seg << std::endl;
+        return pair(xySegmentToLine(undistort_seg), undistort_seg);
     }
 
     // Finds the distance of the line segment's extremities to the vehicle
-    // Return the two points in the (rho1, theta1, rho2, theta2) format
-    Vec4f linePxToDist(const Vec4i& line)
+    // Return the two points in the (x1, y1, x2, y2) format, in meters
+    Vec4f imgSegToRealSeg(const Vec4i& line)
     {
         // TODO
         float constexpr x_center = img_width / 2;
-        float constexpr y_theta_min = img_height;
-        float constexpr px_per_rad = (img_y_horizon - y_theta_min)/img_theta_min;
-        float constexpr y_vehicle = M_PI/2 * px_per_rad; // Where 90º would be if we extended the image
-        float constexpr meter_per_px = dist_theta_min_m / (y_vehicle - y_theta_min); // Using a known distance
-        Vec4f line_dists;
+        float constexpr px_per_rad = img_height/(img_theta_min - img_theta_max); // Theta max e menor que theta min porque é theta da distancia maxima
         
-        // First point
-        float y_angle = (line[1] - img_y_horizon) / px_per_rad;
-        float stretch_factor = tan(M_PI/2 - y_angle);
-        float x_dist = (line[0] - x_center) * meter_per_px * stretch_factor;
-        float y_dist = (y_vehicle - line[1]) * meter_per_px * stretch_factor;
-        line_dists[1] = atan2(x_dist, y_dist) - img_real_zero_rad;
-        if (line_dists[1] < 0)
-            line_dists[1] += 2*M_PI;
-        line_dists[0] = norm(x_dist, y_dist);
-
-        // Second point
-        y_angle = (line[3] - img_y_horizon) / px_per_rad;
-        stretch_factor = tan(M_PI/2 - y_angle);
-        x_dist = (line[2] - x_center) * meter_per_px * stretch_factor;
-        y_dist = (y_vehicle - line[3]) * meter_per_px * stretch_factor;
-        line_dists[3] = atan2(y_dist, x_dist) - img_real_zero_rad;
-        if (line_dists[3] < 0)
-            line_dists[3] += 2*M_PI;
-        line_dists[2] = norm(y_dist, x_dist);
-        return line_dists;
+        const float theta1 = (line[1] - img_y_horizon) / px_per_rad; // TODO: Desnormalizar img_y_horizon
+        const float y1_m = cam_height_m / tan(theta1);
+        const float phi1 = (line[0] - x_center) / px_per_rad;
+        const float x1_m = tan(phi1) * y1_m;
+        
+        const float theta2 = (line[3] - img_y_horizon) / px_per_rad; // TODO: Desnormalizar img_y_horizon
+        const float y2_m = cam_height_m / tan(theta2);
+        const float phi2 = (line[2] - x_center) / px_per_rad;
+        const float x2_m = tan(phi2) * y2_m;
+        
+        return Vec4f(x1_m, y1_m, x2_m, y2_m);
     }
 
     // Finds the line segment's angle relative to the vehicle

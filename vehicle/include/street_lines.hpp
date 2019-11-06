@@ -11,7 +11,7 @@ namespace street_lines
 
 	float getStreetLineAngle(const cv::Vec4i& line);
 	
-	cv::Vec4f linePxToDist(const cv::Vec4i& line);
+	cv::Vec4f imgSegToRealSeg(const cv::Vec4i& line);
 
 	float lineAbsDist(const cv::Vec4i& line);
 	
