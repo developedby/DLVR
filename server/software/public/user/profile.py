@@ -3,19 +3,23 @@ import asyncio
 import objects
 
 async def main(websocket, path, open_sockets, data = None):
-    if not data:
-        data = await websocket.recv()
-        data = json.loads(data)
+    data = await websocket.recv()
+    data = json.loads(data)
     if "cookie" in data:
         resp = {
             "status_code": 200,
             "reason_message": "OK"
         }
-        login = objects.Login(data["cookie"])
-        if login.signout():
-            resp["message_body"] = "true"
+        user = objects.Login(data["cookie"]).get_user()
+        if user:
+            resp["message_body"] = {}
+            first_name = user.get_first_name()
+            if first_name != None:
+                resp["message_body"]["first_name"] = first_name
+            last_name = user.get_last_name()
+            if last_name != None:
+                resp["message_body"]["last_name"] = last_name
             await websocket.send(json.dumps(resp))
-            open_sockets["users"].pop(login.cookie)
         else:
             resp["message_body"] = "false"
             await websocket.send(json.dumps(resp))

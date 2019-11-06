@@ -1,11 +1,6 @@
 import json
-import session
-import connect
-import mysql.connector
-import hashlib
-import http.cookies
-import os
 import asyncio
+import objects
 
 async def main(websocket, path, open_sockets, data = None):
     if not data:
@@ -16,80 +11,38 @@ async def main(websocket, path, open_sockets, data = None):
             "status_code": 200,
             "reason_message": "OK"
         }
-        cookie = http.cookies.SimpleCookie()
-        cookie.load(data["cookie"])
-        email = session.user_email(cookie["token"].value)
-        if email:
-            with connect.connect() as connection:
-                cursor = connection.cursor(prepared = True)
-                query = "SELECT salt, hash FROM User WHERE email = %s"
-                values = (email,)
-                try:
-                    cursor.execute(query, values)
-                    result = cursor.fetchone()
-                    if result:
-                        salt = bytes.fromhex(result[0])
-                        hash = hashlib.pbkdf2_hmac("sha256", data["password"].encode("utf-8"), salt, 100000)
-                        if hash == bytes.fromhex(result[1]):
-                            errors = 0
-                            if "email" in data:
-                                query = "UPDATE User SET email = %s WHERE email = %s"
-                                values = (data["email"], email,)
-                                try:
-                                    session.signout(cookie["token"].value)
-                                    cursor.execute(query, values)
-                                    connection.commit()
-                                    cookie = session.signin(data["email"], data["password"])
-                                    resp["set_cookie"] = cookie.output(header = "", sep = "")
-                                    email = data["email"]
-                                except mysql.connector.Error as e:
-                                    print("update.py:45: " + str(e))
-                                    errors += 1
-                            if "first_name" in data:
-                                query = "UPDATE User SET first_name = %s WHERE email = %s"
-                                values = (data["first_name"], email,)
-                                try:
-                                    cursor.execute(query, values)
-                                except mysql.connector.Error as e:
-                                    print("update.py:53: " + str(e))
-                                    errors += 1
-                            if "last_name" in data:
-                                query = "UPDATE User SET last_name = %s WHERE email = %s"
-                                values = (data["last_name"], email,)
-                                try:
-                                    cursor.execute(query, values)
-                                except mysql.connector.Error as e:
-                                    print("update.py:61: " + str(e))
-                                    errors += 1
-                            if "new_password" in data:
-                                query = "UPDATE User SET salt = %s, hash = %s WHERE email = %s"
-                                salt = os.urandom(32)
-                                hash = hashlib.pbkdf2_hmac("sha256", data["new_password"].encode("utf-8"), salt, 100000)
-                                values = (salt.hex(), hash.hex(), email,)
-                                try:
-                                    cursor.execute(query, values)
-                                except mysql.connector.Error as e:
-                                    print("update.py:71: " + str(e))
-                                    errors += 1
-                            if errors == 0:
-                                connection.commit()
-                                resp["message_body"] = "true"
-                                await websocket.send(json.dumps(resp))
-                            else:
-                                connection.rollback()
-                                resp["message_body"] = "false"
-                                await websocket.send(json.dumps(resp))
+        login = objects.Login(data["cookie"])
+        user = login.get_user()
+        if user:
+            if user.check_password(data["password"]):
+                errors = 0
+                if "email" in data:
+                    if login.signout() and user.set_email(data["email"]):
+                        login = objects.Login.signin(user.email)
+                        if login:
+                            resp["set_cookie"] = login.cookie
                         else:
-                            resp["message_body"] = "false"
-                            await websocket.send(json.dumps(resp))
+                            errors += 1
                     else:
-                        resp["message_body"] = "false"
-                        await websocket.send(json.dumps(resp))
-                except mysql.connector.Error as e:
-                    print("update.py:88: " + str(e))
+                        errors += 1
+                if "first_name" in data:
+                    if not user.set_first_name(data["first_name"]):
+                        errors += 1
+                if "last_name" in data:
+                    if not user.set_last_name(data["last_name"]):
+                        errors += 1
+                if "new_password" in data:
+                    if not user.set_password(data["new_password"]):
+                        errors += 1
+                if errors == 0:
+                    resp["message_body"] = "true"
+                    await websocket.send(json.dumps(resp))
+                else:
                     resp["message_body"] = "false"
                     await websocket.send(json.dumps(resp))
-                cursor.close()
+            else:
+                resp["message_body"] = "false"
+                await websocket.send(json.dumps(resp))
         else:
             resp["message_body"] = "false"
             await websocket.send(json.dumps(resp))

@@ -1,9 +1,7 @@
 import json
-import session
-import connect
-import mysql.connector
-import http.cookies
 import asyncio
+import objects
+import private.choose_robot
 
 async def main(websocket, path, open_sockets, data = None):
     if not data:
@@ -14,82 +12,49 @@ async def main(websocket, path, open_sockets, data = None):
             "status_code": 200,
             "reason_message": "OK"
         }
-        cookie = http.cookies.SimpleCookie()
-        cookie.load(data["cookie"])
-        email = session.user_email(cookie["token"].value)
-        if email:
-            with connect.connect() as connection:
-                cursor = connection.cursor(prepared = True)
-                if data["accept"]:
-                    query = "UPDATE Delivery SET state = 1, destination = %s WHERE id = %s AND receiver = %s"
-                    values = (data["destination"], data["id"], email,)
-                    try:
-                        cursor.execute(query, values)
-                        connection.commit()
-                        query = "SELECT sender FROM Delivery WHERE id = %s"
-                        values = (data["id"],)
-                        try:
-                            cursor.execute(query, values)
-                            result = cursor.fetchone()
-                            if result:
-                                sender = result[0]
-                                cookies = session.user_cookies(sender)
-                                if len(cookies) > 0:
-                                    for login in cookies:
-                                        data2 = {"status_code": 200, "reason_message": "OK", "path": "/delivery/response", "message_body": {"id": data["id"], "accept": True, "destination": data["destination"]}}
-                                        await open_sockets["users"][login[0]].send(json.dumps(data2))
-                                    resp["message_body"] = "true"
-                                    await websocket.send(json.dumps(resp))
-                                else:
-                                    resp["message_body"] = "false"
-                                    await websocket.send(json.dumps(resp))
-                            else:
-                                resp["message_body"] = "false"
+        user = objects.Login(data["cookie"]).get_user()
+        if user:
+            delivery = objects.Delivery(data["id"])
+            sender = delivery.get_sender()
+            if sender:
+                cookies = objects.Login.get_cookies(sender.email)
+                if len(cookies) > 0:
+                    if data["accept"]:
+                        origin = delivery.get_origin()
+                        if origin != None:
+                            rid = private.choose_robot.choose(origin)
+                            if delivery.response(data["destination"], rid):
+                                for cookie in cookies:
+                                    data2 = {"status_code": 200, "reason_message": "OK", "path": "/delivery/response", "message_body": {"id": delivery.id, "accept": True, "destination": data["destination"]}}
+                                    await open_sockets["users"][cookie[0]].send(json.dumps(data2))
+                                robot_path = ""
+                                #choose_robot.choose_path(origin)
+                                data3 = {"status_code": 200, "reason_message": "OK", "path": "/delivery/response", "message_body": {"path": robot_path}}
+                                await open_sockets["robots"][rid].send(json.dumps(data3))
+                                resp["message_body"] = "true"
                                 await websocket.send(json.dumps(resp))
-                        except mysql.connector.Error as e:
-                            print("response.py:50: " + str(e))
-                            resp["message_body"] = "false"
-                            await websocket.send(json.dumps(resp))
-                    except mysql.connector.Error as e:
-                        print("response.py:54: " + str(e))
-                        connection.rollback()
-                        resp["message_body"] = "false"
-                        await websocket.send(json.dumps(resp))
-                else:
-                    query = "SELECT sender FROM Delivery WHERE id = %s AND receiver = %s"
-                    values = (data["id"], email,)
-                    try:
-                        cursor.execute(query, values)
-                        result = cursor.fetchone()
-                        if result:
-                            sender = result[0]
-                            cookies = session.user_cookies(sender)
-                            if len(cookies) > 0:
-                                for login in cookies:
-                                    data2 = {"status_code": 200, "reason_message": "OK", "path": "/delivery/response", "message_body": {"id": data["id"], "accept": False}}
-                                    await open_sockets["users"][login[0]].send(json.dumps(data2))
-                                query = "DELETE FROM Delivery WHERE id = %s"
-                                values = (data["id"],)
-                                try:
-                                    cursor.execute(query, values)
-                                    connection.commit()
-                                    resp["message_body"] = "true"
-                                    await websocket.send(json.dumps(resp))
-                                except mysql.connector.Error as e:
-                                    print("response.py:79: " + str(e))
-                                    connection.rollback()
-                                    resp["message_body"] = "false"
-                                    await websocket.send(json.dumps(resp))
                             else:
                                 resp["message_body"] = "false"
                                 await websocket.send(json.dumps(resp))
                         else:
                             resp["message_body"] = "false"
                             await websocket.send(json.dumps(resp))
-                    except mysql.connector.Error as e:
-                        print("response.py:90: " + str(e))
-                        resp["message_body"] = "false"
-                        await websocket.send(json.dumps(resp))
+                    else:
+                        for cookie in cookies:
+                            data2 = {"status_code": 200, "reason_message": "OK", "path": "/delivery/response", "message_body": {"id": delivery.id, "accept": False}}
+                            await open_sockets["users"][cookie[0]].send(json.dumps(data2))
+                        if delivery.delete():
+                            resp["message_body"] = "true"
+                            await websocket.send(json.dumps(resp))
+                        else:
+                            resp["message_body"] = "false"
+                            await websocket.send(json.dumps(resp))
+                else:
+                    resp["message_body"] = "false"
+                    await websocket.send(json.dumps(resp))
+            else:
+                resp["message_body"] = "false"
+                await websocket.send(json.dumps(resp))
         else:
             resp["message_body"] = "false"
             await websocket.send(json.dumps(resp))
