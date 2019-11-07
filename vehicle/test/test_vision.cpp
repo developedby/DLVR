@@ -23,6 +23,6 @@ int main()
 	std::cout << "Tempo para processar: " << time_to_process << std::endl;
 	for (auto sec: sections)
 	{
-		std::cout << int(sec.type) << ' ' << sec.line << ' '  << sec.end_points << std::endl;
+		std::cout << int(sec.type) << ' ' << sec.line << ' ' << sec.end_points << std::endl;
 	}
 }

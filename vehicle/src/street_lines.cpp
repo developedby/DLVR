@@ -34,7 +34,7 @@ namespace street_lines
     vector<Vec4i> getStreetLines(const Mat& lines_mask)
     {
         vector<Vec4i> lines;
-        cv::HoughLinesP(lines_mask, lines, 1, max_theta_diff-0.01, 90, 40, 8);
+        cv::HoughLinesP(lines_mask, lines, 1, max_theta_diff-0.01, 100, 100, 8);
         //std::cout << "Linhas: " << lines.size() << std::endl;
         reduceLines(lines, lines, 0.2, 7.0, 10.0);
         return lines;
@@ -102,40 +102,6 @@ namespace street_lines
     {
         return std::min(sqrt(line[0]*line[0] + line[1]*line[1]),
                         sqrt(line[2]*line[2] + line[3]*line[3]));
-    }
-
-    // Groups together lines with similar angles
-    // Returns a vector with the index to the members of each group
-    vector<vector<unsigned int>> groupLinesByAngle(const vector<Vec2f>& lines, const float max_theta_diff)
-    {
-        int counter = 0;
-        vector<int> classification(lines.size(), -1);
-        vector<vector<unsigned int>> groups;
-        for (unsigned int i = 0; i < lines.size(); i++)
-        {
-            if (classification[i] == -1)
-            {
-                groups.push_back(vector{i});
-                classification[i] = counter;
-                for (unsigned int j=i+1; j < lines.size(); j++)
-                {
-                    // Group together if angles have difference less than max_theta_diff
-                    if (classification[j] == -1)
-                    {
-                        float delta_theta = abs(lines[i][1] - lines[j][1]);
-                        if (delta_theta > M_PI/2)
-                            delta_theta = M_PI - delta_theta;
-                        if (delta_theta > max_theta_diff)
-                        {
-                            classification[j] = counter;
-                            groups[counter].push_back(j);
-                        }
-                    }
-                }
-                counter++;
-            }
-        }
-        return groups;
     }
 
     // From a group of maybe repeated lines, select only the unique ones, separating them by their distance (rho)

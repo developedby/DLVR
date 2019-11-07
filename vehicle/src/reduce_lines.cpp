@@ -5,9 +5,50 @@
 #include <tuple>
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
+#include "geometry.hpp"
 
 namespace street_lines
 {
+    
+    void reduceLines (const std::vector<cv::Vec4i>& in_lines, std::vector<cv::Vec4i>& out_lines)
+    {
+        auto groups = groupLines
+    }
+    
+    // Groups together lines with similar angles
+    // Returns a vector with the index to the members of each group
+    vector<vector<unsigned int>> groupLinesByAngle(const vector<Vec2f>& lines, const float max_theta_diff)
+    {
+        int counter = 0;
+        vector<int> classification(lines.size(), -1);
+        vector<vector<unsigned int>> groups;
+        for (unsigned int i = 0; i < lines.size(); i++)
+        {
+            if (classification[i] == -1)
+            {
+                groups.push_back(vector{i});
+                classification[i] = counter;
+                for (unsigned int j=i+1; j < lines.size(); j++)
+                {
+                    // Group together if angles have difference less than max_theta_diff
+                    if (classification[j] == -1)
+                    {
+                        float delta_theta = abs(lines[i][1] - lines[j][1]);
+                        if (delta_theta > M_PI/2)
+                            delta_theta = M_PI - delta_theta;
+                        if (delta_theta > max_theta_diff)
+                        {
+                            classification[j] = counter;
+                            groups[counter].push_back(j);
+                        }
+                    }
+                }
+                counter++;
+            }
+        }
+        return groups;
+    }
+    
     void reduceLines (const std::vector<cv::Vec4i>& in_lines, std::vector<cv::Vec4i>& out_lines,
                       const float extend_ratio, const float delta_theta, const float rect_thickness)
     {

@@ -417,29 +417,50 @@ void Vision::getColorMask(Mat& dst, const cv::Scalar min, const cv::Scalar max)
     cv::morphologyEx(dst, dst, cv::MORPH_CLOSE, krn);
 }
 
+void Vision::getTapeMask(Mat& dst, const cv::Scalar min, const cv::Scalar max)
+{
+    Mat raw_mask;
+    this->getColorMask(raw_mask, min, max);
+    vector<vector<cv::Point>> cnts;
+    vector<Vec4i> hierarchy;
+    cv::findContours(raw_mask, cnts, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+    vector<vector<cv::Point>> filtered_cnts;
+    for (auto contour: cnts)
+    {
+        const auto area = cv::contourArea(contour);
+        //cout << "contorno area=" << area << endl;
+        if (area > 2000)
+        {
+            filtered_cnts.push_back(contour);
+        }
+    }
+    dst = cv::Mat::zeros(raw_mask.size(), CV_8U);
+    cv::drawContours(dst, filtered_cnts, -1, 255, cv::FILLED);
+}
+
 void Vision::getRedTapeMask(Mat& dst)
 {
-    this->getColorMask(dst, cv::Scalar(160, 100, 40), cv::Scalar(180, 240, 140));
+    this->getTapeMask(dst, cv::Scalar(160, 100, 40), cv::Scalar(180, 240, 140));
 }
 
 void Vision::getBlueTapeMask(Mat& dst)
 {
-    this->getColorMask(dst, cv::Scalar(90, 200, 100), cv::Scalar(110, 245, 255));
+    this->getTapeMask(dst, cv::Scalar(90, 200, 100), cv::Scalar(110, 245, 255));
 }
 
 void Vision::getGreenTapeMask(Mat& dst)
 {
-    this->getColorMask(dst, cv::Scalar(70, 40, 40), cv::Scalar(90, 250, 255));
+    this->getTapeMask(dst, cv::Scalar(70, 40, 40), cv::Scalar(90, 250, 255));
 }
 
 void Vision::getYellowTapeMask(Mat& dst)
 {
-    this->getColorMask(dst, cv::Scalar(20, 130, 30), cv::Scalar(40, 190, 170));
+    this->getTapeMask(dst, cv::Scalar(20, 130, 30), cv::Scalar(40, 190, 170));
 }
 
 void Vision::getWhiteTapeMask(Mat& dst)
 {
-    this->getColorMask(dst, cv::Scalar(20, 120, 0), cv::Scalar(110, 255, 70));
+    this->getTapeMask(dst, cv::Scalar(20, 120, 0), cv::Scalar(110, 255, 70));
 }
 
 void Vision::getGroundMask(Mat& dst)
