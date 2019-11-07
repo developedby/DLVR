@@ -26,7 +26,7 @@ using cv::Vec4f;
 using cv::Vec2f;
 using cv::Mat;
 using cv::Scalar;
-using cv::Point;
+using cv::Point2f;
 
 namespace street_lines
 {
@@ -35,7 +35,7 @@ namespace street_lines
     {
         vector<Vec4i> lines;
         cv::HoughLinesP(lines_mask, lines, 1, max_theta_diff-0.01, 90, 40, 8);
-        std::cout << "Linhas: " << lines.size() << std::endl;
+        //std::cout << "Linhas: " << lines.size() << std::endl;
         reduceLines(lines, lines, 0.2, 7.0, 10.0);
         return lines;
     }
@@ -202,10 +202,10 @@ namespace street_lines
         const auto seg2_xy = segmentRTToXY(seg2);
         // The score for how different they are is the distance between the end points
         // Takes the min because we don't know how the end points are oriented
-        const float dist = std::min((distXYPoints(cv::Point(seg1_xy[0], seg1_xy[1]), cv::Point(seg2_xy[0], seg2_xy[1]))
-                                + distXYPoints(cv::Point(seg1_xy[2], seg1_xy[3]), cv::Point(seg2_xy[2], seg2_xy[3]))),
-                               (distXYPoints(cv::Point(seg1_xy[0], seg1_xy[1]), cv::Point(seg2_xy[2], seg2_xy[3]))
-                                + distXYPoints(cv::Point(seg1_xy[2], seg1_xy[3]), cv::Point(seg2_xy[0], seg2_xy[1]))));
+        const float dist = std::min((distXYPoints(cv::Point2f(seg1_xy[0], seg1_xy[1]), cv::Point2f(seg2_xy[0], seg2_xy[1]))
+                                     + distXYPoints(cv::Point2f(seg1_xy[2], seg1_xy[3]), cv::Point2f(seg2_xy[2], seg2_xy[3]))),
+                                    (distXYPoints(cv::Point2f(seg1_xy[0], seg1_xy[1]), cv::Point2f(seg2_xy[2], seg2_xy[3]))
+                                     + distXYPoints(cv::Point2f(seg1_xy[2], seg1_xy[3]), cv::Point2f(seg2_xy[0], seg2_xy[1]))));
         return dist < threshold;
     }
 
@@ -226,10 +226,10 @@ namespace street_lines
     Mat drawLines(const vector<Vec4i>& lines, const Mat& img)
     {
         Mat img_lines;
-        cv::cvtColor(img, img_lines, cv::COLOR_HLS2RGB);
+        cv::cvtColor(img, img_lines, cv::COLOR_HLS2BGR);
         for (auto line: lines)
         {
-            cv::line(img_lines, Point(line[0], line[1]), Point(line[2], line[3]), Scalar(0, 255, 0), 1, cv::LINE_AA);
+            cv::line(img_lines, Point2f(line[0], line[1]), Point2f(line[2], line[3]), Scalar(0, 255, 0), 1, cv::LINE_AA);
         }
         return img_lines;
     }

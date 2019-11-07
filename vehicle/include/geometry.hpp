@@ -34,9 +34,9 @@ namespace street_lines
     
     bool xySegmentsIntersect(const cv::Vec4f& seg1, const cv::Vec4f& seg2);
     
-    float distXYPointXYSegment(const cv::Point& pt, cv::Vec4f seg);
+    float distXYPointXYSegment(const cv::Point2f& pt, cv::Vec4f seg);
     
-    float distXYPoints(const cv::Point& pt1, const cv::Point& pt2);
+    float distXYPoints(const cv::Point2f& pt1, const cv::Point2f& pt2);
     
     cv::Vec2f xySegmentToLine(const cv::Vec4f& seg);
     

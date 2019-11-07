@@ -22,7 +22,7 @@ using cv::Vec2f;
 using cv::Vec4f;
 using cv::Vec4i;
 using cv::Mat;
-using cv::Point;
+using cv::Point2f;
 using constants::lane_width;
 using constants::max_theta_diff;
 using constants::img_y_horizon;
@@ -149,25 +149,19 @@ vector<StreetSection> Vision::findStreets()
                                      lane_width/2 * sin(undistort_lines[i][1]+M_PI));
             const Vec4f translated(undistort_segs[i][0]+translation[0], undistort_segs[i][1]+translation[1],
                                    undistort_segs[i][2]+translation[0], undistort_segs[i][3]+translation[1]);
-            const Vec2f mid_pt_transl = xySegmentHalfPoint(translated);
-            const Vec4f transl_half1(translated[0], translated[1], mid_pt_transl[0], mid_pt_transl[1]);
-            const Vec4f transl_half2(mid_pt_transl[0], mid_pt_transl[1], translated[2], translated[3]);
             imaginable_sections.emplace_back(Color::blue,
-                                            xySegmentToLine(transl_half1),
-                                            transl_half1);
-            imaginable_sections.emplace_back(Color::blue,
-                                             xySegmentToLine(transl_half2),
-                                             transl_half2);
+                                             xySegmentToLine(translated),
+                                             translated);
         }
         // If there are opposite segments, try to create sections between them
         else
         {
             for (auto seg: opposite_segs)
             {
-                float dist11 = distXYPoints(Point(undistort_segs[i][0], undistort_segs[i][1]),
-                                            Point(seg.end_points[0], seg.end_points[1]));
-                float dist12 = distXYPoints(Point(undistort_segs[i][0], undistort_segs[i][1]),
-                                            Point(seg.end_points[2], seg.end_points[3]));
+                float dist11 = distXYPoints(Point2f(undistort_segs[i][0], undistort_segs[i][1]),
+                                            Point2f(seg.end_points[0], seg.end_points[1]));
+                float dist12 = distXYPoints(Point2f(undistort_segs[i][0], undistort_segs[i][1]),
+                                            Point2f(seg.end_points[2], seg.end_points[3]));
                 Vec2f pt1;
                 Vec2f pt2;
                 if (dist11 < dist12)
@@ -184,15 +178,10 @@ vector<StreetSection> Vision::findStreets()
                     pt2 = xySegmentHalfPoint(Vec4f(undistort_segs[i][2], undistort_segs[i][3],
                                                  seg.end_points[0], seg.end_points[1]));
                 }
-                const Vec2f mid_pt = xySegmentHalfPoint(Vec4f(pt1[0], pt1[1], pt2[0], pt2[1]));
+                const Vec4f new_seg(pt1[0], pt1[1], pt2[0], pt2[1]);
                 imaginable_sections.emplace_back(Color::blue,
-                                                 Vec2f((undistort_lines[i][0]+seg.end_points[0])/2,
-                                                       (undistort_lines[i][1]+seg.end_points[1])/2),
-                                                 Vec4f(pt1[0], pt1[1], mid_pt[0], mid_pt[1]));
-                imaginable_sections.emplace_back(Color::blue,
-                                                 Vec2f((undistort_lines[i][0]+seg.end_points[0])/2,
-                                                       (undistort_lines[i][1]+seg.end_points[1])/2),
-                                                 Vec4f(mid_pt[0], mid_pt[1], pt2[0], pt2[1]));
+                                                 Vec2f(xySegmentToLine(new_seg)),
+                                                 new_seg);
             }
         }
         // Check if the proposed sections are not crossing blue or yellow
@@ -221,14 +210,10 @@ vector<StreetSection> Vision::findStreets()
                              mid_pt[1] + translation[1]);
             const Vec2f pt2 (mid_pt[0] - translation[0],
                              mid_pt[1] - translation[1]);
-            const Vec4f transl_half1 (pt1[0], pt1[1], mid_pt[0], mid_pt[1]);
-            const Vec4f transl_half2 (mid_pt[0], mid_pt[1], pt2[0], pt2[1]);
+            const Vec4f new_seg (pt1[0], pt1[1], pt2[0], pt2[1]);
             possible_sections.emplace_back(Color::green,
-                                           xySegmentToLine(transl_half1),
-                                           transl_half1);
-            possible_sections.emplace_back(Color::green,
-                                           xySegmentToLine(transl_half2),
-                                           transl_half2);
+                                           xySegmentToLine(new_seg),
+                                           new_seg);
         }
         // If the segment is yellow and it is perpendicular to the vehicle, add a section crossing it
         else if (line_colors[i] == Color::yellow
@@ -241,14 +226,10 @@ vector<StreetSection> Vision::findStreets()
                              mid_pt[1] + translation[1]);
             const Vec2f pt2 (mid_pt[0] - translation[0],
                              mid_pt[1] - translation[1]);
-            const Vec4f transl_half1 (pt1[0], pt1[1], mid_pt[0], mid_pt[1]);
-            const Vec4f transl_half2 (mid_pt[0], mid_pt[1], pt2[0], pt2[1]);
+            const Vec4f new_seg (pt1[0], pt1[1], pt2[0], pt2[1]);
             possible_sections.emplace_back(Color::yellow,
-                                           xySegmentToLine(transl_half1),
-                                           transl_half1);
-            possible_sections.emplace_back(Color::yellow,
-                                           xySegmentToLine(transl_half2),
-                                           transl_half2);
+                                           xySegmentToLine(new_seg),
+                                           new_seg);
         }
     }
 
@@ -271,7 +252,7 @@ vector<StreetSection> Vision::findStreets()
         int used_axis;
         const float group_angle = possible_sections[group[0]].line[1];
         if ((group_angle < M_PI/4)
-            || (((M_PI - M_PI/4) < group_angle) && (group_angle < (M_PI - M_PI/4)))
+            || (((M_PI - M_PI/4) < group_angle) && (group_angle < (M_PI + M_PI/4)))
             || (group_angle > (2*M_PI - M_PI/4)))
         {
             used_axis = 1;
@@ -340,18 +321,32 @@ vector<StreetSection> Vision::findStreets()
                 cut_pts.push_back(street_lines::linesIntersection(long_sections[i].line, long_sections[j].line));
             }
         }
+        //cout << "cut_pts i=" << i << ":" << endl;
+        //for (auto pt: cut_pts)
+        //    cout << '\t' << pt << endl;
+
         // Order the cutpoints
         street_lines::orderCollinearPoints(cut_pts, long_sections[i].line[1]);
+        //cout << "cut_pts_ordered i=" << i << ":" << endl;
+        //for (auto pt: cut_pts)
+        //    cout << '\t' << pt << endl;
+        
         // Remove points that are too close
         vector<int> pts_to_remove;
         for (unsigned int j = 1; j < cut_pts.size(); j++)
         {
-            if (distXYPoints(Point(cut_pts[j-1][0], cut_pts[j-1][1]),
-                             Point(cut_pts[j][0], cut_pts[j][1])) < lane_width/4)
+            const auto dist = distXYPoints(Point2f(cut_pts[j-1][0], cut_pts[j-1][1]),
+                                           Point2f(cut_pts[j][0], cut_pts[j][1]));
+            //cout << "dist i=" << i <<" j=" << j << " - " << dist << endl;
+            if (dist < lane_width/4)
             {
                 pts_to_remove.push_back(j-1);
             }
         }
+        //cout << "pts_to_remove i=" << i << ":" << endl;
+        //for (auto pt: pts_to_remove)
+         //   cout << '\t' << pt << endl;
+        
         vector<Vec2f> cut_pts_filtered;
         for (unsigned int j = 0; j < cut_pts.size(); j++)
         {
@@ -360,6 +355,10 @@ vector<StreetSection> Vision::findStreets()
                 cut_pts_filtered.push_back(cut_pts[j]);
             }
         }
+        //cout << "cut_pts_filtered i=" << i << ":" << endl;
+        //for (auto pt: cut_pts_filtered)
+        //    cout << '\t' << pt << endl;
+
         // Create sections from the cutpoints
         for (unsigned int j = 1; j < cut_pts_filtered.size(); j++)
         {
@@ -380,26 +379,26 @@ vector<StreetSection> Vision::findStreets()
     {
         for (unsigned int j = i+1; j < final_sections.size(); j++)
         {
-            if (distXYPoints(Point(final_sections[i].end_points[0], final_sections[i].end_points[1]),
-                             Point(final_sections[j].end_points[0], final_sections[j].end_points[1])) < lane_width/4)
+            if (distXYPoints(Point2f(final_sections[i].end_points[0], final_sections[i].end_points[1]),
+                             Point2f(final_sections[j].end_points[0], final_sections[j].end_points[1])) < lane_width/4)
             {
                 final_sections[i].connects_end_point1.push_back(&(final_sections[j]));
                 final_sections[j].connects_end_point1.push_back(&(final_sections[i]));
             }
-            else if (distXYPoints(Point(final_sections[i].end_points[0], final_sections[i].end_points[1]),
-                                  Point(final_sections[j].end_points[2], final_sections[j].end_points[3])) < lane_width/4)
+            else if (distXYPoints(Point2f(final_sections[i].end_points[0], final_sections[i].end_points[1]),
+                                  Point2f(final_sections[j].end_points[2], final_sections[j].end_points[3])) < lane_width/4)
             {
                 final_sections[i].connects_end_point1.push_back(&(final_sections[j]));
                 final_sections[j].connects_end_point2.push_back(&(final_sections[i]));
             }
-            else if (distXYPoints(Point(final_sections[i].end_points[2], final_sections[i].end_points[3]),
-                                  Point(final_sections[j].end_points[0], final_sections[j].end_points[1])) < lane_width/4)
+            else if (distXYPoints(Point2f(final_sections[i].end_points[2], final_sections[i].end_points[3]),
+                                  Point2f(final_sections[j].end_points[0], final_sections[j].end_points[1])) < lane_width/4)
             {
                 final_sections[i].connects_end_point2.push_back(&(final_sections[j]));
                 final_sections[j].connects_end_point1.push_back(&(final_sections[i]));
             }
-            else if (distXYPoints(Point(final_sections[i].end_points[2], final_sections[i].end_points[3]),
-                                  Point(final_sections[j].end_points[2], final_sections[j].end_points[3])) < lane_width/4)
+            else if (distXYPoints(Point2f(final_sections[i].end_points[2], final_sections[i].end_points[3]),
+                                  Point2f(final_sections[j].end_points[2], final_sections[j].end_points[3])) < lane_width/4)
             {
                 final_sections[i].connects_end_point2.push_back(&(final_sections[j]));
                 final_sections[j].connects_end_point2.push_back(&(final_sections[i]));
@@ -413,10 +412,9 @@ vector<StreetSection> Vision::findStreets()
 void Vision::getColorMask(Mat& dst, const cv::Scalar min, const cv::Scalar max)
 {
     cv::inRange(this->img, min, max, dst);
-    //Mat mask = Mat::zeros(img.size(), CV_8U);
-    // TODO: Cortar a imagem em ~1m de distancia
-    //mask(cv::Rect(0, img_y_horizon, img.cols, img.rows)) = 255;
-    //cv::bitwise_and(img, mask, img);
+    Mat krn = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
+    cv::morphologyEx(dst, dst, cv::MORPH_OPEN, krn);
+    cv::morphologyEx(dst, dst, cv::MORPH_CLOSE, krn);
 }
 
 void Vision::getRedTapeMask(Mat& dst)
@@ -453,7 +451,7 @@ bool Vision::isTrafficLightRed()
 {
     Mat red_mask;
     getRedTapeMask(red_mask);
-    vector<vector<Point>> contours;
+    vector<vector<cv::Point>> contours;
     vector<Vec4i> hierarchy;
     cv::findContours(red_mask, contours, hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE);
     if(hierarchy.size()>0)

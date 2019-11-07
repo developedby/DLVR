@@ -70,7 +70,7 @@ namespace street_lines
     }
 
     // Calculates the distance between a point and a line segment
-    float distXYPointXYSegment(const cv::Point& pt, cv::Vec4f seg)
+    float distXYPointXYSegment(const cv::Point2f& pt, cv::Vec4f seg)
     {
         const float u_num = (pt.y-seg[0]) * (seg[2]-seg[0])
                            + (pt.x-seg[1]) * (seg[3]-seg[1]);
@@ -86,18 +86,17 @@ namespace street_lines
         {
             const float x = seg[0] + u*(seg[2] - seg[0]);
             const float y = seg[1] + u*(seg[3] - seg[1]);
-            return distXYPoints(pt, cv::Point(x, y));
+            return distXYPoints(pt, cv::Point2f(x, y));
         }
         else
-            return std::min(distXYPoints(pt, cv::Point(seg[0], seg[1])),
-                            distXYPoints(pt, cv::Point(seg[2], seg[3])));
+            return std::min(distXYPoints(pt, cv::Point2f(seg[0], seg[1])),
+                            distXYPoints(pt, cv::Point2f(seg[2], seg[3])));
     }
 
     // Calculates the distance between two points
-    float distXYPoints(const cv::Point& pt1, const cv::Point& pt2)
+    float distXYPoints(const cv::Point2f& pt1, const cv::Point2f& pt2)
     {
-        return sqrt((pt1.y-pt2.y)*(pt1.y-pt2.y)
-                    + (pt1.x-pt2.x)*(pt1.x-pt2.x));
+        return norm(pt1.y-pt2.y, pt1.x-pt2.x);
     }
 
     // Converts a (x1, y1, x2, y2) segment to a (rho, theta) line
