@@ -24,7 +24,7 @@ def main():
         asyncio.get_event_loop().run_until_complete(wssd)
         asyncio.get_event_loop().run_forever()
     except KeyboardInterrupt as e:
-        print("websocketserver.py:23: " + str(e))
+        print("websocketserver: " + str(e))
 
 async def handler(websocket, path):
     print("{0} - - [{1}] \"{2}\"".format(websocket.remote_address[0], datetime.datetime.now().strftime("%d/%b/%Y %H:%M:%S"), path))
@@ -56,7 +56,7 @@ async def handler(websocket, path):
         try:
             await script.main(websocket, path, open_sockets)
         except Exception as e:
-            print("websocketserver.py:53(" + script.__name__ + "): " + str(e))
+            print("websocketserver(" + script.__name__ + "): " + str(e))
             await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
     else:
         await websocket.send("{\"status_code\": 404, \"reason_message\": \"Not Found\"}")

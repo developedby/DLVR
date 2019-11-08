@@ -24,7 +24,7 @@ async def handler():
             print("Signup efetuado com sucesso")
             #code = int(input())
             code = int(await loop.run_in_executor(None, input))
-            data = {"email": "subject2@example.com", "number": code}
+            data = {"user": "subject2@example.com", "number": code}
             async with websockets.connect(uri + "/code/verify", ssl = ssl_context) as websocket2:
                 await websocket2.send(json.dumps(data))
                 resp = await websocket2.recv()
@@ -41,7 +41,7 @@ async def handler():
                             cookie = resp["set_cookie"]
                             print("Cookie: {}".format(cookie))
                             await loop.run_in_executor(None, input)
-                            data = {"path": "/delivery/request", "cookie": cookie, "origin": 0, "email": "subject@example.com"}
+                            data = {"path": "/delivery/request", "cookie": cookie, "origin": 0, "receiver": "subject@example.com"}
                             await websocket3.send(json.dumps(data))
                             resp = await websocket3.recv()
                             resp = json.loads(resp)
@@ -52,7 +52,7 @@ async def handler():
                                     resp = json.loads(message)
                                     if "path" in resp:
                                         if resp["path"] == "/delivery/response":
-                                            data = {"path": "/user/signout", "cookie": cookie}
+                                            data = {"path": "/user/delete", "cookie": cookie, "password": "Password456!"}
                                             await websocket3.send(json.dumps(data))
                                             await loop.run_in_executor(None, input)
                                             return

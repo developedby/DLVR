@@ -14,9 +14,13 @@ async def main(websocket, path, open_sockets, data = None):
         login = objects.Login(data["cookie"])
         user = login.get_user()
         if user:
-            if user.check_password(data["password"]) and login.signout() and user.delete():
+            if user.check_password(data["password"]) and user.delete():
                 resp["message_body"] = "true"
                 await websocket.send(json.dumps(resp))
+                cookies = objects.Login.get_cookies(user.email)
+                if cookies:
+                    for cookie in cookies:
+                        open_sockets["users"].pop(cookie)
             else:
                 resp["message_body"] = "false"
                 await websocket.send(json.dumps(resp))

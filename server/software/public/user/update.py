@@ -17,13 +17,7 @@ async def main(websocket, path, open_sockets, data = None):
             if user.check_password(data["password"]):
                 errors = 0
                 if "email" in data:
-                    if login.signout() and user.set_email(data["email"]):
-                        login = objects.Login.signin(user.email)
-                        if login:
-                            resp["set_cookie"] = login.cookie
-                        else:
-                            errors += 1
-                    else:
+                    if not user.set_email(data["email"]):
                         errors += 1
                 if "first_name" in data:
                     if not user.set_first_name(data["first_name"]):

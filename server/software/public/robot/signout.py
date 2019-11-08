@@ -1,6 +1,4 @@
 import json
-import datetime
-import hashlib
 import asyncio
 import objects
 

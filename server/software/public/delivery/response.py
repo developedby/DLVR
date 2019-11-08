@@ -1,7 +1,6 @@
 import json
 import asyncio
 import objects
-import private.choose_robot
 
 async def main(websocket, path, open_sockets, data = None):
     if not data:
@@ -22,15 +21,15 @@ async def main(websocket, path, open_sockets, data = None):
                     if data["accept"]:
                         origin = delivery.get_origin()
                         if origin != None:
-                            rid = private.choose_robot.choose(origin)
-                            if delivery.response(data["destination"], rid):
+                            robot = objects.Robot.choose(origin)
+                            if delivery.response(data["destination"], robot.id):
                                 for cookie in cookies:
                                     data2 = {"status_code": 200, "reason_message": "OK", "path": "/delivery/response", "message_body": {"id": delivery.id, "accept": True, "destination": data["destination"]}}
                                     await open_sockets["users"][cookie[0]].send(json.dumps(data2))
                                 robot_path = ""
                                 #choose_robot.choose_path(origin)
                                 data3 = {"status_code": 200, "reason_message": "OK", "path": "/delivery/response", "message_body": {"path": robot_path}}
-                                await open_sockets["robots"][rid].send(json.dumps(data3))
+                                await open_sockets["robots"][robot.id].send(json.dumps(data3))
                                 resp["message_body"] = "true"
                                 await websocket.send(json.dumps(resp))
                             else:
