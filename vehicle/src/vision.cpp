@@ -95,7 +95,7 @@ vector<StreetSection> Vision::findStreets()
     lines.insert(lines.end(), lines_aux.begin(), lines_aux.end());
     line_colors.insert(line_colors.end(), lines_aux.size(), Color::yellow);
     
-    Mat img_lines = street_lines::drawLines(lines, this->img);
+    Mat img_lines = street_lines::drawSegments(lines, this->img);
     cv::imwrite("teste_linhas_linhas.jpg", img_lines);
     
     cout << "Calculou as linhas. Encontradas: " << lines.size() << endl;

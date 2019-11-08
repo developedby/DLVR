@@ -7,6 +7,12 @@
 
 namespace street_lines
 {
+    cv::Point2f rotatePoint(const cv::Point2f pt, const float angle)
+    {
+        return cv::Point2f(pt.x*cos(angle) - pt.y*sin(angle),
+                           pt.x*sin(angle) + pt.y*cos(angle));
+    }
+    
     cv::Vec2f rtSegmentHalfPoint(const cv::Vec4f& seg)
     {
         const float a = seg[0];

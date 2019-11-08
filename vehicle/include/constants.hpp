@@ -17,6 +17,7 @@ namespace constants
 	float constexpr img_theta_max_m = 0.470;
 	float constexpr img_theta_max = atan2(cam_height_m, img_theta_max_m);
 	float constexpr lane_width = 0.26;
+	float constexpr tape_width = 0.018;
 	float constexpr max_theta_diff = 5 * M_PI/180;
 
 	// Radio

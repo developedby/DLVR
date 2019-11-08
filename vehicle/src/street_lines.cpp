@@ -36,7 +36,7 @@ namespace street_lines
         vector<Vec4i> lines;
         cv::HoughLinesP(lines_mask, lines, 1, max_theta_diff-0.01, 100, 100, 8);
         //std::cout << "Linhas: " << lines.size() << std::endl;
-        reduceLines(lines, lines, 0.2, 7.0, 10.0);
+        lines = reduceSegments(lines);
         return lines;
     }
 
@@ -188,15 +188,15 @@ namespace street_lines
         std::stable_sort(pts.begin(), pts.end(), [used_axis](auto pt1, auto pt2){return pt1[used_axis] < pt2[used_axis];});
     }
 
-    // Draw the lines on the image
-    Mat drawLines(const vector<Vec4i>& lines, const Mat& img)
+    // Returns a bgr version of the image with the segments drawn on it
+    Mat drawSegments(const vector<Vec4i>& segs, const Mat& img)
     {
-        Mat img_lines;
-        cv::cvtColor(img, img_lines, cv::COLOR_HLS2BGR);
-        for (auto line: lines)
+        Mat img_segs;
+        cv::cvtColor(img, img_segs, cv::COLOR_HLS2BGR);
+        for (auto seg: segs)
         {
-            cv::line(img_lines, Point2f(line[0], line[1]), Point2f(line[2], line[3]), Scalar(0, 255, 0), 1, cv::LINE_AA);
+            cv::line(img_segs, Point2f(seg[0], seg[1]), Point2f(seg[2], seg[3]), Scalar(0, 255, 0), 1, cv::LINE_AA);
         }
-        return img_lines;
+        return img_segs;
     }
 }

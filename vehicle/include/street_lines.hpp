@@ -16,8 +16,6 @@ namespace street_lines
 	float lineAbsDist(const cv::Vec4i& line);
 	
 	std::pair<cv::Vec2f, cv::Vec4f> undistortLine(const cv::Vec4i& line);
-
-	std::vector<std::vector<unsigned int>> groupLinesByAngle(const std::vector<cv::Vec2f>& lines, const float max_theta_diff);
 	
 	std::vector<std::vector<unsigned int>> groupLinesByDistance(const std::vector<cv::Vec2f>& lines, const float max_rho_diff);
 	
@@ -27,7 +25,7 @@ namespace street_lines
 	
 	void orderCollinearPoints(std::vector<cv::Vec2f>& pts, const float angle);
 	
-	cv::Mat drawLines(const std::vector<cv::Vec4i>& lines, const cv::Mat& img);
+	cv::Mat drawSegments(const std::vector<cv::Vec4i>& lines, const cv::Mat& img);
 }
 
 #endif
