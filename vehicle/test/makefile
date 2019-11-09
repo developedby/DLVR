@@ -43,8 +43,9 @@ radio: test_nrf24l01+.cpp ../src/radio.cpp ../src/radio_communication.cpp
 		-lpigpio -lrt -lm -lpthread -lstdc++ -lrf24-bcm -I../include
 
 #Teste visão
-vision: test_vision.cpp ../src/vision.cpp ../src/street_lines.cpp ../src/reduce_lines.cpp ../src/geometry.cpp
-	gcc -Wall -o ./build/test_vision test_vision.cpp ../src/vision.cpp ../src/street_lines.cpp ../src/reduce_lines.cpp ../src/geometry.cpp \
+vision: test_vision.cpp ../src/vision.cpp ../src/street_lines.cpp ../src/reduce_lines.cpp ../src/geometry.cpp ../src/street_section.cpp
+	gcc -Wall -o ./build/test_vision \
+	    test_vision.cpp ../src/vision.cpp ../src/street_lines.cpp ../src/reduce_lines.cpp ../src/geometry.cpp ../src/street_section.cpp \
 		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
 		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lopencv_aruco\
 		-lraspicam -lraspicam_cv \

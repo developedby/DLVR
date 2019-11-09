@@ -8,7 +8,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
-#include <reduce_lines.hpp>
+#include "reduce_lines.hpp"
 #include "geometry.hpp"
 #include "constants.hpp"
 

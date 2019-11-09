@@ -52,6 +52,7 @@ void Vision::getCamImg()
 {
     this->cam.grab();
     this->cam.retrieve(this->img);
+    cv::blur(this->img, this->img, cv::Size(5, 5));
     cv::cvtColor(this->img, this->img, cv::COLOR_BGR2HLS);
 }
 
@@ -72,36 +73,36 @@ vector<StreetSection> Vision::findStreets()
     this->getYellowTapeMask(yellow_tape_mask);
     //cv::imwrite("teste_linhas_yellow.jpg", yellow_tape_mask);
 
-    cout << "Calculou as mascaras de cor." << endl;
+    //cout << "Calculou as mascaras de cor." << endl;
 
     // Finds the lines passing through those masks
     vector<Vec4i> lines;
     vector<Color> line_colors;
     
     auto lines_aux = street_lines::getStreetLines(green_tape_mask);
-    cout << "Achou linhas verdes." << endl;
+    ////cout << "Achou linhas verdes." << endl;
     lines.insert(lines.end(), lines_aux.begin(), lines_aux.end());
     line_colors.insert(line_colors.end(), lines_aux.size(), Color::green);
     
     lines_aux = street_lines::getStreetLines(yellow_tape_mask);
-    cout << "Achou linhas amarelas." << endl;
+    ////cout << "Achou linhas amarelas." << endl;
     lines.insert(lines.end(), lines_aux.begin(), lines_aux.end());
     line_colors.insert(line_colors.end(), lines_aux.size(), Color::yellow);
     
     lines_aux = street_lines::getStreetLines(blue_tape_mask);
-    cout << "Achou linhas azuis." << endl;
+    //cout << "Achou linhas azuis." << endl;
     lines.insert(lines.end(), lines_aux.begin(), lines_aux.end());
-    //cout << "insert lines." << endl;
+    //////cout << "insert lines." << endl;
     line_colors.insert(line_colors.end(), lines_aux.size(), Color::blue);
-    //cout << "insert line_colors." << endl;
+    ////cout << "insert line_colors." << endl;
     
     Mat img_lines = street_lines::drawSegments(lines, this->img);
     cv::imwrite("teste_linhas_linhas.jpg", img_lines);
     
-    cout << "Calculou as linhas. Encontradas: " << lines.size() << endl;
+    //cout << "Calculou as linhas. Encontradas: " << lines.size() << endl;
     for (unsigned int i = 0; i < lines.size(); i++)
     {
-        cout << lines[i] << ' ' << int(line_colors[i]) << endl;
+        //cout << lines[i] << ' ' << int(line_colors[i]) << endl;
     }
     
     // Undo the projection distortion
@@ -112,10 +113,10 @@ vector<StreetSection> Vision::findStreets()
         std::tie(undistort_lines[i], undistort_segs[i]) = street_lines::undistortLine(lines[i]);
     }
 
-    cout << "Reverteu a distorcao de perspectiva" << endl;
+    //cout << "Reverteu a distorcao de perspectiva" << endl;
     for (unsigned int i = 0; i < undistort_lines.size(); i++)
     {
-        cout << undistort_lines[i] << ' ' << undistort_segs[i] << endl;
+        //cout << undistort_lines[i] << ' ' << undistort_segs[i] << endl;
     }
 
     // Find all the possible street sections
@@ -132,14 +133,15 @@ vector<StreetSection> Vision::findStreets()
                 continue;
             const float dist = distXYSegments(undistort_segs[i], undistort_segs[j]);
             // If the segments are right next to each other
-            if (dist < lane_width/5)
+            if (dist < lane_width/4)
             {
                 connected_segs.emplace_back(line_colors[j], undistort_lines[i], undistort_segs[j]);
             }
             // If the segments are parallel, a lane's distance apart, but not collinear
-            else if (street_lines::linesAreParallel(undistort_lines[i], undistort_lines[j], max_theta_diff)
+            else if (j > i
+                     && street_lines::linesAreParallel(undistort_lines[i], undistort_lines[j], max_theta_diff)
                      && (lane_width*0.7 < dist && dist < lane_width*1.3)
-                     && (abs(undistort_lines[i][0] - undistort_lines[j][0]) > lane_width/5))
+                     && (abs(undistort_lines[i][0] - undistort_lines[j][0]) > lane_width/4))
             {
                 opposite_segs.emplace_back(line_colors[j], undistort_lines[i], undistort_segs[j]);
             }
@@ -200,10 +202,10 @@ vector<StreetSection> Vision::findStreets()
                 if (seg.type != Color::green)
                 {
                     const float dist = distXYSegments(section.end_points, seg.end_points);
-                    cout << "Encontrou um segmento que pode dar problema:" << endl;
-                    cout << "  secao: " << section.end_points << ' ' << int(section.type) << endl;
-                    cout << "  seg: " << seg.end_points << ' ' << int(seg.type) << endl;
-                    cout << "  dist: " << dist << endl << endl;
+                    //cout << "Encontrou um segmento que pode dar problema:" << endl;
+                    //cout << "  secao: " << section.end_points << ' ' << int(section.type) << endl;
+                    //cout << "  seg: " << seg.end_points << ' ' << int(seg.type) << endl;
+                    //cout << "  dist: " << dist << endl << endl;
                     if (dist < lane_width/3)
                     {
                         section_possible = false;
@@ -248,19 +250,20 @@ vector<StreetSection> Vision::findStreets()
         }
     }
 
-    cout << "Calculou todas as mini seções. Encontradas: " << possible_sections.size() << endl;
+    //cout << "Calculou todas as mini seções. Encontradas: " << possible_sections.size() << endl;
     for (unsigned int i = 0; i < possible_sections.size(); i++)
     {
-        cout << possible_sections[i].line << ' ' << possible_sections[i].end_points << ' ' << int(possible_sections[i].type) << endl;
+        //cout << possible_sections[i].line << ' ' << possible_sections[i].end_points << ' ' << int(possible_sections[i].type) << endl;
     }
 
-    // Transform the groups of maybe overlapping collinear sections into a single section
+    // Transforms overlapping sections into a single long section
     vector<StreetSection> long_sections;
     vector<Vec2f> possible_lines(possible_sections.size());
     for (unsigned int i = 0; i < possible_sections.size(); i++)
         possible_lines[i] = possible_sections[i].line;
+    // For each group of sections that have the same angle
     const auto angle_groups = street_lines::groupCollinearLines(possible_lines, max_theta_diff, lane_width/3);
-    //cout << "Agrupou as linhas colineares" << endl;
+    ////cout << "Agrupou as linhas colineares" << endl;
     for (auto group: angle_groups)
     {
         // Choose the axis used to order the points on the line
@@ -274,47 +277,63 @@ vector<StreetSection> Vision::findStreets()
         }
         else
             used_axis = 0;
-        //cout << "Escolheu eixo pra juntar linhas" << endl;
-        Vec4f result_seg = possible_sections[group[0]].end_points;
-        //cout << "Construiu o segmentos de um das seções longas" << endl;
-        if (result_seg[used_axis] > result_seg[used_axis+2])
-        {
-            result_seg = Vec4f(result_seg[2], result_seg[3], result_seg[0], result_seg[1]);
-        }
-        //cout << "Ordenou o pontos do segmento longo" << endl;
-        // Find the min and max points
+        //cout << "Escolheu eixo pra juntar linhas " << used_axis <<endl;
+        
+        // Copies the section that belong to this group and order them by the chosen axis
+        vector<StreetSection> collinear_sections;
         for (auto i: group)
         {
-            const Vec4f xy_seg = possible_sections[i].end_points;
-            if (xy_seg[used_axis] < result_seg[used_axis])
+            collinear_sections.push_back(possible_sections[i]);
+        }
+        orderCollinearSections(collinear_sections, used_axis);
+        for(auto section : collinear_sections)
+        {
+            //cout << section.end_points << endl;
+        }        
+        //cout << "Copiei e ordenei colinear sections" <<endl;
+        
+        // Finds and joins the overlaping sections, creating different sections when there is a gap
+        vector<Vec4f> result_segs;
+        int secs_in_result = 0;
+        Vec4f seg_in_construction;
+        for (auto section: collinear_sections)
+        {
+            if (secs_in_result == 0)
             {
-                result_seg[0] = xy_seg[0];
-                result_seg[1] = xy_seg[1];
+                seg_in_construction = section.end_points;
+                secs_in_result++;
             }
-            else if (xy_seg[used_axis+2] < result_seg[used_axis])
+            else
             {
-                result_seg[0] = xy_seg[2];
-                result_seg[1] = xy_seg[3];
-            }
-            if (xy_seg[used_axis] > result_seg[used_axis+2])
-            {
-                result_seg[2] = xy_seg[0];
-                result_seg[3] = xy_seg[1];
-            }
-            else if (xy_seg[used_axis+2] > result_seg[used_axis+2])
-            {
-                result_seg[2] = xy_seg[2];
-                result_seg[3] = xy_seg[3];
+                if (distXYSegments(seg_in_construction, section.end_points) > lane_width/3)
+                {
+                    //cout << "coloquei em result o " << seg_in_construction <<endl;
+                    result_segs.push_back(seg_in_construction);
+                    seg_in_construction = section.end_points;
+                    secs_in_result = 1;
+                }
+                else if (seg_in_construction[used_axis+2] < section.end_points[used_axis+2])
+                {
+                    seg_in_construction[2] = section.end_points[2];
+                    seg_in_construction[3] = section.end_points[3];
+                    secs_in_result++;
+                }
             }
         }
-        //cout << "Montou o segmento longo" << endl;
-        long_sections.emplace_back(Color::none, xySegmentToLine(result_seg), result_seg);
+        if (secs_in_result != 0)
+        {
+            //cout << "coloquei por último em result o " << seg_in_construction <<endl;
+            result_segs.push_back(seg_in_construction);
+        }
+        ////cout << "Montou o segmento longo" << endl;
+        for (auto result_seg: result_segs)
+            long_sections.emplace_back(Color::none, xySegmentToLine(result_seg), result_seg);
     }
 
-    cout << "Calculou todas as seções longas. Encontradas: " << long_sections.size() << endl;
+    //cout << "Calculou todas as seções longas. Encontradas: " << long_sections.size() << endl;
     for (unsigned int i = 0; i < long_sections.size(); i++)
     {
-        cout << long_sections[i].line << ' ' << long_sections[i].end_points << ' ' << int(long_sections[i].type) << endl;
+        //cout << long_sections[i].line << ' ' << long_sections[i].end_points << ' ' << int(long_sections[i].type) << endl;
     }
 
     // Break the sections where they intersect
@@ -336,15 +355,15 @@ vector<StreetSection> Vision::findStreets()
                 cut_pts.push_back(street_lines::linesIntersection(long_sections[i].line, long_sections[j].line));
             }
         }
-        //cout << "cut_pts i=" << i << ":" << endl;
+        ////cout << "cut_pts i=" << i << ":" << endl;
         //for (auto pt: cut_pts)
-        //    cout << '\t' << pt << endl;
+        //    //cout << '\t' << pt << endl;
 
         // Order the cutpoints
         street_lines::orderCollinearPoints(cut_pts, long_sections[i].line[1]);
-        //cout << "cut_pts_ordered i=" << i << ":" << endl;
+        ////cout << "cut_pts_ordered i=" << i << ":" << endl;
         //for (auto pt: cut_pts)
-        //    cout << '\t' << pt << endl;
+        //    //cout << '\t' << pt << endl;
         
         // Remove points that are too close
         vector<int> pts_to_remove;
@@ -352,15 +371,18 @@ vector<StreetSection> Vision::findStreets()
         {
             const auto dist = distXYPoints(Point2f(cut_pts[j-1][0], cut_pts[j-1][1]),
                                            Point2f(cut_pts[j][0], cut_pts[j][1]));
-            //cout << "dist i=" << i <<" j=" << j << " - " << dist << endl;
-            if (dist < lane_width/4)
+            ////cout << "dist i=" << i <<" j=" << j << " - " << dist << endl;
+            if ((dist < lane_width/4) && (pts_to_remove.size() < (cut_pts.size()-2)))
             {
-                pts_to_remove.push_back(j-1);
+                if (j < cut_pts.size()/2)
+                    pts_to_remove.push_back(j);
+                else
+                    pts_to_remove.push_back(j-1);
             }
         }
-        //cout << "pts_to_remove i=" << i << ":" << endl;
+        ////cout << "pts_to_remove i=" << i << ":" << endl;
         //for (auto pt: pts_to_remove)
-         //   cout << '\t' << pt << endl;
+         //   //cout << '\t' << pt << endl;
         
         vector<Vec2f> cut_pts_filtered;
         for (unsigned int j = 0; j < cut_pts.size(); j++)
@@ -370,9 +392,9 @@ vector<StreetSection> Vision::findStreets()
                 cut_pts_filtered.push_back(cut_pts[j]);
             }
         }
-        //cout << "cut_pts_filtered i=" << i << ":" << endl;
+        ////cout << "cut_pts_filtered i=" << i << ":" << endl;
         //for (auto pt: cut_pts_filtered)
-        //    cout << '\t' << pt << endl;
+        //    //cout << '\t' << pt << endl;
 
         // Create sections from the cutpoints
         for (unsigned int j = 1; j < cut_pts_filtered.size(); j++)
@@ -383,10 +405,10 @@ vector<StreetSection> Vision::findStreets()
         }
     }
     
-    cout << "Calculou as seções finais. Encontradas: " << final_sections.size() << endl;
+    //cout << "Calculou as seções finais. Encontradas: " << final_sections.size() << endl;
     for (unsigned int i = 0; i < final_sections.size(); i++)
     {
-        cout << final_sections[i].line << ' ' << final_sections[i].end_points << ' ' << int(final_sections[i].type) << endl;
+        //cout << final_sections[i].line << ' ' << final_sections[i].end_points << ' ' << int(final_sections[i].type) << endl;
     }
     
     // Link the sections
@@ -420,16 +442,17 @@ vector<StreetSection> Vision::findStreets()
             }
         }
     }
-    cout << "Juntou as seções."<< endl;
+    //cout << "Juntou as seções."<< endl;
     return final_sections;
 }
 
 void Vision::getColorMask(Mat& dst, const cv::Scalar min, const cv::Scalar max)
 {
     cv::inRange(this->img, min, max, dst);
-    Mat krn = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
-    cv::morphologyEx(dst, dst, cv::MORPH_OPEN, krn);
-    cv::morphologyEx(dst, dst, cv::MORPH_CLOSE, krn);
+    const Mat krn_open = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
+    cv::morphologyEx(dst, dst, cv::MORPH_OPEN, krn_open);
+    const Mat krn_close = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(9, 9));
+    cv::morphologyEx(dst, dst, cv::MORPH_CLOSE, krn_close);
 }
 
 void Vision::getTapeMask(Mat& dst, const cv::Scalar min, const cv::Scalar max)
@@ -443,7 +466,7 @@ void Vision::getTapeMask(Mat& dst, const cv::Scalar min, const cv::Scalar max)
     for (auto contour: cnts)
     {
         const auto area = cv::contourArea(contour);
-        //cout << "contorno area=" << area << endl;
+        ////cout << "contorno area=" << area << endl;
         if (area > 2000)
         {
             filtered_cnts.push_back(contour);
@@ -465,7 +488,7 @@ void Vision::getBlueTapeMask(Mat& dst)
 
 void Vision::getGreenTapeMask(Mat& dst)
 {
-    this->getTapeMask(dst, cv::Scalar(70, 40, 40), cv::Scalar(90, 250, 255));
+    this->getTapeMask(dst, cv::Scalar(70, 40, 40), cv::Scalar(85, 250, 255));
 }
 
 void Vision::getYellowTapeMask(Mat& dst)

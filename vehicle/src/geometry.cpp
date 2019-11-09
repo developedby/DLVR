@@ -78,10 +78,9 @@ namespace street_lines
     // Calculates the distance between a point and a line segment
     float distXYPointXYSegment(const cv::Point2f& pt, cv::Vec4f seg)
     {
-        const float u_num = (pt.y-seg[0]) * (seg[2]-seg[0])
-                           + (pt.x-seg[1]) * (seg[3]-seg[1]);
-        const float u_den = (seg[2] - seg[0]) * (seg[2] - seg[0])
-                           + (seg[3] - seg[1]) * (seg[3] - seg[1]);
+        const float u_num = (pt.x-seg[0]) * (seg[2]-seg[0])
+                            + (pt.y-seg[1]) * (seg[3]-seg[1]);
+        const float u_den = square(seg[2]-seg[0]) + square(seg[3]-seg[1]);
         float u;
         if (u_den != 0)
             u = u_num / u_den;
