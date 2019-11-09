@@ -30,7 +30,7 @@ int main()
 		line[3] = -line[3];
 		line += cv::Vec4f(50, 50, 50, 50);
 		cv::line(out_img, cv::Point(line[0], line[1]), cv::Point(line[2], line[3]), 255, 1, cv::LINE_AA);
-		//std::cout << int(sec.type) << ' ' << sec.line << ' ' << sec.end_points << std::endl;
+		std::cout << int(sec.type) << ' ' << sec.line << ' ' << sec.end_points << std::endl;
 	}
 	cv::imwrite("teste_linhas_secoes.jpg", out_img);
 }

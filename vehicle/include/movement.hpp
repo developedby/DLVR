@@ -20,7 +20,7 @@ class Movement {
         int l_dir;
         int r_dir;
         int turn_ticks;
-        bool iwflag;
+        bool initial_wheel_flag;
         
         float limit(float vmin, float v, float vmax);
 

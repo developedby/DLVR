@@ -3,27 +3,27 @@ dummy:
 
 # Teste encoder
 encoder: ../src/encoder.cpp test_encoder.cpp
-	gcc -Wall -o ./build/test_encoder ../src/encoder.cpp test_encoder.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -lraspicam -lrf24-bcm -I../include
+	gcc -Wall -o ./build/test_encoder ../src/encoder.cpp test_encoder.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lraspicam -lrf24-bcm -I../include
 
 # Teste roda
 wheel: ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp test_wheel.cpp
-	gcc -Wall -o ./build/test_wheel ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp test_wheel.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -I../include
+	gcc -Wall -o ./build/test_wheel ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp test_wheel.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -I../include
 
 # Teste radio
 radio_example: test_nrf24l01.cpp
-	gcc -Wall -o ./build/test_nrf24l01_example test_nrf24l01_example.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -lrf24-bcm -I../include
+	gcc -Wall -o ./build/test_nrf24l01_example test_nrf24l01_example.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm -I../include
 
 # Teste detector de item
 item_detector: ../src/item_detector.cpp test_item_detector.cpp
-	gcc -Wall -o ./build/test_item_detector ../src/item_detector.cpp test_item_detector.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -I../include
+	gcc -Wall -o ./build/test_item_detector ../src/item_detector.cpp test_item_detector.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -I../include
 
 # Teste trava
 lock: ../src/servo.cpp ../src/lock.cpp test_lock.cpp
-	gcc -Wall -o ./build/test_lock ../src/servo.cpp ../src/lock.cpp test_lock.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -I../include
+	gcc -Wall -o ./build/test_lock ../src/servo.cpp ../src/lock.cpp test_lock.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -I../include
 
 # Teste camera opencv
 camera_opencv:
-	gcc -Wall -o ./build/test_camera_opencv test_camera_opencv.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -lraspicam -lraspicam_cv \
+	gcc -Wall -o ./build/test_camera_opencv test_camera_opencv.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lraspicam -lraspicam_cv \
 		-lopencv_core -lopencv_highgui -lopencv_imgcodecs \
 		-I../include -I/usr/local/include -I/usr/local/include/opencv4
 
@@ -59,22 +59,22 @@ lines: test_line_detection.cpp
 		-I../include -I/usr/local/include -I/usr/local/include/opencv4
 
 #Teste vehicle
-vehicle: ../src/vehicle.cpp ../src/movement.cpp ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/pidz.cpp ../src/radio.cpp ../src/radio_communication.cpp ../src/servo.cpp ../src/lock.cpp ../src/item_detector.cpp ../src/delivery_box.cpp ../src/intelligence.cpp ../src/vision.cpp ../src/street_lines.cpp ../src/reduce_lines.cpp ../src/geometry.cpp
-	gcc -Wall -o ./build/vehicle ../src/movement.cpp ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/pidz.cpp ../src/vehicle.cpp ../src/radio.cpp ../src/radio_communication.cpp ../src/servo.cpp ../src/lock.cpp ../src/item_detector.cpp ../src/delivery_box.cpp ../src/intelligence.cpp ../src/vision.cpp ../src/street_lines.cpp ../src/reduce_lines.cpp ../src/geometry.cpp \
-		-lpigpio -lrt -lm -lpthread -lstdc++ -lrf24-bcm \
-		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lraspicam -lraspicam_cv \
+vehicle: ../src/vehicle.cpp ../src/movement.cpp ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/pidz.cpp ../src/radio.cpp ../src/radio_communication.cpp ../src/servo.cpp ../src/lock.cpp ../src/item_detector.cpp ../src/delivery_box.cpp ../src/intelligence.cpp ../src/vision.cpp ../src/street_lines.cpp ../src/reduce_lines.cpp ../src/geometry.cpp ../src/street_section.cpp
+	gcc -Wall -o ./build/vehicle ../src/movement.cpp ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/pidz.cpp ../src/vehicle.cpp ../src/radio.cpp ../src/radio_communication.cpp ../src/servo.cpp ../src/lock.cpp ../src/item_detector.cpp ../src/delivery_box.cpp ../src/intelligence.cpp ../src/vision.cpp ../src/street_lines.cpp ../src/reduce_lines.cpp ../src/geometry.cpp ../src/street_section.cpp\
+		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
+		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lraspicam -lraspicam_cv -lopencv_aruco\
 		-I../include -I/usr/local/include -I/usr/local/include/opencv4
 
 #teste seguir rua
-follow_road:  test_follow_road.cpp ../src/movement.cpp ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/pidz.cpp ../src/vision.cpp ../src/street_lines.cpp ../src/reduce_lines.cpp ../src/geometry.cpp
-	gcc -Wall -o ./build/test_follow_road test_follow_road.cpp ../src/movement.cpp ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/pidz.cpp ../src/vision.cpp ../src/street_lines.cpp ../src/reduce_lines.cpp ../src/geometry.cpp \
-		-lpigpio -lrt -lm -lpthread -lstdc++ -lrf24-bcm \
-		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lraspicam -lraspicam_cv \
+follow_road:  test_follow_road.cpp ../src/movement.cpp ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/pidz.cpp ../src/vision.cpp ../src/street_lines.cpp ../src/reduce_lines.cpp ../src/geometry.cpp ../src/street_section.cpp
+	gcc -Wall -o ./build/test_follow_road test_follow_road.cpp ../src/movement.cpp ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/pidz.cpp ../src/vision.cpp ../src/street_lines.cpp ../src/reduce_lines.cpp ../src/geometry.cpp ../src/street_section.cpp\
+		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
+		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lraspicam -lraspicam_cv -lopencv_aruco\
 		-I../include -I/usr/local/include -I/usr/local/include/opencv4
 
 #Turn test
 turn: ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/movement.cpp
-	gcc -Wall -o ./build/test_turn ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/movement.cpp ../src/pidz.cpp ./test_turn.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -I../include -I./
+	gcc -Wall -o ./build/test_turn ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/movement.cpp ../src/pidz.cpp ./test_turn.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -I../include -I./
 
 # Teste semaforo
 traffic_light: test_camera_traffic_light.cpp

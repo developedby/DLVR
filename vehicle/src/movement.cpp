@@ -23,7 +23,7 @@ Movement::Movement() :
     l_dir = 0;
     r_dir = 0;
     turn_ticks = -1;
-    iwflag = false;
+    initial_wheel_flag = false;
     wheel_distance = constants::vehicle_wheel_distance;
 }
 
@@ -74,7 +74,7 @@ void Movement::tick(void) {
     }
     float r_dc = this->limit(0, this->right_pid.push_error(rr * rb, aux), 1);
     // Adjust
-    if(iwflag) {
+    if(initial_wheel_flag) {
         this->right_wheel.spin(r_dir, r_dc);
         this->left_wheel.spin(l_dir, l_dc);
     }
@@ -82,7 +82,7 @@ void Movement::tick(void) {
         this->left_wheel.spin(l_dir, l_dc);
         this->right_wheel.spin(r_dir, r_dc);
     }
-    this->iwflag = !(this->iwflag);
+    this->initial_wheel_flag = !(this->initial_wheel_flag);
     if(this->turn_ticks >= 0) {
         if(this->turn_ticks == 0) {
             this->goStraight(0, 0);
