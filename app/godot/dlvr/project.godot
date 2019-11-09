@@ -9,6 +9,11 @@
 config_version=4
 
 _global_script_classes=[ {
+"base": "Node",
+"class": "Client",
+"language": "GDScript",
+"path": "res://scripts/client.gd"
+}, {
 "base": "LineEdit",
 "class": "EmailField",
 "language": "GDScript",
@@ -30,6 +35,7 @@ _global_script_classes=[ {
 "path": "res://scripts/View.gd"
 } ]
 _global_script_class_icons={
+"Client": "",
 "EmailField": "",
 "PasswField": "",
 "SubView": "",
@@ -45,6 +51,7 @@ config/icon="res://icon.png"
 [autoload]
 
 DLVR="*res://scripts/dlvr.gd"
+Utils="*res://scripts/utils.gd"
 
 [display]
 
@@ -62,7 +69,7 @@ translations=PoolStringArray( "res://lang/lang.en.translation", "res://lang/lang
 
 [network]
 
-ssl/certificates="res://cert/cert.pem"
+ssl/certificates="res://cert/cert.crt"
 
 [rendering]
 
