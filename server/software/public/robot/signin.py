@@ -1,7 +1,5 @@
 import json
 import asyncio
-import hashlib
-import datetime
 import objects
 
 async def main(websocket, path, open_sockets):
@@ -29,21 +27,21 @@ async def main(websocket, path, open_sockets):
                                 try:
                                     await script.main(websocket, path, open_sockets, data)
                                 except Exception as e:
-                                    print("signin.py:52(" + script.__name__ + "): " + str(e))
+                                    print("public.robot.signin(public.robot.route): " + str(e))
                                     await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                             elif path == "/robot/signout":
                                 import public.robot.signout as script
                                 try:
                                     await script.main(websocket, path, open_sockets, data)
                                 except Exception as e:
-                                    print("signin.py:59(" + script.__name__ + "): " + str(e))
+                                    print("public.robot.signin(public.robot.signout): " + str(e))
                                     await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                             elif path == "/robot/update":
                                 import public.robot.update as script
                                 try:
                                     await script.main(websocket, path, open_sockets, data)
                                 except Exception as e:
-                                    print("signin.py:66(" + script.__name__ + "): " + str(e))
+                                    print("public.robot.signin(public.robot.update): " + str(e))
                                     await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                             else:
                                 await websocket.send("{\"status_code\": 404, \"reason_message\": \"Not Found\"}")

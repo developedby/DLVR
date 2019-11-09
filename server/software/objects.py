@@ -1,10 +1,11 @@
 import connect
-import mysql.connector
 import random
 import datetime
 import Crypto.PublicKey.RSA
 import os
 import hashlib
+import json
+import math
 
 class Code:
     def __init__(self, number):
@@ -21,8 +22,8 @@ class Code:
                 cursor.execute(query, values)
                 connection.commit()
                 return True
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
                 connection.rollback()
             finally:
                 cursor.close()
@@ -46,8 +47,8 @@ class Code:
                 cursor.execute(query, values)
                 connection.commit()
                 return cls(number)
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
                 connection.rollback()
             finally:
                 cursor.close()
@@ -64,8 +65,8 @@ class Code:
                     cursor.execute(query, values)
                     connection.commit()
                     return True
-                except mysql.connector.Error as e:
-                    print(e)
+                except Exception as e:
+                    print("objects: " + str(e))
                     connection.rollback()
                 finally:
                     cursor.close()
@@ -81,8 +82,8 @@ class Code:
                 result = cursor.fetchone()
                 if result:
                     return User(result[0])
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
 
@@ -96,8 +97,8 @@ class Code:
                 result = cursor.fetchone()
                 if result:
                     return datetime.datetime.fromtimestamp(result[0])
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
 
@@ -109,22 +110,35 @@ class Delivery:
     def request(cls, sender, origin, receiver):
         with connect.connect() as connection:
             cursor = connection.cursor(prepared = True)
-            query = "INSERT INTO Delivery(start_time, origin, state, sender, receiver) VALUES (%s, %s, 0, %s, %s)"
+            query = "INSERT INTO Delivery(id, start_time, origin, state, sender, receiver) VALUES (%s, %s, %s, 0, %s, %s)"
+            next_id = cls.next_id()
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            values = (timestamp, origin, sender, receiver)
+            values = (next_id, timestamp, origin, sender, receiver)
             try:
                 cursor.execute(query, values)
                 connection.commit()
-                query = "SELECT id FROM Delivery WHERE start_time = %s AND origin = %s AND state = 0 AND sender = %s AND receiver = %s"
-                cursor.execute(query, values)
-                result = cursor.fetchone()
-                if result:
-                    return cls(result[0])
-            except mysql.connector.Error as e:
-                print(e)
+                return cls(next_id)
+            except Exception as e:
+                print("objects: " + str(e))
                 connection.rollback()
             finally:
                 cursor.close()
+
+    @classmethod
+    def next_id(cls):
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "SELECT MAX(id) FROM Delivery"
+            try:
+                cursor.execute(query)
+                result = cursor.fetchone()
+                if result and result[0] != None:
+                    return result[0] + 1
+            except Exception as e:
+                print("objects: " + str(e))
+            finally:
+                cursor.close()
+        return 0
 
     def response(self, destination, robot):
         with connect.connect() as connection:
@@ -135,8 +149,8 @@ class Delivery:
                 cursor.execute(query, values)
                 connection.commit()
                 return True
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
                 connection.rollback()
             finally:
                 cursor.close()
@@ -151,8 +165,8 @@ class Delivery:
                 cursor.execute(query, values)
                 connection.commit()
                 return True
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
                 connection.rollback()
             finally:
                 cursor.close()
@@ -167,8 +181,8 @@ class Delivery:
                 cursor.execute(query, values)
                 connection.commit()
                 return True
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
                 connection.rollback()
             finally:
                 cursor.close()
@@ -184,8 +198,8 @@ class Delivery:
                 result = cursor.fetchone()
                 if result:
                     return User(result[0])
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
 
@@ -199,8 +213,8 @@ class Delivery:
                 result = cursor.fetchone()
                 if result:
                     return result[0]
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
 
@@ -214,8 +228,8 @@ class Delivery:
                 result = cursor.fetchone()
                 if result:
                     return Robot(result[0])
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
 
@@ -229,8 +243,8 @@ class Delivery:
                 result = cursor.fetchone()
                 if result:
                     return User(result[0])
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
 
@@ -244,8 +258,8 @@ class Delivery:
                 result = cursor.fetchone()
                 if result:
                     return result[0]
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
 
@@ -259,8 +273,8 @@ class Delivery:
                 result = cursor.fetchone()
                 if result:
                     return result[0]
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
 
@@ -274,8 +288,8 @@ class Delivery:
                 result = cursor.fetchone()
                 if result:
                     return result[0]
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
 
@@ -289,8 +303,8 @@ class Delivery:
                 result = cursor.fetchone()
                 if result:
                     return datetime.datetime.fromtimestamp(result[0])
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
 
@@ -304,8 +318,8 @@ class Delivery:
                 result = cursor.fetchone()
                 if result:
                     return datetime.datetime.fromtimestamp(result[0])
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
 
@@ -327,6 +341,31 @@ class Robot:
                 return True
         return False
 
+    @classmethod
+    def choose(cls, position):
+        available = cls.get_available_robots()
+        if available:
+            nearest = available[0]
+            for robot in available:
+                if distance(robot[1], position) < distance(nearest[1], position):
+                    nearest = robot
+            return cls(nearest[0])
+
+    @classmethod
+    def get_available_robots(cls):
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "SELECT id, position FROM Robot WHERE alive = true AND state = 0"
+            try:
+                cursor.execute(query)
+                result = cursor.fetchall()
+                if result:
+                    return result
+            except Exception as e:
+                print("objects: " + str(e))
+            finally:
+                cursor.close()
+
     def signin(self):
         with connect.connect() as connection:
             cursor = connection.cursor(prepared = True)
@@ -336,8 +375,8 @@ class Robot:
                 cursor.execute(query, values)
                 connection.commit()
                 return True
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
                 connection.rollback()
             finally:
                 cursor.close()
@@ -352,8 +391,8 @@ class Robot:
                 cursor.execute(query, values)
                 connection.commit()
                 return True
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
                 connection.rollback()
             finally:
                 cursor.close()
@@ -368,8 +407,8 @@ class Robot:
                 cursor.execute(query, values)
                 connection.commit()
                 return True
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
                 connection.rollback()
             finally:
                 cursor.close()
@@ -384,8 +423,8 @@ class Robot:
                 cursor.execute(query, values)
                 connection.commit()
                 return True
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
                 connection.rollback()
             finally:
                 cursor.close()
@@ -400,8 +439,8 @@ class Robot:
                 cursor.execute(query, values)
                 connection.commit()
                 return True
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
                 connection.rollback()
             finally:
                 cursor.close()
@@ -416,8 +455,8 @@ class Robot:
                 cursor.execute(query, values)
                 connection.commit()
                 return True
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
                 connection.rollback()
             finally:
                 cursor.close()
@@ -432,8 +471,8 @@ class Robot:
                 cursor.execute(query, values)
                 connection.commit()
                 return True
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
                 connection.rollback()
             finally:
                 cursor.close()
@@ -448,8 +487,8 @@ class Robot:
                 cursor.execute(query, values)
                 connection.commit()
                 return True
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
                 connection.rollback()
             finally:
                 cursor.close()
@@ -464,8 +503,8 @@ class Robot:
                 cursor.execute(query, values)
                 connection.commit()
                 return True
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
                 connection.rollback()
             finally:
                 cursor.close()
@@ -480,8 +519,8 @@ class Robot:
                 cursor.execute(query, values)
                 connection.commit()
                 return True
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
                 connection.rollback()
             finally:
                 cursor.close()
@@ -496,8 +535,8 @@ class Robot:
                 cursor.execute(query, values)
                 connection.commit()
                 return True
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
                 connection.rollback()
             finally:
                 cursor.close()
@@ -513,8 +552,8 @@ class Robot:
                 result = cursor.fetchone()
                 if result:
                     return Crypto.PublicKey.RSA.importKey(bytes.fromhex(result[0]))
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
 
@@ -528,8 +567,8 @@ class Robot:
                 result = cursor.fetchone()
                 if result:
                     return result[0]
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
 
@@ -543,8 +582,8 @@ class Robot:
                 result = cursor.fetchone()
                 if result:
                     return result[0]
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
 
@@ -558,8 +597,8 @@ class Robot:
                 result = cursor.fetchone()
                 if result:
                     return result[0]
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
 
@@ -573,8 +612,8 @@ class Robot:
                 result = cursor.fetchone()
                 if result:
                     return result[0]
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
 
@@ -588,8 +627,8 @@ class Robot:
                 result = cursor.fetchone()
                 if result:
                     return result[0]
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
 
@@ -603,8 +642,8 @@ class Robot:
                 result = cursor.fetchone()
                 if result:
                     return result[0]
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
 
@@ -618,8 +657,8 @@ class Robot:
                 result = cursor.fetchone()
                 if result:
                     return result[0]
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
 
@@ -633,8 +672,8 @@ class Robot:
                 result = cursor.fetchone()
                 if result:
                     return result[0]
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
 
@@ -648,8 +687,8 @@ class Robot:
                 result = cursor.fetchone()
                 if result:
                     return result[0]
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
 
@@ -668,8 +707,8 @@ class User:
                 result = cursor.fetchone()
                 if result:
                     return True
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
         return False
@@ -686,8 +725,8 @@ class User:
                 user = cls(email)
                 if user.set_password(password):
                     return user
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
                 connection.rollback()
             finally:
                 cursor.close()
@@ -701,8 +740,8 @@ class User:
                 cursor.execute(query, values)
                 connection.commit()
                 return True
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
                 connection.rollback()
             finally:
                 cursor.close()
@@ -717,8 +756,8 @@ class User:
                 cursor.execute(query, values)
                 connection.commit()
                 return True
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
                 connection.rollback()
             finally:
                 cursor.close()
@@ -734,8 +773,8 @@ class User:
                 connection.commit()
                 self.email = email
                 return True
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
                 connection.rollback()
             finally:
                 cursor.close()
@@ -750,8 +789,8 @@ class User:
                 cursor.execute(query, values)
                 connection.commit()
                 return True
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
                 connection.rollback()
             finally:
                 cursor.close()
@@ -766,8 +805,8 @@ class User:
                 cursor.execute(query, values)
                 connection.commit()
                 return True
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
                 connection.rollback()
             finally:
                 cursor.close()
@@ -784,8 +823,8 @@ class User:
                 cursor.execute(query, values)
                 connection.commit()
                 return True
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
                 connection.rollback()
             finally:
                 cursor.close()
@@ -804,8 +843,8 @@ class User:
                     hash = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, 100000)
                     if hash == bytes.fromhex(result[1]):
                         return True
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
         return False
@@ -820,8 +859,8 @@ class User:
                 result = cursor.fetchone()
                 if result:
                     return result[0]
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
 
@@ -835,8 +874,8 @@ class User:
                 result = cursor.fetchone()
                 if result:
                     return result[0]
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
 
@@ -850,8 +889,8 @@ class User:
                 result = cursor.fetchone()
                 if result:
                     return result[0]
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
 
@@ -870,8 +909,8 @@ class Login:
                 cursor.execute(query, values)
                 connection.commit()
                 return cls(cookie)
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
                 connection.rollback()
             finally:
                 cursor.close()
@@ -887,8 +926,8 @@ class Login:
                 result = cursor.fetchall()
                 if result:
                     return result
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
 
@@ -901,8 +940,8 @@ class Login:
                 cursor.execute(query, values)
                 connection.commit()
                 return True
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
                 connection.rollback()
             finally:
                 cursor.close()
@@ -918,8 +957,8 @@ class Login:
                 result = cursor.fetchone()
                 if result:
                     return User(result[0])
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
 
@@ -938,8 +977,8 @@ class QRCode:
                 cursor.execute(query, values)
                 connection.commit()
                 return True
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
                 connection.rollback()
             finally:
                 cursor.close()
@@ -963,8 +1002,8 @@ class QRCode:
                 cursor.execute(query, values)
                 connection.commit()
                 return cls(number)
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
                 connection.rollback()
             finally:
                 cursor.close()
@@ -982,8 +1021,8 @@ class QRCode:
                     cursor.execute(query, values)
                     connection.commit()
                     return True
-                except mysql.connector.Error as e:
-                    print(e)
+                except Exception as e:
+                    print("objects: " + str(e))
                     connection.rollback()
                 finally:
                     cursor.close()
@@ -999,8 +1038,8 @@ class QRCode:
                 result = cursor.fetchone()
                 if result:
                     return User(result[0])
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
 
@@ -1014,8 +1053,8 @@ class QRCode:
                 result = cursor.fetchone()
                 if result:
                     return Delivery(result[0])
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
 
@@ -1029,7 +1068,17 @@ class QRCode:
                 result = cursor.fetchone()
                 if result:
                     return datetime.datetime.fromtimestamp(result[0])
-            except mysql.connector.Error as e:
-                print(e)
+            except Exception as e:
+                print("objects: " + str(e))
             finally:
                 cursor.close()
+
+xy_map = [(1, 0), (3, 0), (4, 0), (6, 0), (4, 1), (5, 1), (6, 1), (5, 2),
+          (6, 2), (3, 3), (4, 3), (5, 3), (6, 3), (5, 4), (6, 4), (3, 5),
+          (4, 5), (5, 5), (6, 5), (1, 7), (3, 7), (4, 7), (6, 7), (2, 3),
+          (1, 2), (0, 2), (0, 6), (1, 6), (2, 5)]
+
+def distance(p1, p2):
+    x1, y1 = xy_map[p1]
+    x2, y2 = xy_map[p2]
+    return math.sqrt((x1 - x2)**2 + (y1 - y2)**2)

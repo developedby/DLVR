@@ -27,56 +27,63 @@ async def main(websocket, path, open_sockets):
                             try:
                                 await script.main(websocket, path, open_sockets, data)
                             except Exception as e:
-                                print("signin.py:28(" + script.__name__ + "): " + str(e))
+                                print("public.user.signin(public.delivery.finish): " + str(e))
                                 await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                         elif path == "/delivery/qr":
                             import public.delivery.qr as script
                             try:
                                 await script.main(websocket, path, open_sockets, data)
                             except Exception as e:
-                                print("signin.py:35(" + script.__name__ + "): " + str(e))
+                                print("public.user.signin(public.delivery.qr): " + str(e))
                                 await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                         elif path == "/delivery/request":
                             import public.delivery.request as script
                             try:
                                 await script.main(websocket, path, open_sockets, data)
                             except Exception as e:
-                                print("signin.py:42(" + script.__name__ + "): " + str(e))
+                                print("public.user.signin(public.delivery.request): " + str(e))
                                 await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                         elif path == "/delivery/response":
                             import public.delivery.response as script
                             try:
                                 await script.main(websocket, path, open_sockets, data)
                             except Exception as e:
-                                print("signin.py:49(" + script.__name__ + "): " + str(e))
+                                print("public.user.signin(public.delivery.response): " + str(e))
                                 await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                         elif path == "/delivery/send":
                             import public.delivery.send as script
                             try:
                                 await script.main(websocket, path, open_sockets, data)
                             except Exception as e:
-                                print("signin.py:56(" + script.__name__ + "): " + str(e))
+                                print("public.user.signin(public.delivery.send): " + str(e))
                                 await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                         elif path == "/user/delete":
                             import public.user.delete as script
                             try:
                                 await script.main(websocket, path, open_sockets, data)
                             except Exception as e:
-                                print("signin.py:63(" + script.__name__ + "): " + str(e))
+                                print("public.user.signin(public.user.delete): " + str(e))
+                                await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
+                        elif path == "/user/profile":
+                            import public.user.profile as script
+                            try:
+                                await script.main(websocket, path, open_sockets, data)
+                            except Exception as e:
+                                print("public.user.signin(public.user.profile): " + str(e))
                                 await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                         elif path == "/user/signout":
                             import public.user.signout as script
                             try:
                                 await script.main(websocket, path, open_sockets, data)
                             except Exception as e:
-                                print("signin.py:70(" + script.__name__ + "): " + str(e))
+                                print("public.user.signin(public.user.signout): " + str(e))
                                 await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                         elif path == "/user/update":
                             import public.user.update as script
                             try:
                                 await script.main(websocket, path, open_sockets, data)
                             except Exception as e:
-                                print("signin.py:77(" + script.__name__ + "): " + str(e))
+                                print("public.user.signin(public.user.update): " + str(e))
                                 await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                         else:
                             await websocket.send("{\"status_code\": 404, \"reason_message\": \"Not Found\"}")

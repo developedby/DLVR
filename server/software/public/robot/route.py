@@ -1,10 +1,6 @@
 import json
-import datetime
-import hashlib
-import Crypto.PublicKey.RSA
-import connect
-import mysql.connector
 import asyncio
+import objects
 
 async def main(websocket, path, open_sockets, data = None):
     if not data:

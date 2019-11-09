@@ -10,7 +10,7 @@ class connect:
 
     def __exit__(self, type, value, traceback):
         if isinstance(value, Exception):
-            print(value)
+            print("connect: " + str(value))
 
         try:
             self.connection.close()
