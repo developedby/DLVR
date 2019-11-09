@@ -194,4 +194,17 @@ namespace street_lines
         return cv::Vec4f(norm(xy_seg[0], xy_seg[1]), my_atan2(xy_seg[1], xy_seg[0]),
                          norm(xy_seg[2], xy_seg[3]), my_atan2(xy_seg[3], xy_seg[2]));
     }
+    
+    // Does a stable in-place sort of collinear points
+    void orderCollinearPoints(std::vector<cv::Vec2f>& pts, const float angle)
+    {
+        int used_axis;
+        if ((angle < M_PI/4)
+            || (((M_PI - M_PI/4) < angle) && (angle < (M_PI - M_PI/4)))
+            || (angle > (2*M_PI - M_PI/4)))
+            used_axis = 1;
+        else
+            used_axis = 0;
+        std::stable_sort(pts.begin(), pts.end(), [used_axis](auto pt1, auto pt2){return pt1[used_axis] < pt2[used_axis];});
+    }
 }

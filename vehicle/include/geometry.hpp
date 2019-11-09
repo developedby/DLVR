@@ -55,6 +55,8 @@ namespace street_lines
     cv::Vec4f segmentXYToRT(const cv::Vec4f& xy_seg);
     
     cv::Point2f rotatePoint(const cv::Point2f pt, const float angle);
+    
+    void orderCollinearPoints(std::vector<cv::Vec2f>& pts, const float angle);
 }
 
 #endif

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
+#include <opencv2/highgui.hpp>
 #include <reduce_lines.hpp>
 #include "geometry.hpp"
 #include "constants.hpp"
@@ -35,6 +36,7 @@ namespace street_lines
     {
         vector<Vec4i> lines;
         cv::HoughLinesP(lines_mask, lines, 1, max_theta_diff-0.01, 100, 100, 8);
+        //cv::imwrite("teste_linha_ruffles.jpg", drawSegments(lines, Mat::zeros(img_height, img_width, CV_8UC3)));
         //std::cout << "Linhas: " << lines.size() << std::endl;
         lines = reduceSegments(lines);
         return lines;
@@ -59,12 +61,12 @@ namespace street_lines
         // Theta max e menor que theta min porque é theta da distancia maxima (mais perto do horizonte)
         float constexpr px_per_rad = img_height/(img_theta_min - img_theta_max);
         
-        const float theta1 = (line[1] - img_y_horizon) / px_per_rad; // TODO: Desnormalizar img_y_horizon
+        const float theta1 = line[1]/px_per_rad + img_theta_max;
         const float y1_m = cam_height_m / tan(theta1);
         const float phi1 = (line[0] - x_center) / px_per_rad;
         const float x1_m = tan(phi1) * y1_m;
         
-        const float theta2 = (line[3] - img_y_horizon) / px_per_rad; // TODO: Desnormalizar img_y_horizon
+        const float theta2 = line[3]/px_per_rad + img_theta_max;
         const float y2_m = cam_height_m / tan(theta2);
         const float phi2 = (line[2] - x_center) / px_per_rad;
         const float x2_m = tan(phi2) * y2_m;
@@ -175,18 +177,6 @@ namespace street_lines
         return dist < threshold;
     }
 
-    // Does a stable in-place sort of collinear points
-    void orderCollinearPoints(vector<Vec2f>& pts, const float angle)
-    {
-        int used_axis;
-        if ((angle < M_PI/4)
-            || (((M_PI - M_PI/4) < angle) && (angle < (M_PI - M_PI/4)))
-            || (angle > (2*M_PI - M_PI/4)))
-            used_axis = 1;
-        else
-            used_axis = 0;
-        std::stable_sort(pts.begin(), pts.end(), [used_axis](auto pt1, auto pt2){return pt1[used_axis] < pt2[used_axis];});
-    }
 
     // Returns a bgr version of the image with the segments drawn on it
     Mat drawSegments(const vector<Vec4i>& segs, const Mat& img)

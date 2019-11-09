@@ -21,8 +21,13 @@ int main()
 	auto sections = vision.findStreets();
 	auto time_to_process = (cv::getTickCount() - initial_tick) / cv::getTickFrequency();
 	std::cout << "Tempo para processar: " << time_to_process << std::endl;
+	
+	cv::Mat out_img = cv::Mat::zeros(200, 200, CV_8U);
 	for (auto sec: sections)
 	{
+		const cv::Vec4f line = sec.end_points * (-100) + cv::Vec4f(100, 100, 100, 100);
+		cv::line(out_img, cv::Point(line[0], line[1]), cv::Point(line[2], line[3]), 255, 1, cv::LINE_AA);
 		std::cout << int(sec.type) << ' ' << sec.line << ' ' << sec.end_points << std::endl;
 	}
+	cv::imwrite("teste_linhas_secoes.jpg", out_img);
 }

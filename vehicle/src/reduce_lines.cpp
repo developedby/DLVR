@@ -44,48 +44,20 @@ namespace street_lines
         // For each group, find the rotated bounding rectangle and the line that crosses it
         vector<Vec4i> out_segs;
         int a = 0;
-        char name[] = "group0.png";
         for (auto group: groups)
-        {
+        {         
             std::cout << "group " << a <<std::endl;
             a++;
             // Ignore very small groups
             if (group.size() < 5)
                 continue;
-            // Find the line of the group
-            /*float theta = 0;
-            float rho = 0;
-            int used_axis;
-            if(abs(segs[group[0]][2] - segs[group[0]][0]) > abs(segs[group[0]][3] - segs[group[0]][1]))
-                used_axis = 0;
-            elsePoint
-                used_axis = 1;
-                theta
-            for (auto i: group)
-            {
-                rho += lines[i][0];
-                const float line_angle = lines[i][1];
-                if (line_angle > M_PI)
-                    theta += line_angle - M_PI;
-                else
-                    theta += line_angle;
-            }
-            theta /= group.size();
-            rho /= group.size();
-            std::cout << "angle: " << theta << std::endl;
-            
-            Mat img_line = Mat::zeros(img_width, img_height, CV_8U);
-            drawLine(Vec2f(rho, theta), img_line);
-            Vec4f seg(img_width, img_height, 0, 0);
-            int used_axis;
-            vector<vector<cv::Point>> contours;
-            vector<Vec4i> hierarchy;
-            cv::findContours(red_mask, contours, hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE);*/
-            
-            
+
             float theta = 0;
+            vector<cv::Vec2f> seg_pts;
             for (auto i: group)
             {
+                seg_pts.emplace_back(segs[i][0], segs[i][1]);
+                seg_pts.emplace_back(segs[i][2], segs[i][3]);
                 const float line_angle = lines[i][1];
                 if (line_angle > M_PI)
                     theta += line_angle - M_PI;
@@ -93,24 +65,49 @@ namespace street_lines
                     theta += line_angle;
             }
             theta /= group.size();
-            std::cout << "angle " << theta <<std::endl; 
+            std::cout << "angle " << theta <<std::endl;
+            orderCollinearPoints(seg_pts, theta);
+            
+            Vec4i result_seg(0, 0, 0, 0);
+            const unsigned int n_pts = seg_pts.size();
+            float constexpr percentile = 0.3;
+            for (int i = 0; i < int(percentile*n_pts); i++)
+            {
+                result_seg[0] += seg_pts[i][0];
+                result_seg[1] += seg_pts[i][1];
+                result_seg[2] += seg_pts[n_pts-i-1][0];
+                result_seg[3] += seg_pts[n_pts-i-1][1];
+            }
+            result_seg[0] /= int(percentile*n_pts);
+            result_seg[1] /= int(percentile*n_pts);
+            result_seg[2] /= int(percentile*n_pts);
+            result_seg[3] /= int(percentile*n_pts);
+            out_segs.push_back(result_seg);
+            
+            /* 
             cv::Point2f min((img_width + img_height), (img_width + img_height));
             cv::Point2f max(-(img_width + img_height), -(img_width + img_height));
             vector<Vec4i> rotate_points;
+            float avg_x = 0;
+            float avg_y1 = 0;
+            float avg_y2 = 0;
             for (auto i: group)
             {
                 const Point2f rot_pt1 = rotatePoint(Point2f(segs[i][0], segs[i][1]), -theta);
-                min.x = std::min(min.x, rot_pt1.x);
-                min.y = std::min(min.y, rot_pt1.y);
-                max.x = std::max(max.x, rot_pt1.x);
-                max.y = std::max(max.y, rot_pt1.y);
+                //min.y = std::min(min.y, rot_pt1.y);
+                //max.y = std::max(max.y, rot_pt1.y);
+                avg_y1 += rot_pt1.y;
+                avg_x += rot_pt1.x;
                 const Point2f rot_pt2 = rotatePoint(Point2f(segs[i][2], segs[i][3]), -theta);
-                min.x = std::min(min.x, rot_pt2.x);
-                min.y = std::min(min.y, rot_pt2.y);
-                max.x = std::max(max.x, rot_pt2.x);
-                max.y = std::max(max.y, rot_pt2.y);
+                //min.y = std::min(min.y, rot_pt2.y);
+                //max.y = std::max(max.y, rot_pt2.y);
+                avg_y2 += rot_pt2.y;
+                avg_x += rot_pt2.x;
                 rotate_points.emplace_back(rot_pt1.x, rot_pt1.y, rot_pt2.x, rot_pt2.y); 
             }
+            avg_x /= 2*group.size();
+            avg_y1 /= group.size();
+            avg_y2 /= group.size();
             auto line = xySegmentToLine(rotate_points[0]);
             std::cout << "rotate angle" << line[1] <<std::endl;
             for (auto point: rotate_points)
@@ -119,14 +116,13 @@ namespace street_lines
             }
             Mat img_line = Mat::zeros(img_width, img_height, CV_8U);
             img_line = drawSegmentsTrash(rotate_points, img_line);
-            name[5] = '0' + a;
-            cv::imwrite(name, img_line);
             
-            const Point2f rot_line1((min.x+max.x) / 2, min.y);
-            const Point2f rot_line2((min.x+max.x) / 2, max.y);
+            const Point2f rot_line1(avg_x, min.y);
+            const Point2f rot_line2(avg_x, max.y);
             const Point2f unrot_line1 = rotatePoint(rot_line1, theta);
             const Point2f unrot_line2 = rotatePoint(rot_line2, theta);
             out_segs.emplace_back(unrot_line1.x, unrot_line1.y, unrot_line2.x, unrot_line2.y);
+            */
         }
         return out_segs;
     }
