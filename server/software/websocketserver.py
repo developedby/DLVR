@@ -9,6 +9,7 @@ import mimetypes
 import importlib
 import datetime
 import objects
+import logging
 
 script_cache = {}
 open_sockets = {"users": {}, "robots": {}}
@@ -22,13 +23,14 @@ def main():
         ssl_context.load_cert_chain("cert.pem", "key.pem")
         wssd = websockets.serve(handler, HOST, PORT, ssl = ssl_context)
         os.system("clear")
+        objects.init_logging("websocketserver.log")
         module.log("Serving WSS on {0} port {1} (wss://{0}:{1}/) ...".format(HOST, PORT))
         sys.path.append(os.getcwd())
         os.chdir("./public")
         asyncio.get_event_loop().run_until_complete(wssd)
         asyncio.get_event_loop().run_forever()
     except KeyboardInterrupt:
-        module.log("Server closed")
+        module.log("Server closed\n")
 
 async def handler(websocket, path):
     objects.Request(websocket).log(path)
