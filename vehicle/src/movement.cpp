@@ -45,7 +45,7 @@ void Movement::goStraight(int direction, float speed){
 // Tries to move in a straight line for 'cm' centimeters
 // Return the distance move by the left wheel minus the moved by the right wheel
 // This function blocks execution
-float Movement::goStraightCm(int direction, float cm, float speed=400)
+float Movement::goStraightCm(int direction, float cm, float speed=300)
 {
     float moved_left = 0;
     float moved_right = 0;
@@ -57,6 +57,7 @@ float Movement::goStraightCm(int direction, float cm, float speed=400)
         moved_left += this->left_wheel.cmMovedSinceLastCall();
         moved_right += this->right_wheel.cmMovedSinceLastCall();
     }
+    this->stop();
     return moved_left - moved_right;
 }
 
