@@ -1,15 +1,12 @@
 #include "movement.hpp"
+#include <cmath>
 #include <iostream>
+#include <algorithm>
 #include "constants.hpp"
 
-#define abs(a) ((a >= 0)?a:-a)
 #define LEFT_BALANCE    (1.0f - balance)
 #define RIGHT_BALANCE   (1.0f + balance) 
 #define CMATERIAL 1.0f
-
-float Movement::limit(float vmin, float v, float vmax) {
-    return ((v > vmax)?(vmax):((v < vmin)?(vmin):(v)));
-}
 
 Movement::Movement() :
           left_pid(0), right_pid(1),
@@ -35,6 +32,9 @@ void Movement::turn(float degrees) {
     this->turn_ticks = roundf(CMATERIAL * (abs(degrees * 83.775804096)/(4*lr/constants::vehicle_wheel_distance)) / constants::pid_T_ms);
 }
 
+// Tries to move in a straight line.
+// Direction is 1 (forward) or -1 (backwards)
+// Speed is in milimeters per second
 void Movement::goStraight(int direction, float speed){ //mmps
     lr = abs(speed);
     rr = abs(speed);
@@ -53,6 +53,12 @@ void Movement::goCurve(int direction, float curvature) {
     
 }
 
+void Movement::stop()
+{
+    this->left_wheel.stop();
+    this->right_wheel.stop();
+}
+
 void Movement::tick(void) {
     float aux;
     // Left
@@ -63,7 +69,7 @@ void Movement::tick(void) {
     else if(aux > 1000.0) {
         aux /= 2.0f;
     }
-    float l_dc = this->limit(0, this->left_pid.push_error(lr * lb, aux), 1);
+    float l_dc = std::clamp(this->left_pid.push_error(lr * lb, aux), 0, 1);
     // Right
     aux = this->right_wheel.getSpeed();
     if (aux < 3.7f) {
@@ -72,7 +78,7 @@ void Movement::tick(void) {
     else if(aux > 1000.0) {
         aux /= 2.0f;
     }
-    float r_dc = this->limit(0, this->right_pid.push_error(rr * rb, aux), 1);
+    float r_dc = std::clamp(this->right_pid.push_error(rr * rb, aux), 0, 1);
     // Adjust
     if(initial_wheel_flag) {
         this->right_wheel.spin(r_dir, r_dc);
@@ -87,23 +93,24 @@ void Movement::tick(void) {
         if(this->turn_ticks == 0) {
             this->goStraight(0, 0);
         }
-        --this->turn_ticks;
+        this->turn_ticks -= 1;
     }
 }
 
 float Movement::getBalance(void) {
-    return (this->balance);
+    return this->balance;
 }
 
-float Movement::setBalance(float balance) {
-    this->balance = ((balance < 1.0)?((balance > -1.0)?balance:(-1.0)):(1.0));
+float Movement::setBalance(float balance_) {  
+    this->balance = std::clamp(balance_, -1.0, 1.0);
+
     if(this->balance > 0) {
-        lb = (1.0f - balance);
+        lb = 1.0f - this->balance;
         rb = 1.0f;
     }
     else {
-        rb = (1.0f + balance);
         lb = 1.0f;
+        rb = 1.0f + this->balance;
     }
     return (this->balance);
 }

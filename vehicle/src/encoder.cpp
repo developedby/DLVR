@@ -7,7 +7,7 @@
 
 int Encoder::instances = 0;
 
-Encoder::Encoder(int encoder_num) : last_measure(gpioTick()), sigma_space(2.0), sigma_time(2.0)
+Encoder::Encoder(int encoder_num) : ticks(0), last_measure(gpioTick()), sigma_space(2.0), sigma_time(2.0)
 {
     if(encoder_num == 0)
     {
@@ -19,27 +19,33 @@ Encoder::Encoder(int encoder_num) : last_measure(gpioTick()), sigma_space(2.0), 
     }
     this->instances++;
     this->createSpatialWeights();
-    for (int i=0; i < n_measures; i++)
-        this->measures_us[i] = this->max_measure_interval;
+    
     gpioSetMode(this->pin_read, PI_INPUT);
     gpioSetAlertFuncEx(this->pin_read, callRegisterMeasurement, this);
     gpioSetTimerFuncEx(this->instances, this->max_measure_interval/(4*1000), callRegisterStopped, this);
+}
+
+// Sets the readings to max_measure_interval (aka not moving)
+void Encoder::resetReadings()
+{
+    for (auto& measurement: this->measures_us)
+        measurement = this->max_measure_interval;
 }
 
 // Returns the measured angular speed using a gaussian over the last 'n' measurements
 float Encoder::getAngularSpeed()
 {    
     // Takes a local copy of the speed measurements
-    int const counter_ = counter;
+    int const counter_ = this->counter;
     //std::cout << "counter=" << counter_ << std::endl;
     float measures_cpy[this->n_measures];
-    for (int i=0; i < n_measures; i++)
+    for (int i=0; i < this->n_measures; i++)
     {
-        measures_cpy[n_measures-1-i] = this->measures_us[(counter_ + i) % this->n_measures];
+        measures_cpy[this->n_measures-1-i] = this->measures_us[(counter_ + i) % this->n_measures];
         //std::cout << "measure cpy " << measures_cpy[n_measures-1-i] << " index=" << n_measures-1-i << std::endl;
     }
     
-    // Calculates tsec_agohe temporal weights
+    // Calculates the temporal weights
     float time_weight[this->n_measures];
     float sec_ago = (gpioTick() - this->last_measure) / 1000000.0;
     for (int i=0; i < this->n_measures; i++)
@@ -76,11 +82,17 @@ float Encoder::getAngularSpeed()
     return (360.0/this->num_holes) / avg_time;
 }
 
+// Registers that the encoder spun one hole
 void Encoder::registerMeasurement(int const level, uint32_t const tick)
 {
+    // Filters out measurements made too quickly, because it probably is a double reading
+    if (tick - this->last_measure < this->min_measure_interval)
+        return;
+
     this->measures_us[counter] = tick - this->last_measure;
-    this->last_measure = tick;
+    this->last_measure = tick;  // This is number of cpu ticks
     //std::cout << counter << " " << readings_us[counter] << std::endl;
+    this->ticks++;  // This is amount of times a measurement was registered
     if (this->counter >= this->n_measures-1)
         this->counter = 0;
     else
@@ -97,6 +109,8 @@ void Encoder::createSpatialWeights()
     }
 }
 
+// When the wheel is not moving, no measurements are made
+// We have to register a fake measurement every so often so that the control can know the wheel is not moving
 void Encoder::registerStopped()
 {
     uint32_t const crnt_tick = gpioTick();

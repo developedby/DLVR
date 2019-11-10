@@ -14,6 +14,7 @@ class Wheel
         Wheel(int wheel_num);
         void spin(int const direction, float const duty_cycle);
         float getSpeed();
+        void stop();
 };
 
 #endif //encoder_h_

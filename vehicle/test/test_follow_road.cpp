@@ -29,12 +29,12 @@ void goAhead(std::vector<street_lines::StreetSection>& found_streets, Movement& 
 {
     street_lines::StreetSection closed_street;
     float min_angle = 500;
-    std::cout << "linha encontradas " <<std::endl;
+    std::cout << "linha encontradas " << std::endl;
     bool found = false;
     for(auto sec : found_streets)
     {
         float angle = setAngleInRange(sec.line[1], (20*M_PI)/180);
-        std::cout <<sec.end_points << " angulo" << angle <<std::endl;
+        std::cout << sec.end_points << " angulo: " << angle <<std::endl;
         if(abs(angle) < min_angle)
         {
             found = true;
