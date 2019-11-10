@@ -7,6 +7,7 @@ import sys
 
 if len(sys.argv) < 3:
     print("Passe a Senha e email destino como parâmetro")
+    exit()
 
 # create message object instance
 msg = MIMEMultipart("alternative")
@@ -14,7 +15,7 @@ msg = MIMEMultipart("alternative")
 # setup the parameters of the message
 password = sys.argv[1]
 msg['From'] = "projectdlvr@gmail.com"
-msg['To'] = "matheusgiovannidias@live.com"
+msg['To'] = sys.argv[2]
 msg['Subject'] = "Subscription"
 
 text = "Thank you"
