@@ -20,6 +20,7 @@ Encoder::Encoder(int encoder_num) : ticks(0), last_measure(gpioTick()), sigma_sp
     this->instances++;
     this->createSpatialWeights();
     
+    this->resetReadings();
     gpioSetMode(this->pin_read, PI_INPUT);
     gpioSetAlertFuncEx(this->pin_read, callRegisterMeasurement, this);
     gpioSetTimerFuncEx(this->instances, this->max_measure_interval/(4*1000), callRegisterStopped, this);
@@ -79,24 +80,27 @@ float Encoder::getAngularSpeed()
     }
     avg_time /= 1000000.0;
     //std::cout << "avg_time " << avg_time << std::endl;
-    return (2*M_PI/this->num_holes) / avg_time;
+    return (2*M_PI/this->num_holes) / (avg_time);
 }
 
 // Registers that the encoder spun one hole
 void Encoder::registerMeasurement(int const level, uint32_t const tick)
 {
-    // Filters out measurements made too quickly, because it probably is a double reading
-    if (tick - this->last_measure < this->min_measure_interval)
-        return;
+    if(level == 1)
+    {
+        // Filters out measurements made too quickly, because it probably is a double reading
+        if (tick - this->last_measure < this->min_measure_interval)
+            return;
 
-    this->measures_us[counter] = tick - this->last_measure;
-    this->last_measure = tick;  // This is number of cpu ticks
-    //std::cout << counter << " " << readings_us[counter] << std::endl;
-    this->ticks++;  // This is amount of times a measurement was registered
-    if (this->counter >= this->n_measures-1)
-        this->counter = 0;
-    else
-        this->counter++;
+        this->measures_us[counter] = tick - this->last_measure;
+        this->last_measure = tick;  // This is number of cpu ticks
+        //std::cout << counter << " " << readings_us[counter] << std::endl;
+        this->ticks++;  // This is amount of times a measurement was registered
+        if (this->counter >= this->n_measures-1)
+            this->counter = 0;
+        else
+            this->counter++;
+    }
 }
 
 // Creates gaussian spatial weights (relative to the order in which they were taken)

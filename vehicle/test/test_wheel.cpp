@@ -21,21 +21,21 @@ int main (void)
         std::cout << "Erro ao inicializar!" << std::endl;
         exit(PI_INIT_FAILED);
     }
-    Wheel l_wheel(l_enc_pin, l_motor_fwd_pin, l_motor_bkwd_pin, l_motor_pwm_pin);
-    Wheel r_wheel(r_enc_pin, r_motor_fwd_pin, r_motor_bkwd_pin, r_motor_pwm_pin);
+    Wheel l_wheel(0);
+    Wheel r_wheel(1);
     
     float speed_l, speed_r;
     while (true)
     {
         for (float i = 1; i >= 0; i-= 0.1)
         {
-            l_wheel.spin(1, i);
-            r_wheel.spin(1, i);
+            l_wheel.spin(1, 0.5);
+            r_wheel.spin(1, 0.5);
             speed_l = l_wheel.getSpeed();
             speed_r = r_wheel.getSpeed();
-            std::cout << "Esquerda: " << speed_l << " mm/s" << std::endl;
-            std::cout << "Direita: " << speed_r << " mm/s" << std::endl << std::endl;
-            gpioDelay(3000000);
+            std::cout << "Esquerda: " << speed_l << " mm/s e com contador em " << l_wheel.encoder.ticks <<  std::endl;
+            std::cout << "Direita: " << speed_r << " mm/s e com contador em " << r_wheel.encoder.ticks <<  std::endl;
+            gpioDelay(1000000);
         }
     }
     gpioTerminate();

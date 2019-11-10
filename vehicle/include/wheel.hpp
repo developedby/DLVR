@@ -7,16 +7,16 @@
 class Wheel
 {
     private:
-        Encoder encoder;
         DCMotor dc_motor;
         static constexpr float radius_mm = 33.0;
         int last_encoder_ticks;
     public:
+        Encoder encoder;
         Wheel(int wheel_num);
         void spin(int const direction, float const duty_cycle);
         float getSpeed();
         void stop();
-        float cmMovedSinceLastCall();
+        float mmMovedSinceLastCall();
 };
 
 #endif //encoder_h_

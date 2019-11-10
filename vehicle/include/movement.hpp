@@ -25,6 +25,7 @@ class Movement {
         void tick(void);
         void turn(float degrees);
         void goStraight(int direction, float speed);
+        float goStraightMm(int direction, float mm, float speed);
         void goCurve(int direction, float curvature);
         void stop();
         float getBalance(void);

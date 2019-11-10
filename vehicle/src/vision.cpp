@@ -483,12 +483,12 @@ void Vision::getRedTapeMask(Mat& dst)
 
 void Vision::getBlueTapeMask(Mat& dst)
 {
-    this->getTapeMask(dst, cv::Scalar(90, 200, 100), cv::Scalar(110, 245, 255));
+    this->getTapeMask(dst, cv::Scalar(85, 200, 40), cv::Scalar(105, 250, 255));
 }
 
 void Vision::getGreenTapeMask(Mat& dst)
 {
-    this->getTapeMask(dst, cv::Scalar(70, 40, 40), cv::Scalar(85, 250, 255));
+    this->getTapeMask(dst, cv::Scalar(40, 130, 40), cv::Scalar(60, 250, 255));
 }
 
 void Vision::getYellowTapeMask(Mat& dst)

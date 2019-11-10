@@ -2,11 +2,16 @@
 #include <cmath>
 #include <iostream>
 #include <algorithm>
+#include <pigpio.h>
 #include "constants.hpp"
 
 #define LEFT_BALANCE    (1.0f - balance)
 #define RIGHT_BALANCE   (1.0f + balance) 
 #define CMATERIAL 1.0f
+
+void tickPID(void* args) {
+	((Movement*)args)->tick();
+}
 
 Movement::Movement() : left_pid(0), right_pid(1), left_wheel(0),  right_wheel(1)
 {
@@ -20,6 +25,8 @@ Movement::Movement() : left_pid(0), right_pid(1), left_wheel(0),  right_wheel(1)
     turn_ticks = -1;
     initial_wheel_flag = false;
     wheel_distance = constants::vehicle_wheel_distance;
+    gpioSetTimerFuncEx(9, constants::pid_T_ms, tickPID, this);
+    
 }
 
 void Movement::turn(float degrees) {
@@ -28,6 +35,7 @@ void Movement::turn(float degrees) {
     r_dir = 2*(degrees > 0) - 1;
     l_dir = -r_dir;                    //83.775804096
     this->turn_ticks = roundf(CMATERIAL * (abs(degrees * 83.775804096)/(4*lr/constants::vehicle_wheel_distance)) / constants::pid_T_ms);
+    while(this->isTurning());
 }
 
 // Tries to move in a straight line.
@@ -45,17 +53,23 @@ void Movement::goStraight(int direction, float speed){
 // Tries to move in a straight line for 'cm' centimeters
 // Return the distance move by the left wheel minus the moved by the right wheel
 // This function blocks execution
-float Movement::goStraightCm(int direction, float cm, float speed=300)
+float Movement::goStraightMm(int direction, float mm, float speed=300)
 {
     float moved_left = 0;
     float moved_right = 0;
-    this->left_wheel.cmMovedSinceLastCall();
-    this->right_wheel.cmMovedSinceLastCall();
+    this->left_wheel.mmMovedSinceLastCall();
+    this->right_wheel.mmMovedSinceLastCall();
     this->goStraight(direction, speed);
-    while((moved_left + moved_right) < cm)
+    while((moved_left + moved_right) < 2*mm)
     {
-        moved_left += this->left_wheel.cmMovedSinceLastCall();
-        moved_right += this->right_wheel.cmMovedSinceLastCall();
+        if (moved_left > mm)
+            lr = 0;
+        else
+            moved_left += this->left_wheel.mmMovedSinceLastCall();
+        if (moved_right > mm)
+            rr = 0;
+        else
+            moved_right += this->right_wheel.mmMovedSinceLastCall();
     }
     this->stop();
     return moved_left - moved_right;
@@ -76,6 +90,10 @@ void Movement::stop()
 {
     this->left_wheel.stop();
     this->right_wheel.stop();
+    this->lr = 0;
+    this->rr = 0;
+    this->l_dir = 0;
+    this->r_dir = 0;
 }
 
 void Movement::tick(void) {
@@ -88,7 +106,7 @@ void Movement::tick(void) {
     else if(aux > 1000.0) {
         aux /= 2.0f;
     }
-    float l_dc = std::clamp(this->left_pid.push_error(lr * lb, aux), 0, 1);
+    float l_dc = std::clamp(this->left_pid.push_error(lr * lb, aux), 0.0f, 1.0f);
     // Right
     aux = this->right_wheel.getSpeed();
     if (aux < 3.7f) {
@@ -97,7 +115,7 @@ void Movement::tick(void) {
     else if(aux > 1000.0) {
         aux /= 2.0f;
     }
-    float r_dc = std::clamp(this->right_pid.push_error(rr * rb, aux), 0, 1);
+    float r_dc = std::clamp(this->right_pid.push_error(rr * rb, aux), 0.0f, 1.0f);
     // Adjust
     if(initial_wheel_flag) {
         this->right_wheel.spin(r_dir, r_dc);
@@ -121,7 +139,7 @@ float Movement::getBalance(void) {
 }
 
 float Movement::setBalance(float balance_) {  
-    this->balance = std::clamp(balance_, -1.0, 1.0);
+    this->balance = std::clamp(balance_, -1.0f, 1.0f);
 
     if(this->balance > 0) {
         lb = 1.0f - this->balance;
@@ -138,4 +156,3 @@ bool Movement::isTurning(void) {
     return (this->turn_ticks > 0);
 }
 
-int 

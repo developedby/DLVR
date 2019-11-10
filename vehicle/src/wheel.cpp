@@ -4,7 +4,7 @@
 #include <pigpio.h>
 
 
-Wheel::Wheel(int wheel_num) : encoder(wheel_num), dc_motor(wheel_num), last_encoder_ticks(0) {}
+Wheel::Wheel(int wheel_num) : dc_motor(wheel_num), last_encoder_ticks(0), encoder(wheel_num) {}
 
 void Wheel::spin(int const direction, float const duty_cycle)
 {
@@ -25,9 +25,9 @@ void Wheel::stop()
 
 // Returns the number of centimenters moved since this function was last called
 // This function doesn't differentiate moving forwards and backwards
-float Wheel::cmMovedSinceLastCall()
+float Wheel::mmMovedSinceLastCall()
 {
     const int num_ticks = this->encoder.ticks - this->last_encoder_ticks;
     this->last_encoder_ticks = this->encoder.ticks;
-    return num_ticks * (2*M_PI)/this->encoder.num_holes * radius_mm; 
+    return num_ticks * ((2*M_PI)/this->encoder.num_holes) * radius_mm; 
 }
