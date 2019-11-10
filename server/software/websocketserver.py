@@ -8,26 +8,30 @@ import os
 import mimetypes
 import importlib
 import datetime
+import objects
 
 script_cache = {}
 open_sockets = {"users": {}, "robots": {}}
+module = objects.Module("websocketserver")
 
 def main():
     try:
+        HOST = "ec2-18-229-140-84.sa-east-1.compute.amazonaws.com"
         PORT = 443
         ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         ssl_context.load_cert_chain("cert.pem", "key.pem")
-        wssd = websockets.serve(handler, "", PORT, ssl = ssl_context)
-        print("Serving WSS on 0.0.0.0 port {0} (wss://0.0.0.0:{0}/) ...".format(PORT))
+        wssd = websockets.serve(handler, HOST, PORT, ssl = ssl_context)
+        os.system("clear")
+        module.log("Serving WSS on {0} port {1} (wss://{0}:{1}/) ...".format(HOST, PORT))
         sys.path.append(os.getcwd())
         os.chdir("./public")
         asyncio.get_event_loop().run_until_complete(wssd)
         asyncio.get_event_loop().run_forever()
-    except KeyboardInterrupt as e:
-        print("websocketserver: " + str(e))
+    except KeyboardInterrupt:
+        module.log("Server closed")
 
 async def handler(websocket, path):
-    print("{0} - - [{1}] \"{2}\"".format(websocket.remote_address[0], datetime.datetime.now().strftime("%d/%b/%Y %H:%M:%S"), path))
+    objects.Request(websocket).log(path)
 
     local_path = "./" + path.strip("/")
 
@@ -56,7 +60,7 @@ async def handler(websocket, path):
         try:
             await script.main(websocket, path, open_sockets)
         except Exception as e:
-            print("websocketserver(" + script.__name__ + "): " + str(e))
+            module.error(e, script.__name__)
             await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
     else:
         await websocket.send("{\"status_code\": 404, \"reason_message\": \"Not Found\"}")

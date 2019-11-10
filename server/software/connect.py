@@ -1,4 +1,5 @@
 import mysql.connector
+import objects
 
 class connect:
     def __init__(self):
@@ -10,7 +11,7 @@ class connect:
 
     def __exit__(self, type, value, traceback):
         if isinstance(value, Exception):
-            print("connect: " + str(value))
+            objects.Module(__name__).error(value)
 
         try:
             self.connection.close()

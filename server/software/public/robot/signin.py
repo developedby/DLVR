@@ -3,6 +3,8 @@ import asyncio
 import objects
 
 async def main(websocket, path, open_sockets):
+    module = objects.Module(__name__)
+    req = objects.Request(websocket)
     data = await websocket.recv()
     data = json.loads(data)
     if "id" in data and "signature" in data and "timestamp" in data:
@@ -22,26 +24,27 @@ async def main(websocket, path, open_sockets):
                         data = json.loads(message)
                         if "path" in data:
                             path = data["path"]
+                            req.log(path)
                             if path == "/robot/route":
                                 import public.robot.route as script
                                 try:
                                     await script.main(websocket, path, open_sockets, data)
                                 except Exception as e:
-                                    print("public.robot.signin(public.robot.route): " + str(e))
+                                    module.error(e, script.__name__)
                                     await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                             elif path == "/robot/signout":
                                 import public.robot.signout as script
                                 try:
                                     await script.main(websocket, path, open_sockets, data)
                                 except Exception as e:
-                                    print("public.robot.signin(public.robot.signout): " + str(e))
+                                    module.error(e, script.__name__)
                                     await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                             elif path == "/robot/update":
                                 import public.robot.update as script
                                 try:
                                     await script.main(websocket, path, open_sockets, data)
                                 except Exception as e:
-                                    print("public.robot.signin(public.robot.update): " + str(e))
+                                    module.error(e, script.__name__)
                                     await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                             else:
                                 await websocket.send("{\"status_code\": 404, \"reason_message\": \"Not Found\"}")

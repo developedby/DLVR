@@ -15,8 +15,7 @@ async def main(websocket, path, open_sockets):
         if user:
             code = objects.QRCode.generate(user.email, data["id"])
             if code:
-                print(code.number)
-
+                objects.Request(websocket).log(path, code.number)
                 resp["message_body"] = code.number
                 await websocket.send(json.dumps(resp))
             else:

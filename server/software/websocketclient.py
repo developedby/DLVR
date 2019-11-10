@@ -17,7 +17,7 @@ def main():
 async def handler():
     uri = "wss://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com"
     data = {"email": "subject@example.com", "password": "Password123!", "first_name": "Subject", "last_name": "Subject"}
-    async with websockets.connect(uri + "/user/check", ssl = ssl_context) as websocket:
+    async with websockets.connect(uri + "/user/signup", ssl = ssl_context) as websocket:
         await websocket.send(json.dumps(data))
         resp = await websocket.recv()
         resp = json.loads(resp)

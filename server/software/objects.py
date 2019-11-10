@@ -7,6 +7,41 @@ import hashlib
 import json
 import math
 
+def full_class_name(o):
+    module = o.__class__.__module__
+    if module == None or module == str.__class__.__module__:
+        return o.__class__.__name__
+    else:
+        return module + "." + o.__class__.__name__
+
+class Request:
+    def __init__(self, websocket):
+        self.websocket = websocket
+
+    def log(self, path, message = None):
+        if message != None:
+            print("{}:{} - - [{}] \"{}\": {}".format(self.websocket.remote_address[0], self.websocket.remote_address[1], datetime.datetime.now().strftime("%d/%b/%Y %H:%M:%S"), path, message))
+        else:
+            print("{}:{} - - [{}] \"{}\"".format(self.websocket.remote_address[0], self.websocket.remote_address[1], datetime.datetime.now().strftime("%d/%b/%Y %H:%M:%S"), path))
+
+    def error(self, path, e):
+        self.log(path, "{}: {}".format(full_class_name(e), e))
+
+class Module:
+    def __init__(self, module):
+        self.module = module
+
+    def log(self, message, submodule = None):
+        if submodule != None:
+            print("{}({}): {}".format(self.module, submodule, message))
+        else:
+            print("{}: {}".format(self.module, message))
+
+    def error(self, e, submodule = None):
+        self.log("{}: {}".format(full_class_name(e), e), submodule)
+
+module = Module(__name__)
+
 class Code:
     def __init__(self, number):
         self.number = number
@@ -23,7 +58,7 @@ class Code:
                 connection.commit()
                 return True
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
                 connection.rollback()
             finally:
                 cursor.close()
@@ -48,7 +83,7 @@ class Code:
                 connection.commit()
                 return cls(number)
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
                 connection.rollback()
             finally:
                 cursor.close()
@@ -66,7 +101,7 @@ class Code:
                     connection.commit()
                     return True
                 except Exception as e:
-                    print("objects: " + str(e))
+                    module.error(e)
                     connection.rollback()
                 finally:
                     cursor.close()
@@ -83,7 +118,7 @@ class Code:
                 if result:
                     return User(result[0])
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 
@@ -98,7 +133,7 @@ class Code:
                 if result:
                     return datetime.datetime.fromtimestamp(result[0])
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 
@@ -119,7 +154,7 @@ class Delivery:
                 connection.commit()
                 return cls(next_id)
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
                 connection.rollback()
             finally:
                 cursor.close()
@@ -135,7 +170,7 @@ class Delivery:
                 if result and result[0] != None:
                     return result[0] + 1
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
         return 0
@@ -150,7 +185,7 @@ class Delivery:
                 connection.commit()
                 return True
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
                 connection.rollback()
             finally:
                 cursor.close()
@@ -166,7 +201,7 @@ class Delivery:
                 connection.commit()
                 return True
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
                 connection.rollback()
             finally:
                 cursor.close()
@@ -182,7 +217,7 @@ class Delivery:
                 connection.commit()
                 return True
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
                 connection.rollback()
             finally:
                 cursor.close()
@@ -199,7 +234,7 @@ class Delivery:
                 if result:
                     return User(result[0])
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 
@@ -214,7 +249,7 @@ class Delivery:
                 if result:
                     return result[0]
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 
@@ -229,7 +264,7 @@ class Delivery:
                 if result:
                     return Robot(result[0])
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 
@@ -244,7 +279,7 @@ class Delivery:
                 if result:
                     return User(result[0])
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 
@@ -259,7 +294,7 @@ class Delivery:
                 if result:
                     return result[0]
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 
@@ -274,7 +309,7 @@ class Delivery:
                 if result:
                     return result[0]
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 
@@ -289,7 +324,7 @@ class Delivery:
                 if result:
                     return result[0]
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 
@@ -304,7 +339,7 @@ class Delivery:
                 if result:
                     return datetime.datetime.fromtimestamp(result[0])
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 
@@ -319,7 +354,7 @@ class Delivery:
                 if result:
                     return datetime.datetime.fromtimestamp(result[0])
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 
@@ -362,7 +397,7 @@ class Robot:
                 if result:
                     return result
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 
@@ -376,7 +411,7 @@ class Robot:
                 connection.commit()
                 return True
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
                 connection.rollback()
             finally:
                 cursor.close()
@@ -392,7 +427,7 @@ class Robot:
                 connection.commit()
                 return True
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
                 connection.rollback()
             finally:
                 cursor.close()
@@ -408,7 +443,7 @@ class Robot:
                 connection.commit()
                 return True
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
                 connection.rollback()
             finally:
                 cursor.close()
@@ -424,7 +459,7 @@ class Robot:
                 connection.commit()
                 return True
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
                 connection.rollback()
             finally:
                 cursor.close()
@@ -440,7 +475,7 @@ class Robot:
                 connection.commit()
                 return True
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
                 connection.rollback()
             finally:
                 cursor.close()
@@ -456,7 +491,7 @@ class Robot:
                 connection.commit()
                 return True
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
                 connection.rollback()
             finally:
                 cursor.close()
@@ -472,7 +507,7 @@ class Robot:
                 connection.commit()
                 return True
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
                 connection.rollback()
             finally:
                 cursor.close()
@@ -488,7 +523,7 @@ class Robot:
                 connection.commit()
                 return True
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
                 connection.rollback()
             finally:
                 cursor.close()
@@ -504,7 +539,7 @@ class Robot:
                 connection.commit()
                 return True
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
                 connection.rollback()
             finally:
                 cursor.close()
@@ -520,7 +555,7 @@ class Robot:
                 connection.commit()
                 return True
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
                 connection.rollback()
             finally:
                 cursor.close()
@@ -536,7 +571,7 @@ class Robot:
                 connection.commit()
                 return True
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
                 connection.rollback()
             finally:
                 cursor.close()
@@ -553,7 +588,7 @@ class Robot:
                 if result:
                     return Crypto.PublicKey.RSA.importKey(bytes.fromhex(result[0]))
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 
@@ -568,7 +603,7 @@ class Robot:
                 if result:
                     return result[0]
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 
@@ -583,7 +618,7 @@ class Robot:
                 if result:
                     return result[0]
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 
@@ -598,7 +633,7 @@ class Robot:
                 if result:
                     return result[0]
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 
@@ -613,7 +648,7 @@ class Robot:
                 if result:
                     return result[0]
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 
@@ -628,7 +663,7 @@ class Robot:
                 if result:
                     return result[0]
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 
@@ -643,7 +678,7 @@ class Robot:
                 if result:
                     return result[0]
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 
@@ -658,7 +693,7 @@ class Robot:
                 if result:
                     return result[0]
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 
@@ -673,7 +708,7 @@ class Robot:
                 if result:
                     return result[0]
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 
@@ -688,7 +723,7 @@ class Robot:
                 if result:
                     return result[0]
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 
@@ -708,7 +743,7 @@ class User:
                 if result:
                     return True
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
         return False
@@ -726,7 +761,7 @@ class User:
                 if user.set_password(password):
                     return user
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
                 connection.rollback()
             finally:
                 cursor.close()
@@ -741,7 +776,7 @@ class User:
                 connection.commit()
                 return True
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
                 connection.rollback()
             finally:
                 cursor.close()
@@ -757,7 +792,7 @@ class User:
                 connection.commit()
                 return True
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
                 connection.rollback()
             finally:
                 cursor.close()
@@ -774,7 +809,7 @@ class User:
                 self.email = email
                 return True
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
                 connection.rollback()
             finally:
                 cursor.close()
@@ -790,7 +825,7 @@ class User:
                 connection.commit()
                 return True
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
                 connection.rollback()
             finally:
                 cursor.close()
@@ -806,7 +841,7 @@ class User:
                 connection.commit()
                 return True
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
                 connection.rollback()
             finally:
                 cursor.close()
@@ -824,7 +859,7 @@ class User:
                 connection.commit()
                 return True
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
                 connection.rollback()
             finally:
                 cursor.close()
@@ -844,7 +879,7 @@ class User:
                     if hash == bytes.fromhex(result[1]):
                         return True
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
         return False
@@ -860,7 +895,7 @@ class User:
                 if result:
                     return result[0]
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 
@@ -875,7 +910,7 @@ class User:
                 if result:
                     return result[0]
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 
@@ -890,7 +925,7 @@ class User:
                 if result:
                     return result[0]
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 
@@ -910,7 +945,7 @@ class Login:
                 connection.commit()
                 return cls(cookie)
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
                 connection.rollback()
             finally:
                 cursor.close()
@@ -927,7 +962,7 @@ class Login:
                 if result:
                     return result
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 
@@ -941,7 +976,7 @@ class Login:
                 connection.commit()
                 return True
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
                 connection.rollback()
             finally:
                 cursor.close()
@@ -958,7 +993,7 @@ class Login:
                 if result:
                     return User(result[0])
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 
@@ -978,7 +1013,7 @@ class QRCode:
                 connection.commit()
                 return True
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
                 connection.rollback()
             finally:
                 cursor.close()
@@ -1003,7 +1038,7 @@ class QRCode:
                 connection.commit()
                 return cls(number)
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
                 connection.rollback()
             finally:
                 cursor.close()
@@ -1022,7 +1057,7 @@ class QRCode:
                     connection.commit()
                     return True
                 except Exception as e:
-                    print("objects: " + str(e))
+                    module.error(e)
                     connection.rollback()
                 finally:
                     cursor.close()
@@ -1039,7 +1074,7 @@ class QRCode:
                 if result:
                     return User(result[0])
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 
@@ -1054,7 +1089,7 @@ class QRCode:
                 if result:
                     return Delivery(result[0])
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 
@@ -1069,7 +1104,7 @@ class QRCode:
                 if result:
                     return datetime.datetime.fromtimestamp(result[0])
             except Exception as e:
-                print("objects: " + str(e))
+                module.error(e)
             finally:
                 cursor.close()
 

@@ -12,7 +12,7 @@ async def main(websocket, path, open_sockets):
         }
         code = objects.Code.generate(data["user"])
         if code:
-            print(code.number)
+            objects.Request(websocket).log(path, code.number)
             resp["message_body"] = "true"
             await websocket.send(json.dumps(resp))
         else:
