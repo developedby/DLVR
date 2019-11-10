@@ -13,7 +13,7 @@ class Encoder
         float getAngularSpeed();
         void registerMeasurement(int const level, uint32_t const tick);
         void registerStopped();
-        void Encoder::resetReadings();
+        void resetReadings();
     private:
         static int instances;
         int pin_read;

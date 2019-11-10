@@ -8,9 +8,7 @@
 #define RIGHT_BALANCE   (1.0f + balance) 
 #define CMATERIAL 1.0f
 
-Movement::Movement() :
-          left_pid(0), right_pid(1),
-          left_wheel(0),  right_wheel(1)
+Movement::Movement() : left_pid(0), right_pid(1), left_wheel(0),  right_wheel(1)
 {
     lr = 0.0f;
     rr = 0.0f;
@@ -35,11 +33,31 @@ void Movement::turn(float degrees) {
 // Tries to move in a straight line.
 // Direction is 1 (forward) or -1 (backwards)
 // Speed is in milimeters per second
-void Movement::goStraight(int direction, float speed){ //mmps
+// This function doesn't block execution
+void Movement::goStraight(int direction, float speed){
     lr = abs(speed);
     rr = abs(speed);
     //Dir L = Dir R
     r_dir = l_dir = direction * (speed > 0);
+}
+
+
+// Tries to move in a straight line for 'cm' centimeters
+// Return the distance move by the left wheel minus the moved by the right wheel
+// This function blocks execution
+float Movement::goStraightCm(int direction, float cm, float speed=400)
+{
+    float moved_left = 0;
+    float moved_right = 0;
+    this->left_wheel.cmMovedSinceLastCall();
+    this->right_wheel.cmMovedSinceLastCall();
+    this->goStraight(direction, speed);
+    while((moved_left + moved_right) < cm)
+    {
+        moved_left += this->left_wheel.cmMovedSinceLastCall();
+        moved_right += this->right_wheel.cmMovedSinceLastCall();
+    }
+    return moved_left - moved_right;
 }
 
 void Movement::goCurve(int direction, float curvature) {
@@ -119,3 +137,4 @@ bool Movement::isTurning(void) {
     return (this->turn_ticks > 0);
 }
 
+int 
