@@ -1,30 +1,30 @@
 import json
-import session
-import connect
-import mysql.connector
-import http.cookies
 import asyncio
+import objects
 
 async def main(websocket, path, open_sockets, data = None):
     if not data:
         data = await websocket.recv()
         data = json.loads(data)
-    if "cookie" in data and "origin" in data and "email" in data:
+    if "cookie" in data and "origin" in data and "receiver" in data:
         resp = {
             "status_code": 200,
             "reason_message": "OK"
         }
-        cookie = http.cookies.SimpleCookie()
-        cookie.load(data["cookie"])
-        email = session.user_email(cookie["token"].value)
-        if email:
-            cookies = session.user_cookies(data["email"])
+        user = objects.Login(data["cookie"]).get_user()
+        if user:
+            cookies = objects.Login.get_cookies(data["receiver"])
             if len(cookies) > 0:
-                for login in cookies:
-                    data2 = {"status_code": 200, "reason_message": "OK", "message_type": "request", "message_body": email}
-                    await open_sockets["users"][login[0]].send(json.dumps(data2))
-                resp["message_body"] = "true"
-                await websocket.send(json.dumps(resp))
+                delivery = objects.Delivery.request(user.email, data["origin"], data["receiver"])
+                if delivery:
+                    for cookie in cookies:
+                        data2 = {"status_code": 200, "reason_message": "OK", "path": "/delivery/request", "message_body": {"id": delivery.id, "sender": user.email, "origin": data["origin"]}}
+                        await open_sockets["users"][cookie[0]].send(json.dumps(data2))
+                    resp["message_body"] = "true"
+                    await websocket.send(json.dumps(resp))
+                else:
+                    resp["message_body"] = "false"
+                    await websocket.send(json.dumps(resp))
             else:
                 resp["message_body"] = "false"
                 await websocket.send(json.dumps(resp))

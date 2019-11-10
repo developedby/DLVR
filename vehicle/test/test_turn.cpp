@@ -21,7 +21,7 @@ int main(void) {
         std::cout << "Erro ao inicializar!" << std::endl;
         exit(PI_INIT_FAILED);
     }
-	Movement mov;
+    Movement mov;
     gpioSetTimerFuncEx(9, constants::pid_T_ms, tick, (void*)&mov);
     float dir = 1.0;
     float angle = 0.0f;

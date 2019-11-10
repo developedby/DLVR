@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <utility>
+#include <opencv2/core.hpp>
 
 namespace street_lines
 {
@@ -20,6 +21,8 @@ namespace street_lines
             StreetSection(Color type_, cv::Vec2f line_, cv::Vec4f end_points_) :
                 type(type_), line(line_), end_points(end_points_), connects_end_point1(), connects_end_point2() {}
     };
+    
+    void orderCollinearSections(std::vector<StreetSection>& sections, const int used_axis);
 }
 
 #endif

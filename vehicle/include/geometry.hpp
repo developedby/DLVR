@@ -1,6 +1,7 @@
 #ifndef geometry_hpp_
 #define geometry_hpp_
 
+#include <cmath>
 #include <opencv2/core.hpp>
 
 namespace street_lines
@@ -12,10 +13,20 @@ namespace street_lines
         
     inline float norm (float x, float y)
     {
-        return sqrt(square(x) + square(x));
+        return sqrt(square(x) + square(y));
     }
     
-    cv::Vec2f segmentHalfPoint(const cv::Vec4f& seg);
+    inline float my_atan2(float y, float x)
+    {
+        float angle = atan2(y, x);
+        if (angle < 0)
+            angle += 2*M_PI;
+        return angle;
+    }
+    
+    cv::Vec2f xySegmentHalfPoint(const cv::Vec4f& seg);
+    
+    cv::Vec2f rtSegmentHalfPoint(const cv::Vec4f& seg);
     
     float distXYSegments(const cv::Vec4f& seg1, const cv::Vec4f& seg2);
     
@@ -23,9 +34,9 @@ namespace street_lines
     
     bool xySegmentsIntersect(const cv::Vec4f& seg1, const cv::Vec4f& seg2);
     
-    float distXYPointXYSegment(const cv::Point& pt, cv::Vec4f seg);
+    float distXYPointXYSegment(const cv::Point2f& pt, cv::Vec4f seg);
     
-    float distXYPoints(const cv::Point& pt1, const cv::Point& pt2);
+    float distXYPoints(const cv::Point2f& pt1, const cv::Point2f& pt2);
     
     cv::Vec2f xySegmentToLine(const cv::Vec4f& seg);
     
@@ -42,6 +53,10 @@ namespace street_lines
     cv::Vec4f segmentRTToXY(const cv::Vec4f& rt_seg);
     
     cv::Vec4f segmentXYToRT(const cv::Vec4f& xy_seg);
+    
+    cv::Point2f rotatePoint(const cv::Point2f pt, const float angle);
+    
+    void orderCollinearPoints(std::vector<cv::Vec2f>& pts, const float angle);
 }
 
 #endif

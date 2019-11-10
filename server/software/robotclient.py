@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import json
 import datetime
 import hashlib
@@ -10,9 +12,10 @@ CERT_PEM_PATH = './cert.pem'
 ROBOT_DER_PATH = './robot0.der'
 ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 ssl_context.load_verify_locations(CERT_PEM_PATH)
+loop = asyncio.get_event_loop()
 
 def main():
-    asyncio.get_event_loop().run_until_complete(handler())
+    loop.run_until_complete(handler())
 
 async def handler():
     uri = "wss://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com"
@@ -26,16 +29,20 @@ async def handler():
         resp = json.loads(resp)
         if resp["status_code"] == 200 and resp["message_body"] == "true":
             print("Signin efetuado com sucesso")
-            data = {"path": "/robot/signout", "id": 0, "timestamp": datetime.datetime.now().timestamp()}
-            data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
-            await websocket.send(json.dumps(data))
-            resp = await websocket.recv()
-            resp = json.loads(resp)
-            if resp["status_code"] == 200 and resp["message_body"] == "true":
-                print("Signout efetuado com sucesso")
-            else:
-                print(resp)
-                print("Signout incorreto")
+            async for message in websocket:
+                print(message)
+                data = {"path": "/robot/signout", "id": 0, "timestamp": datetime.datetime.now().timestamp()}
+                data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
+                await websocket.send(json.dumps(data))
+                resp = await websocket.recv()
+                resp = json.loads(resp)
+                if resp["status_code"] == 200 and resp["message_body"] == "true":
+                    print("Signout efetuado com sucesso")
+                    await loop.run_in_executor(None, input)
+                    return
+                else:
+                    print(resp)
+                    print("Signout incorreto")
         else:
             print(resp)
             print("Signin incorreto")

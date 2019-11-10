@@ -1,18 +1,30 @@
 #include "geometry.hpp"
 #include <cmath>
+#include <iostream>
 #include <algorithm>
 #include <numeric>
 #include <opencv2/core.hpp>
 
 namespace street_lines
 {
-    cv::Vec2f segmentHalfPoint(const cv::Vec4f& seg)
+    cv::Point2f rotatePoint(const cv::Point2f pt, const float angle)
+    {
+        return cv::Point2f(pt.x*cos(angle) - pt.y*sin(angle),
+                           pt.x*sin(angle) + pt.y*cos(angle));
+    }
+    
+    cv::Vec2f rtSegmentHalfPoint(const cv::Vec4f& seg)
     {
         const float a = seg[0];
         const float b = seg[3];
         const float c = sqrt(square(a) + square(b) - 2*a*b*cos(abs(seg[1]-seg[3])));
         return cv::Vec2f(sqrt((a*b)*(a+b+c)*(a+b-c)) / (a+b),
                          (seg[1] + seg[3])/2);
+    }
+
+    cv::Vec2f xySegmentHalfPoint(const cv::Vec4f& seg)
+    {
+        return cv::Vec2f((seg[0]+seg[2])/2, (seg[1]+seg[3])/2);
     }
 
     // Finds the distance between two line segments (x1, y1, x2, y2)
@@ -64,12 +76,11 @@ namespace street_lines
     }
 
     // Calculates the distance between a point and a line segment
-    float distXYPointXYSegment(const cv::Point& pt, cv::Vec4f seg)
+    float distXYPointXYSegment(const cv::Point2f& pt, cv::Vec4f seg)
     {
-        const float u_num = (pt.y-seg[0]) * (seg[2]-seg[0])
-                           + (pt.x-seg[1]) * (seg[3]-seg[1]);
-        const float u_den = (seg[2] - seg[0]) * (seg[2] - seg[0])
-                           + (seg[3] - seg[1]) * (seg[3] - seg[1]);
+        const float u_num = (pt.x-seg[0]) * (seg[2]-seg[0])
+                            + (pt.y-seg[1]) * (seg[3]-seg[1]);
+        const float u_den = square(seg[2]-seg[0]) + square(seg[3]-seg[1]);
         float u;
         if (u_den != 0)
             u = u_num / u_den;
@@ -80,52 +91,63 @@ namespace street_lines
         {
             const float x = seg[0] + u*(seg[2] - seg[0]);
             const float y = seg[1] + u*(seg[3] - seg[1]);
-            return distXYPoints(pt, cv::Point(x, y));
+            return distXYPoints(pt, cv::Point2f(x, y));
         }
         else
-            return std::min(distXYPoints(pt, cv::Point(seg[0], seg[1])),
-                            distXYPoints(pt, cv::Point(seg[2], seg[3])));
+            return std::min(distXYPoints(pt, cv::Point2f(seg[0], seg[1])),
+                            distXYPoints(pt, cv::Point2f(seg[2], seg[3])));
     }
 
     // Calculates the distance between two points
-    float distXYPoints(const cv::Point& pt1, const cv::Point& pt2)
+    float distXYPoints(const cv::Point2f& pt1, const cv::Point2f& pt2)
     {
-        return sqrt((pt1.y-pt2.y)*(pt1.y-pt2.y)
-                    + (pt1.x-pt2.x)*(pt1.x-pt2.x));
+        return norm(pt1.y-pt2.y, pt1.x-pt2.x);
     }
 
     // Converts a (x1, y1, x2, y2) segment to a (rho, theta) line
     cv::Vec2f xySegmentToLine(const cv::Vec4f& seg)
     {
-        float theta = -atan2(seg[0]-seg[2], seg[1]-seg[3]);
-        if (theta < 0)
-            theta += M_PI;
-        if (seg[1] < theta - M_PI/2)
-            theta -= M_PI;
-            
-        const float rho = abs(seg[2]*seg[1] - seg[3]*seg[0])
-                        / norm(seg[3]-seg[1], seg[2]-seg[0]);
-        return cv::Vec2f(theta, rho);
+        float line_theta = atan2((seg[3] - seg[1]), (seg[2] - seg[0]));
+        if (line_theta < 0)
+            line_theta += M_PI;
+        const float x1 = seg[0];
+        const float y1 = seg[1];
+        const float x2 = 0;
+        const float y2 = 0;
+        const float theta1 = line_theta;
+        const float theta2 = line_theta - M_PI/2;
+        const float u = ((y1-y2) + (x2-x1)*tan(theta1))
+                         / (sin(theta2) - tan(theta1)*cos(theta2));
+        const float x_intersect = x2 + u*cos(theta2);
+        const float y_intersect = y2 + u*sin(theta2);
+        //std::cout << "Convertendo segmento pra linha: " << seg << " -> " << cv::Vec2f(x_intersect, y_intersect) << std::endl;
+        const float rho = norm(x_intersect, y_intersect);
+        const float theta = my_atan2(y_intersect, x_intersect);
+        return cv::Vec2f(rho, theta);
     }
 
     // Calculates the intersection point of two (rho, theta) lines
     cv::Vec2f linesIntersection(const cv::Vec2f& line1, const cv::Vec2f& line2)
     {
         // If the lines are parallel, intersection is said to be at infinity
-        if (abs(sin(line1[1]) - sin(line2[1])) < 0.01)
+        if (linesAreParallel(line1, line2, 0.01))
         {
             return cv::Vec2f(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
         }
-        // The lines can be defined as vectors '(rho*cos(theta), rho*sin(theta)) + u*(-sin(theta), cos(theta))'
-        // By saying these two vectors are equal, we can isolate u
-        // Using x dimensoin to find u
-        const float u = (line2[0]*cos(line2[1]) - line1[0]*cos(line1[1]))
-                       / (sin(line2[1]) - sin(line1[1]));
-        // Using y dimension to find u (equivalent formula)
-        //const auto u = (line1[0]*sin(line1[1]) - line2[0]*sin(line2[1]))
-        //               / (cos(line2[1]) - cos(line1[1]));
-
-        return cv::Vec2f(line1[0]*cos(line1[1]) - u*sin(line1[1]), line1[0]*sin(line1[1]) + u*cos(line1[1]));
+        
+        // (x1, y1) + u1(cos(theta1) + sin(theta1)) = (x2, y2) + u2(cos(theta2), sin(theta2))
+        // x1 + u1*cos(theta1) = x2 + u2*cos(theta2)
+        // y1 + u1*sin(theta1) = y2 + u2*sin(theta2)
+        const float x1 = line1[0] * cos(line1[1]);
+        const float y1 = line1[0] * sin(line1[1]);
+        const float x2 = line2[0] * cos(line2[1]);
+        const float y2 = line2[0] * sin(line2[1]);
+        const float theta1 = line1[1] + M_PI/2;
+        const float theta2 = line2[1] + M_PI/2;
+        // isolating u1, substituting it into the second equation and isolating u2
+        const float u2 = ((y1-y2) + (x2-x1)*tan(theta1)) / (sin(theta2) - tan(theta1)*cos(theta2));
+        // Applying u2 back to the original equation, we find the intersection point
+        return cv::Vec2f(x2 + u2*cos(theta2), y2 + u2*sin(theta2));
     }
 
     // Decides whether or not two lines make a certain angle between them
@@ -168,7 +190,20 @@ namespace street_lines
     // Transforms a (x1, y1, x2, y2) segment to a (rho1, theta1, rho2, theta2) segment
     cv::Vec4f segmentXYToRT(const cv::Vec4f& xy_seg)
     {
-        return cv::Vec4f(norm(xy_seg[0], xy_seg[1]), atan2(xy_seg[1], xy_seg[0]),
-                         norm(xy_seg[2], xy_seg[3]), atan2(xy_seg[3], xy_seg[2]));
+        return cv::Vec4f(norm(xy_seg[0], xy_seg[1]), my_atan2(xy_seg[1], xy_seg[0]),
+                         norm(xy_seg[2], xy_seg[3]), my_atan2(xy_seg[3], xy_seg[2]));
+    }
+    
+    // Does a stable in-place sort of collinear points
+    void orderCollinearPoints(std::vector<cv::Vec2f>& pts, const float angle)
+    {
+        int used_axis;
+        if ((angle < M_PI/4)
+            || (((M_PI - M_PI/4) < angle) && (angle < (M_PI - M_PI/4)))
+            || (angle > (2*M_PI - M_PI/4)))
+            used_axis = 1;
+        else
+            used_axis = 0;
+        std::stable_sort(pts.begin(), pts.end(), [used_axis](auto pt1, auto pt2){return pt1[used_axis] < pt2[used_axis];});
     }
 }

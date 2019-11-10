@@ -1,20 +1,23 @@
 #include "street_lines.hpp"
 #include <cmath>
+#include <iostream>
 #include <limits>
 #include <vector>
 #include <array>
 #include <algorithm>
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
-#include <reduce_lines.hpp>
+#include <opencv2/highgui.hpp>
+#include "reduce_lines.hpp"
 #include "geometry.hpp"
 #include "constants.hpp"
 
 using constants::img_y_horizon;
 using constants::img_height;
 using constants::img_width;
+using constants::cam_height_m;
+using constants::img_theta_max;
 using constants::img_theta_min;
-using constants::dist_theta_min_m;
 using constants::img_real_zero_rad;
 using constants::max_theta_diff;
 using std::vector;
@@ -22,69 +25,53 @@ using std::pair;
 using cv::Vec4i;
 using cv::Vec4f;
 using cv::Vec2f;
+using cv::Mat;
+using cv::Scalar;
+using cv::Point2f;
 
 namespace street_lines
 {
     // Finds the lines in the mask representing the street lane markers
-    vector<Vec4i> getStreetLines(const cv::Mat& lines_mask)
+    vector<Vec4i> getStreetLines(const Mat& lines_mask)
     {
         vector<Vec4i> lines;
-        cv::HoughLinesP(lines_mask, lines, 1, max_theta_diff-0.01, 80, 20, 10);
-        reduceLines(lines, lines, 0.2, 2.0, 10.0);
+        cv::HoughLinesP(lines_mask, lines, 1, max_theta_diff-0.01, 100, 100, 8);
+        //cv::imwrite("teste_linha_ruffles.jpg", drawSegments(lines, Mat::zeros(img_height, img_width, CV_8UC3)));
+        //std::cout << "Linhas: " << lines.size() << std::endl;
+        lines = reduceSegments(lines);
         return lines;
     }
 
     // Reverte a distorção de perspectiva
     // Retornando uma linha (rho, theta) em relação ao veiculo
-    // e os dois extremos do segmento no formato (rho1, theta1, rho2, theta2)
+    // e os dois extremos do segmento no formato (x1, y1, x2, y2)
     pair<Vec2f, Vec4f> undistortLine(const Vec4i& line)
     {
         // Undistorted segment in rho theta format
-        const Vec4f undistort_seg_rt = linePxToDist(line);
-        // Undistorted segment in x y format
-        const Vec4f undistort_seg_xy(undistort_seg_rt[0] * sin(undistort_seg_rt[1]),
-                                     undistort_seg_rt[0] * cos(undistort_seg_rt[1]),
-                                     undistort_seg_rt[2] * sin(undistort_seg_rt[3]),
-                                     undistort_seg_rt[2] * cos(undistort_seg_rt[3]));
-
-        const float u_num = (0-line[0]) * (line[2]-line[0])
-                             + (0-line[1]) * (line[3]-line[1]);
-        const float u_den = (line[2] - line[0]) * (line[2] - line[0])
-                             + (line[3] - line[1]) * (line[3] - line[1]);
-        const float u = u_num / u_den;
-        const float x = line[0] + u*(line[2] - line[0]);
-        const float y = line[1] + u*(line[3] - line[1]);
-        
-        return pair(Vec2f(norm(x, y), atan2(y, x)), undistort_seg_rt);
+        const Vec4f undistort_seg = imgSegToRealSeg(line);
+        //std::cout << "undistort: " << undistort_seg << std::endl;
+        return pair(xySegmentToLine(undistort_seg), undistort_seg);
     }
 
     // Finds the distance of the line segment's extremities to the vehicle
-    // Return the two points in the (rho1, theta1, rho2, theta2) format
-    Vec4f linePxToDist(const Vec4i& line)
+    // Return the two points in the (x1, y1, x2, y2) format, in meters
+    Vec4f imgSegToRealSeg(const Vec4i& line)
     {
         float constexpr x_center = img_width / 2;
-        float constexpr y_theta_min = img_height;
-        float constexpr px_per_rad = (img_y_horizon - y_theta_min)/img_theta_min;
-        float constexpr y_vehicle = M_PI/2 * px_per_rad; // Where 90º would be if we extended the image
-        float constexpr meter_per_px = dist_theta_min_m / (y_vehicle - y_theta_min); // Using a known distance
-        Vec4f line_dists;
+        // Theta max e menor que theta min porque é theta da distancia maxima (mais perto do horizonte)
+        float constexpr px_per_rad = img_height/(img_theta_min - img_theta_max);
         
-        // First point
-        float y_angle = (line[1] - img_y_horizon) / px_per_rad;
-        float stretch_factor = tan(M_PI/2 - y_angle);
-        float x_dist = (line[0] - x_center) * meter_per_px * stretch_factor;
-        float y_dist = (line[1] - img_y_horizon) * meter_per_px * stretch_factor;
-        line_dists[1] = atan2(x_dist, y_dist) - img_real_zero_rad;
-        line_dists[0] = norm(x_dist, y_dist);
-
-        // Second point
-        y_angle = (line[3] - img_y_horizon) / px_per_rad;
-        stretch_factor = tan(M_PI/2 - y_angle);
-        x_dist = (line[2] - x_center) * meter_per_px * stretch_factor;
-        y_dist = (line[3] - img_y_horizon) * meter_per_px * stretch_factor;
-        line_dists[3] = atan2(x_dist, y_dist) - img_real_zero_rad;
-        line_dists[2] = norm(x_dist, y_dist);
-        return line_dists;
+        const float theta1 = line[1]/px_per_rad + img_theta_max;
+        const float y1_m = cam_height_m / tan(theta1);
+        const float phi1 = (line[0] - x_center) / px_per_rad;
+        const float x1_m = tan(phi1) * y1_m;
+        
+        const float theta2 = line[3]/px_per_rad + img_theta_max;
+        const float y2_m = cam_height_m / tan(theta2);
+        const float phi2 = (line[2] - x_center) / px_per_rad;
+        const float x2_m = tan(phi2) * y2_m;
+        
+        return Vec4f(x1_m, y1_m, x2_m, y2_m);
     }
 
     // Finds the line segment's angle relative to the vehicle
@@ -117,40 +104,6 @@ namespace street_lines
     {
         return std::min(sqrt(line[0]*line[0] + line[1]*line[1]),
                         sqrt(line[2]*line[2] + line[3]*line[3]));
-    }
-
-    // Groups together lines with similar angles
-    // Returns a vector with the index to the members of each group
-    vector<vector<unsigned int>> groupLinesByAngle(const vector<Vec2f>& lines, const float max_theta_diff)
-    {
-        int counter = 0;
-        vector<int> classification(lines.size(), -1);
-        vector<vector<unsigned int>> groups;
-        for (unsigned int i = 0; i < lines.size(); i++)
-        {
-            if (classification[i] == -1)
-            {
-                groups.push_back(vector{i});
-                classification[i] = counter;
-                for (unsigned int j=i+1; j < lines.size(); j++)
-                {
-                    // Group together if angles have difference less than max_theta_diff
-                    if (classification[j] == -1)
-                    {
-                        float delta_theta = abs(lines[i][1] - lines[j][1]);
-                        if (delta_theta > M_PI/2)
-                            delta_theta = M_PI - delta_theta;
-                        if (delta_theta > max_theta_diff)
-                        {
-                            classification[j] = counter;
-                            groups[counter].push_back(j);
-                        }
-                    }
-                }
-                counter++;
-            }
-        }
-        return groups;
     }
 
     // From a group of maybe repeated lines, select only the unique ones, separating them by their distance (rho)
@@ -217,23 +170,23 @@ namespace street_lines
         const auto seg2_xy = segmentRTToXY(seg2);
         // The score for how different they are is the distance between the end points
         // Takes the min because we don't know how the end points are oriented
-        const float dist = std::min((distXYPoints(cv::Point(seg1_xy[0], seg1_xy[1]), cv::Point(seg2_xy[0], seg2_xy[1]))
-                                + distXYPoints(cv::Point(seg1_xy[2], seg1_xy[3]), cv::Point(seg2_xy[2], seg2_xy[3]))),
-                               (distXYPoints(cv::Point(seg1_xy[0], seg1_xy[1]), cv::Point(seg2_xy[2], seg2_xy[3]))
-                                + distXYPoints(cv::Point(seg1_xy[2], seg1_xy[3]), cv::Point(seg2_xy[0], seg2_xy[1]))));
+        const float dist = std::min((distXYPoints(cv::Point2f(seg1_xy[0], seg1_xy[1]), cv::Point2f(seg2_xy[0], seg2_xy[1]))
+                                     + distXYPoints(cv::Point2f(seg1_xy[2], seg1_xy[3]), cv::Point2f(seg2_xy[2], seg2_xy[3]))),
+                                    (distXYPoints(cv::Point2f(seg1_xy[0], seg1_xy[1]), cv::Point2f(seg2_xy[2], seg2_xy[3]))
+                                     + distXYPoints(cv::Point2f(seg1_xy[2], seg1_xy[3]), cv::Point2f(seg2_xy[0], seg2_xy[1]))));
         return dist < threshold;
     }
 
-    // Does a stable in-place sort of collinear points
-    void orderCollinearPoints(vector<Vec2f>& pts, const float angle)
+
+    // Returns a bgr version of the image with the segments drawn on it
+    Mat drawSegments(const vector<Vec4i>& segs, const Mat& img)
     {
-        int used_axis;
-        if ((angle < M_PI/4)
-            || (((M_PI - M_PI/4) < angle) && (angle < (M_PI - M_PI/4)))
-            || (angle > (2*M_PI - M_PI/4)))
-            used_axis = 1;
-        else
-            used_axis = 0;
-        std::stable_sort(pts.begin(), pts.end(), [used_axis](auto pt1, auto pt2){return pt1[used_axis] < pt2[used_axis];});
+        Mat img_segs;
+        cv::cvtColor(img, img_segs, cv::COLOR_HLS2BGR);
+        for (auto seg: segs)
+        {
+            cv::line(img_segs, Point2f(seg[0], seg[1]), Point2f(seg[2], seg[3]), Scalar(0, 255, 0), 1, cv::LINE_AA);
+        }
+        return img_segs;
     }
 }

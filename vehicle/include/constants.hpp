@@ -9,12 +9,15 @@ namespace constants
 	// Vision
 	int constexpr img_height = 960;
 	int constexpr img_width = 1280;
-	float constexpr img_y_horizon = 0.282;
+	float constexpr cam_height_m = 0.128;
+	int constexpr img_y_horizon = -402;
 	float constexpr img_real_zero_rad = 4.647 * M_PI/180;
-	float constexpr img_y_vehicle = 1.;
-	float constexpr img_theta_min = 29.12 * M_PI/180; // Could be calculated from the below distance and the camera height
-	float constexpr dist_theta_min_m = 0.145; // Distance from the vehicle to the bottom point of the image
+	float constexpr img_theta_min_m = 0.062;
+	float constexpr img_theta_min = atan2(cam_height_m, img_theta_min_m);
+	float constexpr img_theta_max_m = 0.470;
+	float constexpr img_theta_max = atan2(cam_height_m, img_theta_max_m);
 	float constexpr lane_width = 0.26;
+	float constexpr tape_width = 0.018;
 	float constexpr max_theta_diff = 5 * M_PI/180;
 
 	// Radio

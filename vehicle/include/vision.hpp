@@ -12,9 +12,9 @@ class Vision
 {
 	private:
 		raspicam::RaspiCam_Cv cam;
-		cv::Mat img;
 		cv::Ptr<cv::aruco::Dictionary> aruco_dict;
 		void getColorMask(cv::Mat& dst, const cv::Scalar min, const cv::Scalar max);
+		void getTapeMask(cv::Mat& dst, const cv::Scalar min, const cv::Scalar max);
 		void getRedTapeMask(cv::Mat& dst);
 		void getGreenTapeMask(cv::Mat& dst);
 		void getBlueTapeMask(cv::Mat& dst);
@@ -22,9 +22,10 @@ class Vision
 		void getWhiteTapeMask(cv::Mat& dst);
 		void getGroundMask(cv::Mat& dst);
 	public:
+		cv::Mat img;
+		Vision();
 		void getCamImg();
 		std::vector<street_lines::StreetSection> findStreets();
-		Vision();
 		bool isTrafficLightRed();
 		std::pair<std::vector<int>, std::vector<std::vector<cv::Point2f>>> findARMarkers();
 };

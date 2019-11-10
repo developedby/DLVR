@@ -1,10 +1,6 @@
 import json
-import session
-import connect
-import mysql.connector
-import hashlib
-import http.cookies
 import asyncio
+import objects
 
 async def main(websocket, path, open_sockets, data = None):
     if not data:
@@ -15,45 +11,19 @@ async def main(websocket, path, open_sockets, data = None):
             "status_code": 200,
             "reason_message": "OK"
         }
-        cookie = http.cookies.SimpleCookie()
-        cookie.load(data["cookie"])
-        email = session.user_email(cookie["token"].value)
-        if email:
-            with connect.connect() as connection:
-                cursor = connection.cursor(prepared = True)
-                query = "SELECT salt, hash FROM User WHERE email = %s"
-                values = (email,)
-                try:
-                    cursor.execute(query, values)
-                    result = cursor.fetchone()
-                    if result:
-                        salt = bytes.fromhex(result[0])
-                        hash = hashlib.pbkdf2_hmac("sha256", data["password"].encode("utf-8"), salt, 100000)
-                        if hash == bytes.fromhex(result[1]):
-                            query = "DELETE FROM User WHERE email = %s"
-                            values = (email,)
-                            try:
-                                session.signout(cookie["token"].value)
-                                cursor.execute(query, values)
-                                connection.commit()
-                                resp["message_body"] = "true"
-                                await websocket.send(json.dumps(resp))
-                            except mysql.connector.Error as e:
-                                print("delete.py:41: " + str(e))
-                                connection.rollback()
-                                resp["message_body"] = "false"
-                                await websocket.send(json.dumps(resp))
-                        else:
-                            resp["message_body"] = "false"
-                            await websocket.send(json.dumps(resp))
-                    else:
-                        resp["message_body"] = "false"
-                        await websocket.send(json.dumps(resp))
-                except mysql.connector.Error as e:
-                    print("delete.py:52: " + str(e))
-                    resp["message_body"] = "false"
-                    await websocket.send(json.dumps(resp))
-                cursor.close()
+        login = objects.Login(data["cookie"])
+        user = login.get_user()
+        if user:
+            if user.check_password(data["password"]) and user.delete():
+                resp["message_body"] = "true"
+                await websocket.send(json.dumps(resp))
+                cookies = objects.Login.get_cookies(user.email)
+                if cookies:
+                    for cookie in cookies:
+                        open_sockets["users"].pop(cookie)
+            else:
+                resp["message_body"] = "false"
+                await websocket.send(json.dumps(resp))
         else:
             resp["message_body"] = "false"
             await websocket.send(json.dumps(resp))
