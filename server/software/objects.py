@@ -6,6 +6,7 @@ import os
 import hashlib
 import json
 import math
+import logging
 
 def full_class_name(o):
     module = o.__class__.__module__
@@ -14,15 +15,19 @@ def full_class_name(o):
     else:
         return module + "." + o.__class__.__name__
 
+def init_logging(filename):
+    logging.basicConfig(filename = filename, format = "%(message)s", level = logging.INFO)
 class Request:
     def __init__(self, websocket):
         self.websocket = websocket
 
     def log(self, path, message = None):
         if message != None:
-            print("{}:{} - - [{}] \"{}\": {}".format(self.websocket.remote_address[0], self.websocket.remote_address[1], datetime.datetime.now().strftime("%d/%b/%Y %H:%M:%S"), path, message))
+            log_message = "[{}] - - {}:{} \"{}\": {}".format(datetime.datetime.now().strftime("%d/%b/%Y %H:%M:%S"), self.websocket.remote_address[0], self.websocket.remote_address[1], path, message)
         else:
-            print("{}:{} - - [{}] \"{}\"".format(self.websocket.remote_address[0], self.websocket.remote_address[1], datetime.datetime.now().strftime("%d/%b/%Y %H:%M:%S"), path))
+            log_message = "[{}] - - {}:{} \"{}\"".format(datetime.datetime.now().strftime("%d/%b/%Y %H:%M:%S"), self.websocket.remote_address[0], self.websocket.remote_address[1], path)
+        print(log_message)
+        logging.info(log_message)
 
     def error(self, path, e):
         self.log(path, "{}: {}".format(full_class_name(e), e))
@@ -33,9 +38,11 @@ class Module:
 
     def log(self, message, submodule = None):
         if submodule != None:
-            print("{}({}): {}".format(self.module, submodule, message))
+            log_message = "[{}] {}({}): {}".format(datetime.datetime.now().strftime("%d/%b/%Y %H:%M:%S"), self.module, submodule, message)
         else:
-            print("{}: {}".format(self.module, message))
+            log_message = "[{}] {}: {}".format(datetime.datetime.now().strftime("%d/%b/%Y %H:%M:%S"), self.module, message)
+        print(log_message)
+        logging.info(log_message)
 
     def error(self, e, submodule = None):
         self.log("{}: {}".format(full_class_name(e), e), submodule)
