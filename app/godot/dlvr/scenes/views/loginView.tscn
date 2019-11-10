@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=2]
+[gd_scene load_steps=16 format=2]
 
 [ext_resource path="res://scripts/views/loginView.gd" type="Script" id=1]
 [ext_resource path="res://sprites/placeholder_city.jpg" type="Texture" id=2]
@@ -9,6 +9,7 @@
 [ext_resource path="res://scripts/PasswField.gd" type="Script" id=7]
 [ext_resource path="res://resources/gui/TextEdit_Normal.tres" type="StyleBox" id=8]
 [ext_resource path="res://scripts/views/login_subviews/passwSubview.gd" type="Script" id=9]
+[ext_resource path="res://scenes/Client.tscn" type="PackedScene" id=10]
 
 [sub_resource type="StyleBoxFlat" id=1]
 bg_color = Color( 1, 1, 1, 1 )
@@ -45,6 +46,7 @@ texture = ExtResource( 2 )
 centered = false
 
 [node name="emailSubview" type="Control" parent="."]
+editor/display_folded = true
 margin_top = 435.0
 margin_right = 720.0
 margin_bottom = 635.0
@@ -203,6 +205,10 @@ theme = ExtResource( 3 )
 shortcut_in_tooltip = false
 shortcut = SubResource( 3 )
 text = "CONTINUE_KS"
+
+[node name="client" parent="." instance=ExtResource( 10 )]
+connection_timeout = 2.0
+received_timeout = 2.0
 [connection signal="pressed" from="emailSubview/button" to="emailSubview" method="_on_button_pressed"]
 [connection signal="pressed" from="signinSubview/button" to="signinSubview" method="_on_button_pressed"]
 [connection signal="pressed" from="passwSubview/button" to="passwSubview" method="_on_button_pressed"]
