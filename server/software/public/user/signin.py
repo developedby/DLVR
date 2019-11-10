@@ -13,8 +13,8 @@ async def main(websocket, path, open_sockets):
             "reason_message": "OK"
         }
         user = objects.User(data["email"])
-        if user.get_verified() and user.check_password(data["password"]):
-            login = objects.Login.signin(data["email"])
+        if user.verified and user.password == data["password"]:
+            login = objects.Login.create(data["email"])
             if login:
                 resp["set_cookie"] = login.cookie
                 resp["message_body"] = "true"

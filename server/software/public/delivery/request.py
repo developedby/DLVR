@@ -11,15 +11,15 @@ async def main(websocket, path, open_sockets, data = None):
             "status_code": 200,
             "reason_message": "OK"
         }
-        user = objects.Login(data["cookie"]).get_user()
+        user = objects.Login(data["cookie"]).user
         if user:
-            cookies = objects.Login.get_cookies(data["receiver"])
-            if len(cookies) > 0:
-                delivery = objects.Delivery.request(user.email, data["origin"], data["receiver"])
+            logins = objects.User(data["receiver"]).logins
+            if len(logins) > 0:
+                delivery = objects.Delivery.create(data["origin"], user.email, data["receiver"])
                 if delivery:
-                    for cookie in cookies:
+                    for login in logins:
                         data2 = {"status_code": 200, "reason_message": "OK", "path": "/delivery/request", "message_body": {"id": delivery.id, "sender": user.email, "origin": data["origin"]}}
-                        await open_sockets["users"][cookie[0]].send(json.dumps(data2))
+                        await open_sockets["users"][login.cookie].send(json.dumps(data2))
                     resp["message_body"] = "true"
                     await websocket.send(json.dumps(resp))
                 else:

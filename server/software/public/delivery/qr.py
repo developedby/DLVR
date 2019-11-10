@@ -11,9 +11,9 @@ async def main(websocket, path, open_sockets):
             "reason_message": "OK"
         }
         login = objects.Login(data["cookie"])
-        user = login.get_user()
+        user = login.user
         if user:
-            code = objects.QRCode.generate(user.email, data["id"])
+            code = objects.QRCode.create(data["id"])
             if code:
                 objects.Request(websocket).log(path, code.number)
                 resp["message_body"] = code.number

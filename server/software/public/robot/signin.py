@@ -13,46 +13,43 @@ async def main(websocket, path, open_sockets):
             "reason_message": "OK"
         }
         robot = objects.Robot(data["id"])
-        public_key = robot.get_public_key()
+        public_key = robot.public_key
         if public_key:
             if objects.Robot.verify(public_key, data):
-                if robot.signin():
-                    resp["message_body"] = "true"
-                    await websocket.send(json.dumps(resp))
-                    open_sockets["robots"][robot.id] = websocket
-                    async for message in websocket:
-                        data = json.loads(message)
-                        if "path" in data:
-                            path = data["path"]
-                            req.log(path)
-                            if path == "/robot/route":
-                                import public.robot.route as script
-                                try:
-                                    await script.main(websocket, path, open_sockets, data)
-                                except Exception as e:
-                                    module.error(e, script.__name__)
-                                    await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
-                            elif path == "/robot/signout":
-                                import public.robot.signout as script
-                                try:
-                                    await script.main(websocket, path, open_sockets, data)
-                                except Exception as e:
-                                    module.error(e, script.__name__)
-                                    await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
-                            elif path == "/robot/update":
-                                import public.robot.update as script
-                                try:
-                                    await script.main(websocket, path, open_sockets, data)
-                                except Exception as e:
-                                    module.error(e, script.__name__)
-                                    await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
-                            else:
-                                await websocket.send("{\"status_code\": 404, \"reason_message\": \"Not Found\"}")
+                robot.alive = True
+                resp["message_body"] = "true"
+                await websocket.send(json.dumps(resp))
+                open_sockets["robots"][robot.id] = websocket
+                async for message in websocket:
+                    data = json.loads(message)
+                    if "path" in data:
+                        path = data["path"]
+                        req.log(path)
+                        if path == "/robot/route":
+                            import public.robot.route as script
+                            try:
+                                await script.main(websocket, path, open_sockets, data)
+                            except Exception as e:
+                                module.error(e, script.__name__)
+                                await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
+                        elif path == "/robot/signout":
+                            import public.robot.signout as script
+                            try:
+                                await script.main(websocket, path, open_sockets, data)
+                            except Exception as e:
+                                module.error(e, script.__name__)
+                                await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
+                        elif path == "/robot/update":
+                            import public.robot.update as script
+                            try:
+                                await script.main(websocket, path, open_sockets, data)
+                            except Exception as e:
+                                module.error(e, script.__name__)
+                                await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                         else:
-                            await websocket.send("{\"status_code\": 400, \"reason_message\": \"Bad Request\"}")
-                else:
-                    resp["message_body"] = "false"
-                    await websocket.send(json.dumps(resp))
+                            await websocket.send("{\"status_code\": 404, \"reason_message\": \"Not Found\"}")
+                    else:
+                        await websocket.send("{\"status_code\": 400, \"reason_message\": \"Bad Request\"}")
             else:
                 resp["message_body"] = "false"
                 await websocket.send(json.dumps(resp))

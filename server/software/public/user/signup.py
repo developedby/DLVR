@@ -10,8 +10,8 @@ async def main(websocket, path, open_sockets):
             "status_code": 200,
             "reason_message": "OK"
         }
-        if objects.User.signup(data["email"], data["first_name"], data["last_name"], data["password"]):
-            code = objects.Code.generate(data["email"])
+        if objects.User.create(data["email"], data["first_name"], data["last_name"], data["password"]):
+            code = objects.Code.create(data["email"])
             if code:
                 objects.Request(websocket).log(path, code.number)
                 resp["message_body"] = "true"

@@ -10,14 +10,14 @@ async def main(websocket, path, open_sockets):
             "status_code": 200,
             "reason_message": "OK"
         }
-        if objects.Code(data["number"]).verify(data["user"]):
-            user = objects.User(data["user"])
-            if user.get_verified() or user.verify():
-                resp["message_body"] = "true"
-                await websocket.send(json.dumps(resp))
-            else:
-                resp["message_body"] = "false"
-                await websocket.send(json.dumps(resp))
+        code = objects.Code(data["number"])
+        user = code.user
+        if user and user.email == data["user"]:
+            if not user.verified:
+                user.verified = True
+            code.delete()
+            resp["message_body"] = "true"
+            await websocket.send(json.dumps(resp))
         else:
             resp["message_body"] = "false"
             await websocket.send(json.dumps(resp))

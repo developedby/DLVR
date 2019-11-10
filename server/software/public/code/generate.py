@@ -10,7 +10,7 @@ async def main(websocket, path, open_sockets):
             "status_code": 200,
             "reason_message": "OK"
         }
-        code = objects.Code.generate(data["user"])
+        code = objects.Code.create(data["user"])
         if code:
             objects.Request(websocket).log(path, code.number)
             resp["message_body"] = "true"

@@ -10,13 +10,13 @@ async def main(websocket, path, open_sockets, data = None):
             "status_code": 200,
             "reason_message": "OK"
         }
-        user = objects.Login(data["cookie"]).get_user()
+        user = objects.Login(data["cookie"]).user
         if user:
             resp["message_body"] = {}
-            first_name = user.get_first_name()
+            first_name = user.first_name
             if first_name != None:
                 resp["message_body"]["first_name"] = first_name
-            last_name = user.get_last_name()
+            last_name = user.last_name
             if last_name != None:
                 resp["message_body"]["last_name"] = last_name
             await websocket.send(json.dumps(resp))

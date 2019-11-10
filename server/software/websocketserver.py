@@ -9,7 +9,6 @@ import mimetypes
 import importlib
 import datetime
 import objects
-import logging
 
 script_cache = {}
 open_sockets = {"users": {}, "robots": {}}
@@ -23,7 +22,7 @@ def main():
         ssl_context.load_cert_chain("cert.pem", "key.pem")
         wssd = websockets.serve(handler, HOST, PORT, ssl = ssl_context)
         os.system("clear")
-        objects.init_logging("websocketserver.log")
+        objects.init_logging("websocketserver_{}.log".format(datetime.datetime.now().strftime("%Y_%b_%d")))
         module.log("Serving WSS on {0} port {1} (wss://{0}:{1}/) ...".format(HOST, PORT))
         sys.path.append(os.getcwd())
         os.chdir("./public")

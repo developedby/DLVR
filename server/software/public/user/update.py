@@ -12,28 +12,19 @@ async def main(websocket, path, open_sockets, data = None):
             "reason_message": "OK"
         }
         login = objects.Login(data["cookie"])
-        user = login.get_user()
+        user = login.user
         if user:
-            if user.check_password(data["password"]):
-                errors = 0
+            if user.password == data["password"]:
                 if "email" in data:
-                    if not user.set_email(data["email"]):
-                        errors += 1
+                    user.email = data["email"]
                 if "first_name" in data:
-                    if not user.set_first_name(data["first_name"]):
-                        errors += 1
+                    user.first_name = data["first_name"]
                 if "last_name" in data:
-                    if not user.set_last_name(data["last_name"]):
-                        errors += 1
+                    user.last_name = data["last_name"]
                 if "new_password" in data:
-                    if not user.set_password(data["new_password"]):
-                        errors += 1
-                if errors == 0:
-                    resp["message_body"] = "true"
-                    await websocket.send(json.dumps(resp))
-                else:
-                    resp["message_body"] = "false"
-                    await websocket.send(json.dumps(resp))
+                    user.password = data["new_password"]
+                resp["message_body"] = "true"
+                await websocket.send(json.dumps(resp))
             else:
                 resp["message_body"] = "false"
                 await websocket.send(json.dumps(resp))

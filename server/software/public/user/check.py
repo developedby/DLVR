@@ -10,7 +10,7 @@ async def main(websocket, path, open_sockets):
             "status_code": 200,
             "reason_message": "OK"
         }
-        if objects.User.check(data["email"]):
+        if objects.User(data["email"]).verified != None:
             resp["message_body"] = "true"
             await websocket.send(json.dumps(resp))
         else:

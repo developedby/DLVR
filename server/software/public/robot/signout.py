@@ -12,16 +12,13 @@ async def main(websocket, path, open_sockets, data = None):
             "reason_message": "OK"
         }
         robot = objects.Robot(data["id"])
-        public_key = robot.get_public_key()
+        public_key = robot.public_key
         if public_key:
             if objects.Robot.verify(public_key, data):
-                if robot.signout():
-                    resp["message_body"] = "true"
-                    await websocket.send(json.dumps(resp))
-                    open_sockets["robots"].pop(data["id"])
-                else:
-                    resp["message_body"] = "false"
-                    await websocket.send(json.dumps(resp))
+                robot.alive = False
+                resp["message_body"] = "true"
+                await websocket.send(json.dumps(resp))
+                open_sockets["robots"].pop(data["id"])
             else:
                 resp["message_body"] = "false"
                 await websocket.send(json.dumps(resp))

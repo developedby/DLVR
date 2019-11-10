@@ -12,48 +12,27 @@ async def main(websocket, path, open_sockets, data = None):
             "reason_message": "OK"
         }
         robot = objects.Robot(data["id"])
-        public_key = robot.get_public_key()
+        public_key = robot.public_key
         if public_key:
             if objects.Robot.verify(public_key, data):
-                errors = 0
-
                 if "state" in data:
-                    if not robot.set_state(data["state"]):
-                        errors += 1
-
+                    robot.state = data["state"]
                 if "item" in data:
-                    if not robot.set_item(data["item"]):
-                        errors += 1
-
+                    robot.item = data["item"]
                 if "qr" in data:
                     pass
-
                 if "speed" in data:
-                    if not robot.set_speed(data["speed"]):
-                        errors += 1
-
+                    robot.speed = data["speed"]
                 if "curve_radius" in data:
-                    if not robot.set_curve_radius(data["curve_radius"]):
-                        errors += 1
-
+                    robot.curve_radius = data["curve_radius"]
                 if "left_encoder" in data:
-                    if not robot.set_left_encoder(data["left_encoder"]):
-                        errors += 1
-
+                    robot.left_encoder = data["left_encoder"]
                 if "right_encoder" in data:
-                    if not robot.set_right_encoder(data["right_encoder"]):
-                        errors += 1
-
+                    robot.right_encoder = data["right_encoder"]
                 if "ultrasound" in data:
-                    if not robot.set_ultrasound(data["ultrasound"]):
-                        errors += 1
-
-                if errors == 0:
-                    resp["message_body"] = "true"
-                    await websocket.send(json.dumps(resp))
-                else:
-                    resp["message_body"] = "false"
-                    await websocket.send(json.dumps(resp))
+                    robot.ultrasound = data["ultrasound"]
+                resp["message_body"] = "true"
+                await websocket.send(json.dumps(resp))
             else:
                 resp["message_body"] = "false"
                 await websocket.send(json.dumps(resp))

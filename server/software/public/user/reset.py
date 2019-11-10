@@ -10,7 +10,11 @@ async def main(websocket, path, open_sockets):
             "status_code": 200,
             "reason_message": "OK"
         }
-        if objects.Code(data["code"]).verify(data["email"]) and objects.User(data["email"]).set_password(data["password"]):
+        code = objects.Code(data["code"])
+        user = code.user
+        if user and user.email == data["email"]:
+            user.password = data["password"]
+            code.delete()
             resp["message_body"] = "true"
             await websocket.send(json.dumps(resp))
         else:
