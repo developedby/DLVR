@@ -22,7 +22,6 @@ async def handler():
         resp = json.loads(resp)
         if resp["status_code"] == 200 and resp["message_body"] == "true":
             print("Signup efetuado com sucesso")
-            #code = int(input())
             code = int(await loop.run_in_executor(None, input))
             data = {"user": "subject2@example.com", "number": code}
             async with websockets.connect(uri + "/code/verify", ssl = ssl_context) as websocket2:
