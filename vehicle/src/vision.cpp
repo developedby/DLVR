@@ -451,7 +451,7 @@ void Vision::getColorMask(Mat& dst, const cv::Scalar min, const cv::Scalar max)
     cv::inRange(this->img, min, max, dst);
     const Mat krn_open = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
     cv::morphologyEx(dst, dst, cv::MORPH_OPEN, krn_open);
-    const Mat krn_close = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(9, 9));
+    const Mat krn_close = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
     cv::morphologyEx(dst, dst, cv::MORPH_CLOSE, krn_close);
 }
 
