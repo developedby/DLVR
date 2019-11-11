@@ -314,6 +314,23 @@ class User:
                     cursor.close()
             return ret
 
+    @property
+    def delivery(self):
+        if self._email != None:
+            with connect.connect() as connection:
+                cursor = connection.cursor(prepared = True)
+                query = "SELECT DISTINCT id FROM Delivery WHERE (sender = %s OR receiver = %s) AND state < 5"
+                values = (self._email, self._email)
+                try:
+                    cursor.execute(query, values)
+                    result = cursor.fetchone()
+                    if result:
+                        return Delivery(result[0])
+                except Exception as e:
+                    module.error(e)
+                finally:
+                    cursor.close()
+
     def delete(self):
         if self._email != None:
             with connect.connect() as connection:
@@ -726,6 +743,22 @@ class Robot:
             finally:
                 cursor.close()
         return ret
+
+    @property
+    def delivery(self):
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "SELECT id FROM Delivery WHERE robot = %s AND state < 5"
+            values = (self._id,)
+            try:
+                cursor.execute(query, values)
+                result = cursor.fetchone()
+                if result:
+                    return Delivery(result[0])
+            except Exception as e:
+                module.error(e)
+            finally:
+                cursor.close()
 
 class Code:
     @classmethod
@@ -1250,7 +1283,7 @@ class QRCode:
         with connect.connect() as connection:
             cursor = connection.cursor(prepared = True)
             query = "INSERT INTO QRCode(number, expiration, delivery) VALUES (%s, %s, %s)"
-            number = random.randint(0, 65535)
+            number = random.randint(32, 65535)
             expiration = datetime.datetime.now() + datetime.timedelta(minutes = 5)
             expiration = expiration.strftime("%Y-%m-%d %H:%M:%S")
             values = (number, expiration, delivery)

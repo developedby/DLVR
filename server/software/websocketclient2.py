@@ -15,6 +15,29 @@ def main():
 
 async def handler():
     uri = "wss://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com"
+    option = int(await loop.run_in_executor(None, input))
+    if option > 0:
+        data = {"email": "subject2@example.com", "first_name": "Subject2", "last_name": "Subject2", "password": "Password456!"}
+        async with websockets.connect(uri + "/user/signup", ssl = ssl_context) as websocket:
+            await websocket.send(json.dumps(data))
+            resp = await websocket.recv()
+            resp = json.loads(resp)
+            if resp["status_code"] == 200 and resp["message_body"] == "true":
+                print("Signup efetuado com sucesso")
+                number = int(await loop.run_in_executor(None, input))
+                data = {"user": "subject2@example.com", "number": number}
+                async with websockets.connect(uri + "/code/verify", ssl = ssl_context) as websocket2:
+                    await websocket2.send(json.dumps(data))
+                    resp = await websocket2.recv()
+                    resp = json.loads(resp)
+                    if resp["status_code"] == 200 and resp["message_body"] == "true":
+                        print("Código verificado com sucesso")
+                    else:
+                        print(resp)
+                        print("Código incorreto")
+            else:
+                print(resp)
+                print("Signup incorreto")
     data = {"email": "subject2@example.com", "password": "Password456!"}
     async with websockets.connect(uri + "/user/signin", ssl = ssl_context) as websocket:
         await websocket.send(json.dumps(data))
@@ -24,19 +47,30 @@ async def handler():
             print("Signin efetuado com sucesso")
             cookie = resp["set_cookie"]
             print("Cookie: {}".format(cookie))
+            ORIG = 14
+            id = None
             await loop.run_in_executor(None, input)
-            data = {"path": "/delivery/request", "cookie": cookie, "origin": 0, "receiver": "subject@example.com"}
+            data = {"path": "/delivery/request", "cookie": cookie, "origin": ORIG, "receiver": "subject@example.com"}
             await websocket.send(json.dumps(data))
             resp = await websocket.recv()
             resp = json.loads(resp)
             if resp["status_code"] == 200 and resp["message_body"] == "true":
-                print("Delivery request efetuado com sucesso")
                 async for message in websocket:
                     print(message)
                     resp = json.loads(message)
                     if "path" in resp:
                         if resp["path"] == "/delivery/response":
-                            data = {"path": "/user/signout", "cookie": cookie}
+                            id = resp["message_body"]["id"]
+                        elif resp["path"] == "/robot/update":
+                            if "position" in resp["message_body"] and resp["message_body"]["position"] == ORIG:
+                                await loop.run_in_executor(None, input)
+                                data = {"path": "/delivery/send", "cookie": cookie, "id": id}
+                                await websocket.send(json.dumps(data))
+                        elif resp["path"] == "/delivery/finish":
+                            if option == 2:
+                                data = {"path": "/user/delete", "cookie": cookie, "password": "Password456!"}
+                            else:
+                                data = {"path": "/user/signout", "cookie": cookie}
                             await websocket.send(json.dumps(data))
                             await loop.run_in_executor(None, input)
                             return

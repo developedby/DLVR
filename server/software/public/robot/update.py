@@ -20,7 +20,8 @@ async def main(websocket, path, open_sockets, data = None):
                 if "item" in data:
                     robot.item = data["item"]
                 if "qr" in data:
-                    pass
+                    if data["qr"] < 32:
+                        robot.position = data["qr"]
                 if "speed" in data:
                     robot.speed = data["speed"]
                 if "curve_radius" in data:
@@ -40,6 +41,9 @@ async def main(websocket, path, open_sockets, data = None):
                     data2["message_body"].pop("id")
                     data2["message_body"].pop("signature")
                     data2["message_body"].pop("timestamp")
+                    if "qr" in data2["message_body"] and data2["message_body"]["qr"] < 32:
+                        data2["message_body"]["position"] = data2["message_body"]["qr"]
+                        data2["message_body"].pop("qr")
                     data2 = json.dumps(data2)
                     logins = sender.logins
                     for login in logins:

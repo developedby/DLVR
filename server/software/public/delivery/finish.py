@@ -14,9 +14,9 @@ async def main(websocket, path, open_sockets, data = None):
         user = objects.Login(data["cookie"]).user
         if user:
             delivery = objects.Delivery(data["id"])
-            receiver = delivery.receiver
-            if receiver:
-                logins = receiver.logins
+            sender = delivery.sender
+            if sender:
+                logins = sender.logins
                 if len(logins) > 0:
                     robot = delivery.robot
                     delivery.finish()
