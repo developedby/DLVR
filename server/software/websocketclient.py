@@ -56,11 +56,13 @@ async def handler():
                 if "path" in resp:
                     if resp["path"] == "/delivery/request":
                         id = resp["message_body"]["id"]
+                        print("Nova solicitação de delivery")
                         await loop.run_in_executor(None, input)
                         data = {"path": "/delivery/response", "cookie": cookie, "id": id, "accept": True, "destination": DEST}
                         await websocket.send(json.dumps(data))
                     elif resp["path"] == "/robot/update":
                         if "qr" in resp["message_body"]:
+                            print("Robô abriu")
                             await loop.run_in_executor(None, input)
                             data = {"path": "/delivery/finish", "cookie": cookie, "id": id}
                             await websocket.send(json.dumps(data))
@@ -72,6 +74,7 @@ async def handler():
                             await loop.run_in_executor(None, input)
                             return
                         elif "position" in resp["message_body"] and resp["message_body"]["position"] == DEST:
+                            print("Robô chegou ao destino")
                             await loop.run_in_executor(None, input)
                             data = {"path": "/delivery/qr", "cookie": cookie, "id": id}
                             await websocket.send(json.dumps(data))

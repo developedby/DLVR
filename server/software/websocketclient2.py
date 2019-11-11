@@ -55,18 +55,22 @@ async def handler():
             resp = await websocket.recv()
             resp = json.loads(resp)
             if resp["status_code"] == 200 and resp["message_body"] == "true":
+                print("Solicitação de delivery enviada")
                 async for message in websocket:
                     print(message)
                     resp = json.loads(message)
                     if "path" in resp:
                         if resp["path"] == "/delivery/response":
                             id = resp["message_body"]["id"]
+                            print("Delivery aceito")
                         elif resp["path"] == "/robot/update":
                             if "position" in resp["message_body"] and resp["message_body"]["position"] == ORIG:
+                                print("Robô chegou na origem")
                                 await loop.run_in_executor(None, input)
                                 data = {"path": "/delivery/send", "cookie": cookie, "id": id}
                                 await websocket.send(json.dumps(data))
                         elif resp["path"] == "/delivery/finish":
+                            print("Delivery finalizado")
                             if option == 2:
                                 data = {"path": "/user/delete", "cookie": cookie, "password": "Password456!"}
                             else:
