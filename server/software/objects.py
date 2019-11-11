@@ -6,6 +6,9 @@ import hashlib
 import json
 import math
 import logging
+import email.mime.multipart
+import email.mime.text
+import smtplib
 
 def full_class_name(o):
     module = o.__class__.__module__
@@ -26,6 +29,38 @@ def distance(p1, p2):
     x1, y1 = xy_map[p1]
     x2, y2 = xy_map[p2]
     return math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
+
+def send_email(email_address, first_name, last_name, number):
+    try:
+        msg = email.mime.multipart.MIMEMultipart("alternative")
+        msg["From"] = "projectdlvr@gmail.com"
+        msg["To"] = email_address
+        msg["Subject"] = "DLVR Verification Code"
+        with open("/home/ec2-user/software/email.txt", "r") as text_file:
+            text = text_file.read()
+        with open("/home/ec2-user/software/email.html", "r") as html_file:
+            html = html_file.read()
+        text = text.replace("{{first_name}}", first_name)
+        text = text.replace("{{last_name}}", last_name)
+        text = text.replace("{{number}}", str(number))
+        html = html.replace("{{first_name}}", first_name)
+        html = html.replace("{{last_name}}", last_name)
+        html = html.replace("{{number}}", str(number))
+        part1 = email.mime.text.MIMEText(text, "plain")
+        part2 = email.mime.text.MIMEText(html, "html")
+        msg.attach(part1)
+        msg.attach(part2)
+        with open("/home/ec2-user/software/password", "r") as pwd_file:
+            password = pwd_file.read()
+        server = smtplib.SMTP("smtp.gmail.com:587")
+        server.starttls()
+        server.login(msg["From"], password)
+        server.sendmail(msg["From"], msg["To"], msg.as_string())
+        server.quit()
+        return True
+    except Exception as e:
+        module.error(e)
+    return False
 
 class Request:
     def __init__(self, websocket):

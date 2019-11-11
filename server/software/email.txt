@@ -1,0 +1,11 @@
+Hi {{first_name}} {{last_name}}
+
+A verification code was requested for your account.
+If you didn't request it, you can ignore this email safely.
+This is your verification code:
+
+{{number}}
+
+You must enter this code in the app when requested.
+This code will expire in 5 minutes.
+After that, a new code must be requested.

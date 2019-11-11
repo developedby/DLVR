@@ -12,9 +12,11 @@ async def main(websocket, path, open_sockets):
         }
         code = objects.Code.create(data["user"])
         if code:
+            user = code.user
             objects.Request(websocket).log(path, code.number)
             resp["message_body"] = "true"
             await websocket.send(json.dumps(resp))
+            objects.send_email(user.email, user.first_name, user.last_name, code.number)
         else:
             resp["message_body"] = "false"
             await websocket.send(json.dumps(resp))
