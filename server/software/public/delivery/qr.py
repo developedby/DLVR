@@ -16,6 +16,11 @@ async def main(websocket, path, open_sockets):
             code = objects.QRCode.create(data["id"])
             if code:
                 objects.Request(websocket).log(path, code.number)
+                delivery = code.delivery
+                delivery.qr()
+                robot = delivery.robot
+                data2 = {"status_code": 200, "reason_message": "OK", "path": "/delivery/qr", "message_body": code.number}
+                await open_sockets["robots"][robot.id].send(json.dumps(data2))
                 resp["message_body"] = code.number
                 await websocket.send(json.dumps(resp))
             else:

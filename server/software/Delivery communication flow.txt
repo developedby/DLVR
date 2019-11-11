@@ -1,17 +1,14 @@
-Sender -> /delivery/request -> Receiver
-Receiver -> /delivery/response -> Sender
-                               -> Robot
-Robot -> /robot/update -> Sender
-                       -> Receiver
-Sender -> /delivery/qr -> Robot
-Robot -> /robot/update -> Sender
-                       -> Receiver
-Sender -> /delivery/send -> Robot
-                         -> Receiver
-Robot -> /robot/update -> Sender
-                       -> Receiver
-Receiver -> /delivery/qr -> Robot
-Robot -> /robot/update -> Sender
-                       -> Receiver
-Receiver -> /delivery/finish -> Robot
-                             -> Sender
+Sender -> /delivery/request -> Receiver(Done)
+Receiver -> /delivery/response -> Sender(Done)
+                               -> Robot(Done)
+Robot -> /robot/update -> Sender(Done)
+                       -> Receiver(Done)
+Sender -> /delivery/send -> Robot(Done)
+                         -> Receiver(Done)
+Robot -> /robot/update -> Sender(Done)
+                       -> Receiver(Done)
+Receiver -> /delivery/qr -> Robot(Done)
+Robot -> /robot/update -> Sender(Done)
+                       -> Receiver(Done)
+Receiver -> /delivery/finish -> Robot(Done)
+                             -> Sender(Done)

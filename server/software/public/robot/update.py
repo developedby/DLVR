@@ -31,6 +31,22 @@ async def main(websocket, path, open_sockets, data = None):
                     robot.right_encoder = data["right_encoder"]
                 if "ultrasound" in data:
                     robot.ultrasound = data["ultrasound"]
+                if robot.delivery != None:
+                    delivery = robot.delivery
+                    sender = delivery.sender
+                    receiver = delivery.receiver
+                    data2 = {"status_code": 200, "reason_message": "OK", "path": "/robot/update"}
+                    data2["message_body"] = data.copy()
+                    data2["message_body"].pop("id")
+                    data2["message_body"].pop("signature")
+                    data2["message_body"].pop("timestamp")
+                    data2 = json.dumps(data2)
+                    logins = sender.logins
+                    for login in logins:
+                        await open_sockets["users"][login.cookie].send(data2)
+                    logins = receiver.logins
+                    for login in logins:
+                        await open_sockets["users"][login.cookie].send(data2)
                 resp["message_body"] = "true"
                 await websocket.send(json.dumps(resp))
             else:
