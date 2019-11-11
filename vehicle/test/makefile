@@ -66,12 +66,11 @@ vehicle: ../src/vehicle.cpp ../src/movement.cpp ../src/dc_motor.cpp ../src/encod
 		-I../include -I/usr/local/include -I/usr/local/include/opencv4
 
 #teste seguir rua
-follow_road:  test_follow_road.cpp ../src/movement.cpp ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/pidz.cpp ../src/vision.cpp ../src/street_lines.cpp ../src/reduce_lines.cpp ../src/geometry.cpp ../src/street_section.cpp
-	gcc -Wall -o ./build/test_follow_road test_follow_road.cpp ../src/movement.cpp ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/pidz.cpp ../src/vision.cpp ../src/street_lines.cpp ../src/reduce_lines.cpp ../src/geometry.cpp ../src/street_section.cpp\
+follow_road:  ./build/test_follow_road.o ./build/movement.o ./build/dc_motor.o ./build/encoder.o ./build/wheel.o ./build/pidz.o ./build/vision.o ./build/street_lines.o ./build/reduce_lines.o ./build/geometry.o ./build/street_section.o
+	gcc -o ./build/test_follow_road ./build/test_follow_road.o ./build/movement.o ./build/dc_motor.o ./build/encoder.o ./build/wheel.o ./build/pidz.o ./build/vision.o ./build/street_lines.o ./build/reduce_lines.o ./build/geometry.o ./build/street_section.o \
 		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
 		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lraspicam -lraspicam_cv -lopencv_aruco\
 		-I../include -I/usr/local/include -I/usr/local/include/opencv4
-
 #Turn test
 turn: ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/movement.cpp
 	gcc -Wall -o ./build/test_turn ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/movement.cpp ../src/pidz.cpp ./test_turn.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -I../include -I./
@@ -81,4 +80,67 @@ traffic_light: test_camera_traffic_light.cpp
 	gcc -Wall -o ./build/test_camera_traffic_light test_camera_traffic_light.cpp \
 		-lstdc++ -std=c++17 \
 		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc \
+		-I../include -I/usr/local/include -I/usr/local/include/opencv4
+    
+# Compilation commands:
+./build/test_follow_road.o: test_follow_road.cpp
+	gcc -c -Wall -o ./build/test_follow_road.o test_follow_road.cpp \
+		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
+		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lraspicam -lraspicam_cv -lopencv_aruco\
+		-I../include -I/usr/local/include -I/usr/local/include/opencv4
+
+./build/movement.o: ../src/movement.cpp
+	gcc -c -Wall -o ./build/movement.o ../src/movement.cpp \
+		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
+		-I../include 
+		 
+
+./build/dc_motor.o: ../src/dc_motor.cpp
+	gcc -c -Wall -o ./build/dc_motor.o ../src/dc_motor.cpp \
+		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
+		-I../include 
+    
+./build/encoder.o: ../src/encoder.cpp
+	gcc -c -Wall -o ./build/encoder.o ../src/encoder.cpp \
+		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
+		-I../include
+
+./build/wheel.o: ../src/wheel.cpp
+	gcc -c -Wall -o ./build/wheel.o ../src/wheel.cpp \
+		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
+		-I../include
+
+./build/pidz.o: ../src/pidz.cpp
+	gcc -c -Wall -o ./build/pidz.o ../src/pidz.cpp \
+		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
+		-I../include
+
+./build/vision.o: ../src/vision.cpp
+	gcc -c -Wall -o ./build/vision.o ../src/vision.cpp \
+		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
+		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lraspicam -lraspicam_cv -lopencv_aruco\
+		-I../include -I/usr/local/include -I/usr/local/include/opencv4
+
+./build/street_lines.o: ../src/street_lines.cpp
+	gcc -c -Wall -o ./build/street_lines.o ../src/street_lines.cpp \
+		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
+		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lraspicam -lraspicam_cv -lopencv_aruco\
+		-I../include -I/usr/local/include -I/usr/local/include/opencv4
+
+./build/reduce_lines.o: ../src/reduce_lines.cpp
+	gcc -c -Wall -o ./build/reduce_lines.o ../src/reduce_lines.cpp \
+		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
+		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lraspicam -lraspicam_cv -lopencv_aruco\
+		-I../include -I/usr/local/include -I/usr/local/include/opencv4
+
+./build/geometry.o: ../src/geometry.cpp
+	gcc -c -Wall -o ./build/geometry.o ../src/geometry.cpp \
+		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
+		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lraspicam -lraspicam_cv -lopencv_aruco\
+		-I../include -I/usr/local/include -I/usr/local/include/opencv4
+
+./build/street_section.o: ../src/street_section.cpp
+	gcc -c -Wall -o ./build/street_section.o ../src/street_section.cpp \
+		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
+		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lraspicam -lraspicam_cv -lopencv_aruco\
 		-I../include -I/usr/local/include -I/usr/local/include/opencv4
