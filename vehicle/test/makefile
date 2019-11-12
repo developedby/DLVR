@@ -43,9 +43,8 @@ radio: test_nrf24l01+.cpp ../src/radio.cpp ../src/radio_communication.cpp
 		-lpigpio -lrt -lm -lpthread -lstdc++ -lrf24-bcm -I../include
 
 #Teste visão
-vision: test_vision.cpp ../src/vision.cpp ../src/street_lines.cpp ../src/reduce_lines.cpp ../src/geometry.cpp ../src/street_section.cpp
-	gcc -Wall -o ./build/test_vision \
-	    test_vision.cpp ../src/vision.cpp ../src/street_lines.cpp ../src/reduce_lines.cpp ../src/geometry.cpp ../src/street_section.cpp \
+vision: ./build/test_vision.o ./build/vision.o ./build/street_lines.o ./build/reduce_lines.o ./build/geometry.o ./build/street_section.o
+	gcc -Wall -o ./build/test_vision ./build/test_vision.o ./build/vision.o ./build/street_lines.o ./build/reduce_lines.o ./build/geometry.o ./build/street_section.o \
 		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
 		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lopencv_aruco\
 		-lraspicam -lraspicam_cv \
@@ -59,15 +58,15 @@ lines: test_line_detection.cpp
 		-I../include -I/usr/local/include -I/usr/local/include/opencv4
 
 #Teste vehicle
-vehicle: ../src/vehicle.cpp ../src/movement.cpp ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/pidz.cpp ../src/radio.cpp ../src/radio_communication.cpp ../src/servo.cpp ../src/lock.cpp ../src/item_detector.cpp ../src/delivery_box.cpp ../src/intelligence.cpp ../src/vision.cpp ../src/street_lines.cpp ../src/reduce_lines.cpp ../src/geometry.cpp ../src/street_section.cpp
-	gcc -Wall -o ./build/vehicle ../src/movement.cpp ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/pidz.cpp ../src/vehicle.cpp ../src/radio.cpp ../src/radio_communication.cpp ../src/servo.cpp ../src/lock.cpp ../src/item_detector.cpp ../src/delivery_box.cpp ../src/intelligence.cpp ../src/vision.cpp ../src/street_lines.cpp ../src/reduce_lines.cpp ../src/geometry.cpp ../src/street_section.cpp\
+vehicle: ./build/test_follow_road.o ./build/movement.o ./build/dc_motor.o ./build/encoder.o ./build/wheel.o ./build/pidz.o ./build/vision.o ./build/street_lines.o ./build/reduce_lines.o ./build/geometry.o ./build/street_section.o ./build/radio.o ./build/radio_communication.o ./build/lock.o ./build/item_detector.o ./build/delivery_box.o ./build/intelligence.o
+	gcc -Wall -o ./build/vehicle ./build/test_follow_road.o ./build/movement.o ./build/dc_motor.o ./build/encoder.o ./build/wheel.o ./build/pidz.o ./build/vision.o ./build/street_lines.o ./build/reduce_lines.o ./build/geometry.o ./build/street_section.o ./build/radio.o ./build/radio_communication.o ./build/lock.o ./build/item_detector.o ./build/delivery_box.o ./build/intelligence.o\ 
 		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
 		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lraspicam -lraspicam_cv -lopencv_aruco\
 		-I../include -I/usr/local/include -I/usr/local/include/opencv4
 
 #teste seguir rua
-follow_road:  ./build/test_follow_road.o ./build/movement.o ./build/dc_motor.o ./build/encoder.o ./build/wheel.o ./build/pidz.o ./build/vision.o ./build/street_lines.o ./build/reduce_lines.o ./build/geometry.o ./build/street_section.o
-	gcc -o ./build/test_follow_road ./build/test_follow_road.o ./build/movement.o ./build/dc_motor.o ./build/encoder.o ./build/wheel.o ./build/pidz.o ./build/vision.o ./build/street_lines.o ./build/reduce_lines.o ./build/geometry.o ./build/street_section.o \
+follow_road:  ./build/test_follow_road.o ./build/movement.o ./build/dc_motor.o ./build/encoder.o ./build/wheel.o ./build/pidz.o ./build/vision.o ./build/street_lines.o ./build/reduce_lines.o ./build/geometry.o ./build/street_section.o ./build/servo.o
+	gcc -Wall -o ./build/test_follow_road ./build/test_follow_road.o ./build/movement.o ./build/dc_motor.o ./build/encoder.o ./build/wheel.o ./build/pidz.o ./build/vision.o ./build/street_lines.o ./build/reduce_lines.o ./build/geometry.o ./build/street_section.o \
 		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
 		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lraspicam -lraspicam_cv -lopencv_aruco\
 		-I../include -I/usr/local/include -I/usr/local/include/opencv4
@@ -85,6 +84,12 @@ traffic_light: test_camera_traffic_light.cpp
 # Compilation commands:
 ./build/test_follow_road.o: test_follow_road.cpp
 	gcc -c -Wall -o ./build/test_follow_road.o test_follow_road.cpp \
+		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
+		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lraspicam -lraspicam_cv -lopencv_aruco\
+		-I../include -I/usr/local/include -I/usr/local/include/opencv4
+
+./build/test_vision.o: test_vision.cpp
+	gcc -c -Wall -o ./build/test_vision.o test_vision.cpp \
 		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
 		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lraspicam -lraspicam_cv -lopencv_aruco\
 		-I../include -I/usr/local/include -I/usr/local/include/opencv4
@@ -144,3 +149,40 @@ traffic_light: test_camera_traffic_light.cpp
 		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
 		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lraspicam -lraspicam_cv -lopencv_aruco\
 		-I../include -I/usr/local/include -I/usr/local/include/opencv4
+
+./build/radio.o: ../src/radio.cpp
+	gcc -c -Wall -o ./build/radio.o ../src/radio.cpp \
+		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
+		-I../include
+
+./build/radio_communication.o: ../src/radio_communication.cpp
+	gcc -c -Wall -o ./build/radio_communication.o ../src/radio_communication.cpp \
+		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
+		-I../include
+
+./build/servo.o: ../src/servo.cpp
+	gcc -c -Wall -o ./build/servo.o ../src/servo.cpp \
+		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
+		-I../include
+
+./build/lock.o: ../src/lock.cpp
+	gcc -c -Wall -o ./build/lock.o ../src/lock.cpp \
+		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
+		-I../include
+
+./build/item_detector.o: ../src/item_detector.cpp
+	gcc -c -Wall -o ./build/item_detector.o ../src/item_detector.cpp \
+		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
+		-I../include
+
+./build/delivery_box.o: ../src/delivery_box.cpp
+	gcc -c -Wall -o ./build/delivery_box.o ../src/delivery_box.cpp \
+		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
+		-I../include
+
+./build/intelligence.o: ../src/intelligence.cpp
+	gcc -c -Wall -o ./build/intelligence.o ../src/intelligence.cpp \
+		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
+		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lraspicam -lraspicam_cv -lopencv_aruco\
+		-I../include -I/usr/local/include -I/usr/local/include/opencv4
+
