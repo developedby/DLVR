@@ -13,7 +13,7 @@ class RadioCommunication{
     uint8_t last_address[constants::radio_width_address];
 
 public:
-    SendedMessage last_sended_message;
+    SentMessage last_sended_message;
     pthread_t *radio_ack_thread;
     int siz;
     int ack;
@@ -22,7 +22,7 @@ public:
     RadioCommunication();
     ~RadioCommunication() {}
     void setAddress(uint8_t const *addres);
-    void sendToRadio(SendedMessage message);
+    void sendToRadio(SentMessage message);
     bool receiveFromRadio();
     ReceivedMessage getData();
     int getDataSize();

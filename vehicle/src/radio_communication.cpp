@@ -39,7 +39,7 @@ void RadioCommunication::setAddress(uint8_t const *address)
     }
 }
 
-void RadioCommunication::sendToRadio(SendedMessage message)
+void RadioCommunication::sendToRadio(SentMessage message)
 {
     last_sended_message = message;
     std::vector<uint8_t> data;

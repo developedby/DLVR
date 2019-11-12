@@ -60,9 +60,9 @@ class SentMessage{
         uint8_t other_sensors_reading;
         MovementInfo movement;
         status::Status status;
-        SendedMessage(std::vector<uint16_t> _qr_codes_read, float _ultrassound_reading, bool _other_sensors_reading, MovementInfo _movement, status::Status _status):
+        SentMessage(std::vector<uint16_t> _qr_codes_read, float _ultrassound_reading, bool _other_sensors_reading, MovementInfo _movement, status::Status _status):
             qr_codes_read(_qr_codes_read), ultrassound_reading(_ultrassound_reading), other_sensors_reading(_other_sensors_reading), movement(_movement), status(_status) {}
-        SendedMessage(){;}
+        SentMessage(){;}
 };
 
 #define NO_SENSOR_READ 3

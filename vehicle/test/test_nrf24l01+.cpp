@@ -49,7 +49,7 @@ int main()
 			qr_codes_read.push_back(3);
 			float ultrassound_reading;
 			uint8_t other_sensors_reading;
-			if(received.sensor_to_read == ULTASOUND)
+			if(received.sensor_to_read == ULTRASOUND)
 			{
 				ultrassound_reading = 2.345678;
 				other_sensors_reading = NO_SENSOR_READ;
@@ -64,7 +64,7 @@ int main()
 				ultrassound_reading = 0;
 				other_sensors_reading = 1;
 			}
-			Movement movement;
+			MovementInfo movement;
 			status::Status status;
 			if(received.required_status == MOVEMENT)
 			{
@@ -82,9 +82,9 @@ int main()
 				movement.read = false;
 				status = status::NO_STATUS;
 			}
-			radio.sendToRadio(SendedMessage(qr_codes_read, ultrassound_reading, other_sensors_reading, movement, status));
+			radio.sendToRadio(SentMessage(qr_codes_read, ultrassound_reading, other_sensors_reading, movement, status));
 		}
 	}
-	std::cout <<"acabou" <<std::endl;
+	std::cout <<"radio desconectado" <<std::endl;
 	return 0;
 }
