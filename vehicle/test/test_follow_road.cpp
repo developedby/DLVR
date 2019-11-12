@@ -29,11 +29,11 @@ void goAhead(Movement& movement, float angle, float distance)
     std:: cout << "girando com angulo " << angle <<std::endl;
     if(std::abs(angle) > 5)
     {
-        movement.turn(angle/3);
+        //movement.turn(angle/3);
     }
     gpioDelay(500000);
     std::cout << "andando reto" <<std::endl;
-    movement.goStraightMm(1, distance, 500);
+    //movement.goStraightMm(1, distance, 500);
 }
 
 int main ()
@@ -113,9 +113,9 @@ int main ()
         vision.getCamImg();
         gpioDelay(200000);
         found_streets = vision.findStreets();
-        /*std::cout << "linhas encontradas" <<std::endl;
+        std::cout << "linhas encontradas" <<std::endl;
         float min_distance = 1000;
-        //float min_angle = 360;
+        float min_angle = 360;
         for (auto street: found_streets)
         {
             std::cout << int(street.type) << ' ' << street.line << ' ' << street.end_points << std::endl;
@@ -129,7 +129,7 @@ int main ()
                 std::cout << int(street.type) << ' ' << street.line << ' ' << street.end_points << std::endl;
                 float angle = setAngleInRange(street.line[1], (20*M_PI)/180);
                 float distance = street_lines::distXYPointXYSegment(cv::Point(chosen_street.end_points[2], chosen_street.end_points[3]), street.end_points);
-                if((distance < min_distance) && (std::abs(angle - my_angle) < 45))
+                if((distance < min_distance) && (std::abs(angle - my_angle) < min_angle))
                 {
                     correction_street = street;
                     min_distance = distance;
@@ -145,7 +145,7 @@ int main ()
             float angle2 = atan2(correction_street.end_points[3], correction_street.end_points[2]) * (180/M_PI) - 90;
             std::cout << "achei que andei 10 mas na verdade andei " << real_distance << " com " << std::abs(real_distance) << " e meu angulo eh " << my_angle - previous_angle + angle2 << " ao inves de " << my_angle <<std::endl;
             my_angle = my_angle - previous_angle + angle2;
-        }*/
+        }
         std::cout << "ate agora andei " << ran_distance <<std::endl;
         if(ran_distance >= required_distance)
             stop = true;
