@@ -1,12 +1,111 @@
-import requests
-import serial
-import struct
-import time
-from datetime import datetime
-import threading
-import urllib.request
-import ssl
+#!/usr/bin/env python3
+
 import json
+import datetime
+import hashlib
+import Crypto.PublicKey.RSA
+import asyncio
+import websockets
+import ssl
+import struct
+import serial
+import time
+
+CERT_PEM_PATH = './cert.pem'
+ROBOT_DER_PATH = './robot0.der'
+ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+ssl_context.load_verify_locations(CERT_PEM_PATH)
+loop = asyncio.get_event_loop()
+
+class VehicleServerInterface:
+    #dictionaries to vehicle
+    vehicle_sensors_code = {"item detector" : 1, "ultrasound" : 2, "lock" : 3}
+    possible_commands = {"force_go_ahead" : 1, "open_box" : 2, "close_box" : 3, "get qr_code" : 4}
+    possible_status_to_vehicle = {"movement" : 1, "status_robot" : 2}
+    #dictionaries from vehicle
+    possible_status_from_vehicle = {1 : "stopped", 2 : "moving forward", 3 :"moving backway", 4 : "avoiding obstacle", 5 : "waiting semaphore", 6 : "waiting route"}
+    
+    def __init__(self):
+        self.serial_interface = SerialInterface()
+        
+    def handle_server_request(self, robot_id, msg):
+        packet_to_send, sensor_to_read, required_status = self.decodeMessageFromServer(robot_id, msg)
+        self.serial_interface.write(packet_to_send)
+        packet_received = self.serial_interface.read()
+        if (packet_received and packet_received[0] == robot_id):
+            dict_to_server = self.decodeMessageFromVehicle(packet_received, sensor_to_read, required_status)
+            return dict_to_server
+
+    def decodeMessageFromServer(self, robot_id, msg):
+        packet_to_vehicle = []
+        radio_address = "DLVR1"
+        packet_to_vehicle.extend(list(radio_address.encode("ascii")))
+        packet_to_vehicle.append(robot_id)
+        route = ""
+        command = ""
+        sensor_to_read = ""
+        required_status = ""
+        qr_code_destination = 0
+        if("route" in msg):
+            route = msg["route"]
+            qr_code_destination = msg["qr"]
+        if("command" in msg):
+            command = msg["command"]
+        if("sensor_to_read" in msg):
+            sensor_to_read = msg["sensor_to_read"]
+        if("required_status" in msg):
+            required_status = msg["required_status"]
+        packet_content = (1 if route else 0) << 3
+        packet_content += (1 if command else 0) << 2
+        packet_content += (1 if sensor_to_read else 0) << 1
+        packet_content += (1 if required_status else 0) << 0
+        packet_to_vehicle.append(packet_content)
+        if route:
+            packet_to_vehicle.append(len(route))
+            packet_to_vehicle.extend(route)
+            packet_to_vehicle.append((qr_code_destination & 0xff00) >> 8)
+            packet_to_vehicle.append((qr_code_destination & 0xff))
+        if command:
+            packet_to_vehicle.append(self.possible_commands[command])
+        if sensor_to_read:
+            packet_to_vehicle.append(self.vehicle_sensors_code[sensor_to_read])
+        if required_status:
+            packet_to_vehicle.append(self.possible_status_to_vehicle[required_status])
+
+
+    def decodeMessageFromVehicle(self, msg, sensor_to_read, required_status, json):
+        current_address = 1
+        sensor_read = 0
+        status = 0
+        qr_codes_read = 0
+        dict_from_vehicle = {}
+        if sensor_to_read == "ultrasound":
+            sensor_read = struct.unpack('f', msg[current_address:(current_address+4)])
+            dict_from_vehicle["ultrasound"] = sensor_read
+            current_address += 4
+        else:
+            sensor_read = msg[current_address]
+            if sensor_to_read == "item detector":
+                dict_from_vehicle["item"] = sensor_read
+            else:
+                pass
+            current_address += 1
+        if required_status == "movement":
+            speed = struct.unpack('f', msg[current_address:(current_address+4)])
+            current_address += 4
+            curve_radius = struct.unpack('f',msg[current_address:(current_address+4)])
+            current_address += 4
+            dict_from_vehicle["speed"] = speed
+            dict_from_vehicle["curve_radius"] = curve_radius
+        elif required_status == "status_robot":
+            status = self.possible_status_from_vehicle[msg[current_address]]
+            dict_from_vehicle["state"] = status
+            current_address += 1
+        qr_codes_read += msg[current_address : -1]
+        dict_from_vehicle["qr"] = qr_codes_read
+        return dict_from_vehicle
+
+        return sensor_read, status, qr_codes_read
 
 class SerialInterface:
     START_BYTE = 0Xaa
@@ -132,142 +231,32 @@ class SerialInterface:
             print(list(qr_codes_read))
         print("fim")
 
-class ServerInterface:
-    """Sends and receives stuff from the server
-    Handles multiple vehicles in one instance
-    """
-    def __init__(self, address, callback_server_msg):
-        self.address = address
-        self.connections = {}
-        self.callback_server_msg = callback_server_msg
+vehicle_server = VehicleServerInterface()
+def main():
+    loop.run_until_complete(handler())
 
-    def send_json(self, url, data_dict = None, method = "POST", cookie = None):
-        headers = {}
-        data = None
-        if data_dict:
-            data = json.dumps(data_dict).encode("utf-8")
-            headers["Content-Type"] = "application/json"
-        if cookie:
-            headers["Cookie"] = cookie
-        req = urllib.request.Request(self.address+url, data,
-                                     headers=headers, method=method)
-        context = ssl._create_unverified_context()
-        resp = urllib.request.urlopen(req, timeout=30, context=context)
-        return resp
-
-    def send_update(self, packet):
-        self.send_json("/robot/update", packet)
-
-    def request_new_route(self, robot_id):
-        self.send_json("/robot/route", {'signature': robot_id})
-
-    def sign_in(self, robot_id):
-        resp = self.send_json("/robot/signin", {'signature': robot_id,
-                                                'timestamp': str(datetime.now())})
-        self.connections[robot_id] = threading.Thread(target=self.receive_from_server,
-                                                      args=(robot_id, resp))
-
-    def receive_from_server(self, robot_id, resp):
-        connection_active = True
-        while connection_active:
-            msg = resp.read().decode('utf-8')
-            self.callback_server_msg(robot_id, msg)
-
-    def sign_out(self, robot_id):
-        self.send_json("robot/signout", {'signature': robot_id})
-    
-
-class VehicleServerInterface:
-    #dictionaries to vehicle
-    vehicle_sensors_code = {"item detector" : 1, "ultrasound" : 2, "lock" : 3}
-    possible_commands = {"force_go_ahead" : 1, "open_box" : 2, "close_box" : 3, "get qr_code" : 4}
-    possible_status_to_vehicle = {"movement" : 1, "status_robot" : 2}
-    #dictionaries from vehicle
-    possible_status_from_vehicle = {1 : "stopped", 2 : "moving forward", 3 :"moving backway", 4 : "avoiding obstacle", 5 : "waiting semaphore", 6 : "waiting route"}
-    
-    def __init__(self, serial_port, server_address):
-        self.server_interface = ServerInterface(server_address, self.handle_server_request)
-        self.serial_interface = SerialInterface()
-        
-    def handle_server_request(self, robot_id, msg):
-        packet_to_send, sensor_to_read, required_status = self.decodeMessageFromServer(robot_id, msg)
-        self.serial_interface.write(packet_to_send)
-        packet_received = self.serial_interface.read()
-        if (packet_received and packet_received[0] == robot_id):
-            dict_to_server = self.decodeMessageFromVehicle(packet_received, sensor_to_read, required_status)
-            self.server_interface.send_update(dict_to_server)
-
-    def decodeMessageFromServer(self, robot_id, msg):
-        packet_to_vehicle = []
-        radio_address = "DLVR1"
-        packet_to_vehicle.extend(list(radio_address.encode("ascii")))
-        packet_to_vehicle.append(robot_id)
-        route = ""
-        command = ""
-        sensor_to_read = ""
-        required_status = ""
-        qr_code_destination = 0
-        if("route" in msg):
-            route = msg["route"]
-            qr_code_destination = msg["qr"]
-        if("command" in msg):
-            command = msg["command"]
-        if("sensor_to_read" in msg):
-            sensor_to_read = msg["sensor_to_read"]
-        if("required_status" in msg):
-            required_status = msg["required_status"]
-        packet_content = (1 if route else 0) << 3
-        packet_content += (1 if command else 0) << 2
-        packet_content += (1 if sensor_to_read else 0) << 1
-        packet_content += (1 if required_status else 0) << 0
-        packet_to_vehicle.append(packet_content)
-        if route:
-            packet_to_vehicle.append(len(route))
-            packet_to_vehicle.extend(route)
-            packet_to_vehicle.append((qr_code_destination & 0xff00) >> 8)
-            packet_to_vehicle.append((qr_code_destination & 0xff))
-        if command:
-            packet_to_vehicle.append(self.possible_commands[command])
-        if sensor_to_read:
-            packet_to_vehicle.append(self.vehicle_sensors_code[sensor_to_read])
-        if required_status:
-            packet_to_vehicle.append(self.possible_status_to_vehicle[required_status])
-
-
-    def decodeMessageFromVehicle(self, msg, sensor_to_read, required_status, json):
-        current_address = 1
-        sensor_read = 0
-        status = 0
-        qr_codes_read = 0
-        dict_from_vehicle = {}
-        if sensor_to_read == "ultrasound":
-            sensor_read = struct.unpack('f', msg[current_address:(current_address+4)])
-            dict_from_vehicle["ultrasound"] = sensor_read
-            current_address += 4
+async def handler():
+    uri = "wss://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com"
+    data = {"id": 0, "timestamp": datetime.datetime.now().timestamp()}
+    with open(ROBOT_DER_PATH, "r") as file:
+        private_key = Crypto.PublicKey.RSA.importKey(bytes.fromhex(file.read()))
+    data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
+    async with websockets.connect(uri + "/robot/signin", ssl = ssl_context) as websocket:
+        await websocket.send(json.dumps(data))
+        resp = await websocket.recv()
+        resp = json.loads(resp)
+        if resp["status_code"] == 200 and resp["message_body"] == "true":
+            print("Signin efetuado com sucesso")
+            async for message in websocket:
+                print(message)
+                resp = json.loads(message)
+                if "path" in resp:
+                    data = vehicle_server.handle_server_request(0, resp["path"])
+                    data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
+                    await websocket.send(json.dumps(data))
         else:
-            sensor_read = msg[current_address]
-            if sensor_to_read == "item detector":
-                dict_from_vehicle["item"] = sensor_read
-            else:
-                pass
-            current_address += 1
-        if required_status == "movement":
-            speed = struct.unpack('f', msg[current_address:(current_address+4)])
-            current_address += 4
-            curve_radius = struct.unpack('f',msg[current_address:(current_address+4)])
-            current_address += 4
-            dict_from_vehicle["speed"] = speed
-            dict_from_vehicle["curve_radius"] = curve_radius
-        elif required_status == "status_robot":
-            status = self.possible_status_from_vehicle[msg[current_address]]
-            dict_from_vehicle["state"] = status
-            current_address += 1
-        qr_codes_read += msg[current_address : -1]
-        dict_from_vehicle["qr"] = qr_codes_read
-        return dict_from_vehicle
+            print(resp)
+            print("Signin incorreto")
 
-        return sensor_read, status, qr_codes_read
-
-    def run(self):
-        while True:
-            pass
+if __name__ == "__main__":
+    main()
