@@ -195,7 +195,7 @@ class VehicleServerInterface:
             packet_to_vehicle.append(self.vehicle_sensors_code[sensor_to_read])
         if required_status:
             packet_to_vehicle.append(self.possible_status_to_vehicle[required_status])
-
+        return packet_to_vehicle, sensor_to_read, required_status
 
     def decodeMessageFromVehicle(self, msg, sensor_to_read, required_status, json):
         current_address = 1
@@ -263,21 +263,19 @@ async def handler():
                             print("tem uma rota")
                         vehicle_server.decodeMessageFromServer(1, msg)
                         """
-                        await loop.run_in_executor(None, input)
                         data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "state": 1}
                         data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                         await websocket.send(json.dumps(data))
                         msg = {"command" : "open_box"}
-                        vehicle_server.decodeMessageFromServer(1, msg)
+                        vehicle_server.handle_server_request(1, msg)
                         data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "state": 2, "qr": 14}
                         data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                         await websocket.send(json.dumps(data))
                         print("Container aberto")
                     elif resp["path"] == "/delivery/send":
                         print("Container fechado")
-                        await loop.run_in_executor(None, input)
-                        msg = {"command" : "open_box"}
-                        vehicle_server.decodeMessageFromServer(1, msg)
+                        msg = {"command" : "close_box"}
+                        vehicle_server.handle_server_request(1, msg)
                         data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "state": 3}
                         data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                         await websocket.send(json.dumps(data))
@@ -287,7 +285,6 @@ async def handler():
                         data = {"path": "/robot/signout", "id": 0, "timestamp": datetime.datetime.now().timestamp()}
                         data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                         await websocket.send(json.dumps(data))
-                        await loop.run_in_executor(None, input)
                         print("logout")
                         return
         else:
