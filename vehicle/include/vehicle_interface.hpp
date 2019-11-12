@@ -9,13 +9,13 @@
 class VehicleInterface
 {
     private:
+    public:
         Vision vision;
         Movement movement;
         RadioCommunication communication;
         DeliveryBox box;
         Intelligence intelligence;
-    public:
-        VehicleInterface(){}
+        VehicleInterface() : intelligence(){}
         virtual void start();
 };
 
