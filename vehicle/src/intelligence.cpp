@@ -1,4 +1,5 @@
 #include "intelligence.hpp"
+#include "vehicle.hpp"
 
 Intelligence::Intelligence(Vehicle *_vehicle) : vehicle(_vehicle)
 {
@@ -36,7 +37,7 @@ void Intelligence::decodeMessage()
     bool has_feedback = false;
     uint8_t other_sensors_reading;
     float ultrassound_reading;
-    Movement movement;
+    MovementInfo movement;
     status::Status status;
     received_message = vehicle->communication.getData();
     switch (received_message.command)
@@ -51,7 +52,7 @@ void Intelligence::decodeMessage()
             vehicle->box.lock();
             break;
         case GET_QR_CODE:
-            qr_codes_read.push_back(vehicle->vision.getQrCodeFromUser())
+            qr_codes_read.push_back(1);//vehicle->vision.getQrCodeFromUser())
             has_feedback = true;
         default:
             break;
@@ -59,7 +60,7 @@ void Intelligence::decodeMessage()
     switch (received_message.sensor_to_read)
     {
         case ULTRASOUND:
-            ultrassound_reading = vehicle->vision.getUltrasoundReading();
+            ultrassound_reading = 0.2;//vehicle->vision.getUltrasoundReading();
             other_sensors_reading = NO_SENSOR_READ;
             has_feedback = true;
             break;
@@ -79,7 +80,7 @@ void Intelligence::decodeMessage()
     switch (received_message.required_status)
     {
         case MOVEMENT:
-            movement. = current_movement;
+            movement = current_movement;
             movement.read = true;
             status = status::NO_STATUS;
             has_feedback = true;
@@ -97,7 +98,7 @@ void Intelligence::decodeMessage()
     target_qr_code = received_message.qr_code;
     if(has_feedback)
     {
-        sent_message = SendedMessage(qr_codes_read, ultrassound_reading, other_sensors_reading, movement, status);
+        sent_message = SentMessage(qr_codes_read, ultrassound_reading, other_sensors_reading, movement, status);
     }
 }
 
@@ -112,4 +113,5 @@ void Intelligence::waitTrafficLight()
 
 int Intelligence::getQrCode()
 {
+    return 0;
 }

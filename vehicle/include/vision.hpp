@@ -6,12 +6,14 @@
 #include <raspicam/raspicam_cv.h>
 #include <opencv2/core.hpp>
 #include <opencv2/aruco.hpp>
+#include <opencv2/videoio.hpp>
 #include "street_section.hpp"
 
 class Vision
 {
 	private:
 		raspicam::RaspiCam_Cv cam;
+		cv::VideoCapture top_cam;
 		cv::Ptr<cv::aruco::Dictionary> aruco_dict;
 		void getColorMask(cv::Mat& dst, const cv::Scalar min, const cv::Scalar max);
 		void getTapeMask(cv::Mat& dst, const cv::Scalar min, const cv::Scalar max);
@@ -23,8 +25,10 @@ class Vision
 		void getGroundMask(cv::Mat& dst);
 	public:
 		cv::Mat img;
+		cv::Mat top_img;
 		Vision();
 		void getCamImg();
+		void getTopCamImg();
 		std::vector<street_lines::StreetSection> findStreets();
 		bool isTrafficLightRed();
 		std::pair<std::vector<int>, std::vector<std::vector<cv::Point2f>>> findARMarkers();

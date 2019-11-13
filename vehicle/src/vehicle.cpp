@@ -8,9 +8,3 @@ void Vehicle::start()
 {
 	intelligence.mainLoop();
 }
-
-int main()
-{
-	Vehicle vehicle = Vehicle();
-	vehicle.start();
-}

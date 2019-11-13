@@ -2,7 +2,7 @@
 #define message_hpp_
 
 #include <vector>
-
+#include <cstdint>
 struct MovementInfo{
     bool read;
     float amplitude;
@@ -51,6 +51,7 @@ class ReceivedMessage{
         PossibleStatus required_status;
         ReceivedMessage(std::vector<uint8_t> _path, uint16_t _qr_code, Commands _command, PossibleSensors _sensor_to_read, PossibleStatus _required_status):
             path(_path), qr_code(_qr_code), command(_command), sensor_to_read(_sensor_to_read), required_status(_required_status) {}
+        ReceivedMessage(){}
 };
 
 class SentMessage{
@@ -62,7 +63,7 @@ class SentMessage{
         status::Status status;
         SentMessage(std::vector<uint16_t> _qr_codes_read, float _ultrassound_reading, bool _other_sensors_reading, MovementInfo _movement, status::Status _status):
             qr_codes_read(_qr_codes_read), ultrassound_reading(_ultrassound_reading), other_sensors_reading(_other_sensors_reading), movement(_movement), status(_status) {}
-        SentMessage(){;}
+        SentMessage(){}
 };
 
 #define NO_SENSOR_READ 3
