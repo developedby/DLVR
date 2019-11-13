@@ -414,7 +414,7 @@ class Robot:
         ret = []
         with connect.connect() as connection:
             cursor = connection.cursor(prepared = True)
-            query = "SELECT id FROM Robot WHERE alive = true AND state = 0"
+            query = "SELECT id FROM Robot WHERE alive = true AND state = 6"
             try:
                 cursor.execute(query)
                 result = cursor.fetchall()

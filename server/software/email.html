@@ -11,10 +11,18 @@
             * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
             * Forked from Normalize.css, licensed MIT (https://github.com/necolas/normalize.css/blob/master/LICENSE.md)
             */
+
             *,
             *::before,
             *::after {
                 box-sizing: border-box;
+            }
+
+            html {
+                font-family: sans-serif;
+                line-height: 1.15;
+                -webkit-text-size-adjust: 100%;
+                -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
             }
 
             body {
@@ -24,19 +32,23 @@
                 font-weight: 400;
                 line-height: 1.5;
                 color: #212529;
+                text-align: left;
                 background-color: #fff;
-                -webkit-text-size-adjust: 100%;
-                -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
             }
 
             h1, h2, h3, h4, h5, h6 {
                 margin-top: 0;
                 margin-bottom: 0.5rem;
+            }
+
+            h1, h2, h3, h4, h5, h6,
+            .h1, .h2, .h3, .h4, .h5, .h6 {
+                margin-bottom: 0.5rem;
                 font-weight: 500;
                 line-height: 1.2;
             }
 
-            h3 {
+            h3, .h3 {
                 font-size: 1.75rem;
             }
 
@@ -49,27 +61,18 @@
             }
 
             code {
-                font-size: 0.875em;
-                color: #d63384;
-                word-wrap: break-word;
+                font-size: 87.5%;
+                color: #e83e8c;
+                word-break: break-word;
             }
         </style>
         <style>
             /*!
-            * Bootstrap Grid v4.3.1 (https://getbootstrap.com/)
-            * Copyright 2011-2019 The Bootstrap Authors
-            * Copyright 2011-2019 Twitter, Inc.
-            * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
-            */
-            html {
-                box-sizing: border-box;
-            }
-
-            *,
-            *::before,
-            *::after {
-                box-sizing: inherit;
-            }
+             * Bootstrap Grid v4.3.1 (https://getbootstrap.com/)
+             * Copyright 2011-2019 The Bootstrap Authors
+             * Copyright 2011-2019 Twitter, Inc.
+             * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+             */
 
             .container {
                 width: 100%;
@@ -104,7 +107,9 @@
             }
 
             .row {
+                display: -ms-flexbox;
                 display: flex;
+                -ms-flex-wrap: wrap;
                 flex-wrap: wrap;
                 margin-right: -15px;
                 margin-left: -15px;
@@ -123,13 +128,20 @@
             }
 
             .col {
+                -ms-flex-preferred-size: 0;
                 flex-basis: 0;
+                -ms-flex-positive: 1;
                 flex-grow: 1;
                 max-width: 100%;
             }
 
+            .pt-3,
             .py-3 {
                 padding-top: 1rem !important;
+            }
+
+            .pb-3,
+            .py-3 {
                 padding-bottom: 1rem !important;
             }
         </style>

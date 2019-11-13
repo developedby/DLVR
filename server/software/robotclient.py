@@ -28,50 +28,57 @@ async def handler():
         resp = await websocket.recv()
         resp = json.loads(resp)
         if resp["status_code"] == 200 and resp["message_body"] == "true":
-            print("Signin efetuado com sucesso")
+            print("Signin done successfully")
+            data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "state": 6}
+            data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
+            await websocket.send(json.dumps(data))
             async for message in websocket:
                 print(message)
                 resp = json.loads(message)
                 if "path" in resp:
                     if resp["path"] == "/delivery/response":
-                        print("Iniciando delivery")
+                        print("Starting delivery")
+                        print("Press enter to continue...", end = "")
                         await loop.run_in_executor(None, input)
-                        data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "state": 1}
+                        data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "state": 2}
                         data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                         await websocket.send(json.dumps(data))
-                        data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "state": 2, "qr": 14}
+                        data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "state": 1, "qr": 14}
                         data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                         await websocket.send(json.dumps(data))
-                        print("Container aberto")
+                        print("Container opened")
                     elif resp["path"] == "/delivery/send":
-                        print("Container fechado")
+                        print("Container closed")
+                        print("Press enter to continue...", end = "")
                         await loop.run_in_executor(None, input)
-                        data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "state": 3}
+                        data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "state": 2}
                         data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                         await websocket.send(json.dumps(data))
-                        data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "state": 4, "qr": 28}
+                        data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "state": 1, "qr": 28}
                         data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                         await websocket.send(json.dumps(data))
-                        print("Container aberto")
+                        print("Container opened")
                     elif resp["path"] == "/delivery/qr":
-                        print("QR code lido")
+                        print("QR code read")
+                        print("Press enter to continue...", end = "")
                         await loop.run_in_executor(None, input)
-                        data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "state": 5, "qr": resp["message_body"]}
+                        data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "qr": resp["message_body"]}
                         data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                         await websocket.send(json.dumps(data))
                     elif resp["path"] == "/delivery/finish":
-                        print("Delivery finalizado")
+                        print("Delivery finished")
                         data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "state": 0, "qr": 0}
                         data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                         await websocket.send(json.dumps(data))
                         data = {"path": "/robot/signout", "id": 0, "timestamp": datetime.datetime.now().timestamp()}
                         data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                         await websocket.send(json.dumps(data))
+                        print("Press enter to continue...", end = "")
                         await loop.run_in_executor(None, input)
                         return
         else:
             print(resp)
-            print("Signin incorreto")
+            print("Incorrect signin")
 
 if __name__ == "__main__":
     main()
