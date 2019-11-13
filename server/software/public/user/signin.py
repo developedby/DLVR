@@ -28,7 +28,21 @@ async def main(websocket, path, open_sockets):
                         if "path" in data:
                             path = data["path"]
                             req.log(path)
-                            if path == "/delivery/finish":
+                            if path == "/debug/close":
+                                import public.debug.close as script
+                                try:
+                                    await script.main(websocket, path, open_sockets, data)
+                                except Exception as e:
+                                    module.error(e, script.__name__)
+                                    await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
+                            elif path == "/debug/open":
+                                import public.debug.open as script
+                                try:
+                                    await script.main(websocket, path, open_sockets, data)
+                                except Exception as e:
+                                    module.error(e, script.__name__)
+                                    await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
+                            elif path == "/delivery/finish":
                                 import public.delivery.finish as script
                                 try:
                                     await script.main(websocket, path, open_sockets, data)

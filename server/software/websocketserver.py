@@ -50,12 +50,12 @@ async def main():
         elif command == "open":
             print("Robot id: ", end = "")
             id = int(await loop.run_in_executor(None, input))
-            await public.debug.open.main(id, open_sockets)
+            await public.debug.open.main(None, "", open_sockets, {}, id)
             module.log("Robot {} opened".format(id))
         elif command == "close":
             print("Robot id: ", end = "")
             id = int(await loop.run_in_executor(None, input))
-            await public.debug.close.main(id, open_sockets)
+            await public.debug.close.main(None, "", open_sockets, {}, id)
             module.log("Robot {} closed".format(id))
         elif command == "cleanup":
             await cleanup.main()
