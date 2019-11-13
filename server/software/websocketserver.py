@@ -6,14 +6,11 @@ import ssl
 import sys
 import os
 import mimetypes
-import importlib
 import datetime
 import objects
-import public.debug.open
-import public.debug.close
 import cleanup
 
-script_cache = {}
+script_cache = objects.ScriptCache()
 open_sockets = {"users": {}, "robots": {}}
 module = objects.Module("websocketserver")
 loop = asyncio.get_event_loop()
@@ -50,12 +47,14 @@ async def main():
         elif command == "open":
             print("Robot id: ", end = "")
             id = int(await loop.run_in_executor(None, input))
-            await public.debug.open.main(None, "", open_sockets, {}, id)
+            script = script_cache.import_("/debug/open")
+            await script.main(None, "", open_sockets, script_cache, {}, id)
             module.log("Robot {} opened".format(id))
         elif command == "close":
             print("Robot id: ", end = "")
             id = int(await loop.run_in_executor(None, input))
-            await public.debug.close.main(None, "", open_sockets, {}, id)
+            script = script_cache.import_("/debug/close")
+            await script.main(None, "", open_sockets, script_cache, {}, id)
             module.log("Robot {} closed".format(id))
         elif command == "cleanup":
             await cleanup.main()
@@ -76,22 +75,9 @@ async def handler(websocket, path):
     mimetype = mimetypes.guess_type(local_path)
 
     if os.path.exists(local_path) and mimetype[0] == "text/x-python":
-        module_name = "public." + local_path.replace(".py", "").replace("/", ".").strip(".")
-        if module_name in script_cache:
-            if script_cache[module_name]["lastmodified"] < os.path.getmtime(local_path):
-                script_cache[module_name]["module"] = importlib.reload(script_cache[module_name]["module"])
-                script_cache[module_name]["lastmodified"] = os.path.getmtime(local_path)
-
-            script = script_cache[module_name]["module"]
-        else:
-            script = importlib.import_module(module_name)
-            script_cache[module_name] = {
-                "module": script,
-                "lastmodified": os.path.getmtime(local_path)
-            }
-
+        script = script_cache.import_(local_path)
         try:
-            await script.main(websocket, path, open_sockets)
+            await script.main(websocket, path, open_sockets, script_cache)
         except Exception as e:
             module.error(e, script.__name__)
             await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")

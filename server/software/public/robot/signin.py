@@ -3,7 +3,7 @@ import asyncio
 import objects
 import websockets
 
-async def main(websocket, path, open_sockets):
+async def main(websocket, path, open_sockets, script_cache):
     module = objects.Module(__name__)
     robot = None
     try:
@@ -29,23 +29,23 @@ async def main(websocket, path, open_sockets):
                             path = data["path"]
                             req.log(path)
                             if path == "/robot/route":
-                                import public.robot.route as script
+                                script = script_cache.import_(path)
                                 try:
-                                    await script.main(websocket, path, open_sockets, data)
+                                    await script.main(websocket, path, open_sockets, script_cache, data)
                                 except Exception as e:
                                     module.error(e, script.__name__)
                                     await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                             elif path == "/robot/signout":
-                                import public.robot.signout as script
+                                script = script_cache.import_(path)
                                 try:
-                                    await script.main(websocket, path, open_sockets, data)
+                                    await script.main(websocket, path, open_sockets, script_cache, data)
                                 except Exception as e:
                                     module.error(e, script.__name__)
                                     await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                             elif path == "/robot/update":
-                                import public.robot.update as script
+                                script = script_cache.import_(path)
                                 try:
-                                    await script.main(websocket, path, open_sockets, data)
+                                    await script.main(websocket, path, open_sockets, script_cache, data)
                                 except Exception as e:
                                     module.error(e, script.__name__)
                                     await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
