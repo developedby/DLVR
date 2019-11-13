@@ -18,13 +18,13 @@ func _ready():
 	set_debug(true)
 	client.received_timeout = 2.0
 	client.connection_timeout = 3.0
-	client.connect("server_disconnected", self, "_server_disconnected")
+	# client.connect("server_disconnected", self, "_server_disconnected")
 	add_child(client)
 
 
-func server_disconnected():
-	if logout():
-		get_tree().change_scene("res://scenes/views/loginView.tscn")
+#func _server_disconnected():
+#	if logout():
+#		get_tree().change_scene("res://scenes/views/loginView.tscn")
 
 func _exit_tree():
 	logout()

@@ -220,7 +220,6 @@ margin_right = 660.0
 margin_bottom = 676.0
 grow_horizontal = 2
 grow_vertical = 2
-align = 1
 placeholder_text = "CODE_KS"
 
 [node name="button_c" type="Button" parent="codeSubview"]
