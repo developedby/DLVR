@@ -10,5 +10,13 @@ func _on_sideMenuButton_pressed():
 
 func _on_exit_pressed():
 	# warning-ignore: return_value_discarded
-	DLVR.logout()
-	get_tree().change_scene("res://scenes/views/loginView.tscn")
+	if DLVR.logout():		# FIXME: successful request
+		get_tree().change_scene("res://scenes/views/loginView.tscn")
+
+
+func _on_debug_open_pressed():
+	DLVR._debug_open_box()
+
+
+func _on_debug_close_pressed():
+	DLVR._debug_close_box()

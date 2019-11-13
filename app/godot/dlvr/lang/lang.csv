@@ -7,3 +7,7 @@ NAME_KS,Name,Nome
 SURNAME_KS,Surname,Sobrenome
 REPASSW_KS,Password (Again),Senha (Novamente)
 EXIT_KS,Exit,Sair
+REGEN_KS,Generate new code,Gerar novo código
+CODE_KS,Verification code,Código de verificação
+DEBUG_OPEN_KS,<DEBUG> OPEN BOX,<DEBUG> ABRIR CAIXA
+DEBUG_CLOSE_KS,<DEBUG> CLOSE BOX, <DEBUG> FECHAR CAIXA

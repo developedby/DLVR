@@ -4,6 +4,7 @@ class_name Client
 
 signal packet_received_or_timeout(status, data)
 signal connected_or_timeout(status)
+signal server_disconnected()
 
 enum {
 	OK = 0,
@@ -71,6 +72,7 @@ func _connection_timeout():
 
 func _client_disconnected(clean=true):
 	Utils.print_log( "Client just disconnected. Was clean: %s" % clean)
+	emit_signal("server_disconnected")
 	
 
 func _client_received(p_id = 1):
