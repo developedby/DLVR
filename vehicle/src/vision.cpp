@@ -8,6 +8,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/aruco.hpp>
+#include <opencv2/videoio.hpp>
 #include "reduce_lines.hpp"
 #include "constants.hpp"
 #include "street_lines.hpp"
@@ -46,6 +47,14 @@ Vision::Vision() : cam(), aruco_dict(cv::aruco::getPredefinedDictionary(cv::aruc
     {
         this->cam.grab();
     }
+    this->top_cam.open(0);
+    //this->top_cam.set(cv::CAP_PROP_FRAME_WIDTH, constants::img_width);
+    //this->top_cam.set(cv::CAP_PROP_FRAME_HEIGHT, constants::img_height);
+    if(!top_cam.isOpened())
+    {
+        std::cout <<  "nao funciona" <<std::endl;
+    }
+    
 }
 
 void Vision::getCamImg()
@@ -54,6 +63,11 @@ void Vision::getCamImg()
     this->cam.retrieve(this->img);
     cv::blur(this->img, this->img, cv::Size(5, 5));
     cv::cvtColor(this->img, this->img, cv::COLOR_BGR2HLS);
+}
+
+void Vision::getTopCamImg()
+{
+    this->top_cam.read(this->top_img);
 }
 
 // Looks at the image and finds the streets
@@ -532,6 +546,6 @@ pair<vector<int>, vector<vector<cv::Point2f>>> Vision::findARMarkers()
 {
     vector<int> ids;
     vector<vector<cv::Point2f>> corners;
-    cv::aruco::detectMarkers(this->img, this->aruco_dict, corners, ids);
+    cv::aruco::detectMarkers(this->top_img, this->aruco_dict, corners, ids);
     return pair(ids, corners);
 }

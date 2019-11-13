@@ -33,4 +33,13 @@ int main()
 		std::cout << int(sec.type) << ' ' << sec.line << ' ' << sec.end_points << std::endl;
 	}
 	cv::imwrite("teste_linhas_secoes.jpg", out_img);
+	vision.getTopCamImg();
+	cv::imwrite("teste_top_img.jpg", vision.top_img);
+	std::vector<int> ids;
+    std::vector<std::vector<cv::Point2f>> positions;
+	std::tie(ids, positions) = vision.findARMarkers();
+	for(unsigned int i=0; i < ids.size(); i++)
+	{
+		std::cout << "encontrou " << ids[i] << " " << positions[i] <<std::endl;
+	}
 }

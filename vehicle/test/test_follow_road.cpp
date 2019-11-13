@@ -29,11 +29,11 @@ void goAhead(Movement& movement, float angle, float distance)
     std:: cout << "girando com angulo " << angle <<std::endl;
     if(std::abs(angle) > 5)
     {
-        //movement.turn(angle/3);
+        movement.turn(angle/3);
     }
     gpioDelay(500000);
     std::cout << "andando reto" <<std::endl;
-    //movement.goStraightMm(1, distance, 500);
+    movement.goStraightMm(1, distance, 500);
 }
 
 int main ()
@@ -58,11 +58,14 @@ int main ()
     {
         street_lines::StreetSection chosen_street;
         street_lines::StreetSection correction_street;
+        cv::Point2f chosen_point;
+        cv::Point2f correction_point;
         previous_streets = found_streets;
         //choose the street to follow
         std::vector<int> horizontal;
         std::vector<int> vertical;
         std::cout << "escolhendo a rua para seguir"<<std::endl;
+        
         for (unsigned int i=0; i < previous_streets.size(); i++)
         {
             float angle = setAngleInRange(previous_streets[i].line[1], (20*M_PI)/180);
@@ -88,8 +91,13 @@ int main ()
         }
         if(chosen_street.line[0] != 0)
         {
-            std::cout << "Escolhi a rua " <<int(chosen_street.type) << ' ' << chosen_street.line << ' ' << chosen_street.end_points << std::endl;
-            float angle = atan2(chosen_street.end_points[3], chosen_street.end_points[2]) * (180/M_PI) - 90;
+            if(chosen_street.end_points[3] > chosen_street.end_points[1])
+                chosen_point = cv::Point2f(chosen_street.end_points[2], chosen_street.end_points[3]);
+            else
+                chosen_point = cv::Point2f(chosen_street.end_points[0], chosen_street.end_points[1]);
+            float angle = atan2(chosen_point.y, chosen_point.x) * (180/M_PI) - 90;
+            std::cout << "Escolhi a rua " <<int(chosen_street.type) << ' ' << chosen_street.line << ' ' << chosen_street.end_points << " angulo: " << angle << std::endl ;
+            
             previous_angle = my_angle;
             if(angle >= 0)
                 my_angle = angle;
@@ -128,8 +136,8 @@ int main ()
             {
                 std::cout << int(street.type) << ' ' << street.line << ' ' << street.end_points << std::endl;
                 float angle = setAngleInRange(street.line[1], (20*M_PI)/180);
-                float distance = street_lines::distXYPointXYSegment(cv::Point(chosen_street.end_points[2], chosen_street.end_points[3]), street.end_points);
-                if((distance < min_distance) && (std::abs(angle - my_angle) < min_angle))
+                float distance = street_lines::distXYPointXYSegment(chosen_point, street.end_points);
+                if((distance < min_distance) && (std::abs(angle - previous_angle) < min_angle))
                 {
                     correction_street = street;
                     min_distance = distance;
@@ -139,16 +147,49 @@ int main ()
         }
         if((chosen_street.line[0] != 0) && (correction_street.line[0] != 0))
         {
-            std::cout << "Escolhi para correcao a rua " <<int(correction_street.type) << ' ' << correction_street.line << ' ' << correction_street.end_points << std::endl;
-            float real_distance = (correction_street.end_points[3] - chosen_street.end_points[3]) * 100;
-            ran_distance = ran_distance - 10 + std::abs(real_distance);
-            float angle2 = atan2(correction_street.end_points[3], correction_street.end_points[2]) * (180/M_PI) - 90;
-            std::cout << "achei que andei 10 mas na verdade andei " << real_distance << " com " << std::abs(real_distance) << " e meu angulo eh " << my_angle - previous_angle + angle2 << " ao inves de " << my_angle <<std::endl;
+            if(correction_street.end_points[3] > correction_street.end_points[1])
+                correction_point = cv::Point2f(correction_street.end_points[2], correction_street.end_points[3]);
+            else
+                correction_point = cv::Point2f(correction_street.end_points[0], correction_street.end_points[1]);
+            float angle2 = atan2(correction_point.y, correction_point.x) * (180/M_PI) - 90;
+            std::cout << "Escolhi para correcao a rua " <<int(correction_street.type) << ' ' << correction_street.line << ' ' << correction_street.end_points  << " angulo: " << angle2<< std::endl;
+            float real_distance = (correction_point.y - chosen_point.y) * 100;
+            //ran_distance = ran_distance - 10 + std::abs(real_distance);
+            std::cout << "achei que andei 10 mas na verdade andei " << real_distance << " com " << std::abs(real_distance) << " e meu angulo eh " << my_angle - previous_angle - angle2 << " ao inves de " << my_angle <<std::endl;
             my_angle = my_angle - previous_angle + angle2;
+            previous_angle = my_angle;
+            my_angle = 0;
         }
+        //previous_angle = 0;
+        //my_angle = 0;
         std::cout << "ate agora andei " << ran_distance <<std::endl;
         if(ran_distance >= required_distance)
             stop = true;
+    }
+    bool found = false;
+    while(!found)
+    {
+        vision.getTopCamImg();
+        std::vector<int> ids;
+        std::vector<std::vector<cv::Point2f>> positions;
+        std::tie(ids, positions) = vision.findARMarkers();
+        for(unsigned int i=0; i < ids.size(); i++)
+        {
+            if(ids[i] == 1)
+            {
+                found = true;
+                break;
+            }
+        }
+        movement.turn(5);
+        gpioDelay(500000);
+        if(found)
+        {
+            movement.goStraightMm(1, 70, 500);
+            gpioDelay(500000);
+            movement.goStraightMm(1, 70, 500);
+            gpioDelay(500000);
+        }
     }
     gpioTerminate();
     return 0;
