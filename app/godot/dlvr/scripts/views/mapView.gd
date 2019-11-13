@@ -1,6 +1,6 @@
 extends "res://scripts/View.gd"
 
-func _ready():
+func _draw():
 	$leftBar/header/nameLabel.text = "%s %s" % [DLVR.user_first_name, DLVR.user_last_name]
 
 

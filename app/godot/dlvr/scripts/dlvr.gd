@@ -156,6 +156,7 @@ func login(email:String, passw:String):
 func __get_user_profile():
 	if logged:
 		var data = {
+			'path': '/user/profile',
 			'cookie': cookie,
 		}
 		client.send_data(JSON.print(data))
@@ -165,7 +166,7 @@ func __get_user_profile():
 			data = JSON.parse(res[1])
 			if data.error == OK:
 				data = data.result
-				if (data['status_code'] == 200) and (data['message_body'] != 'false'):
+				if (data['status_code'] == 200) and (typeof(data['message_body']) != TYPE_STRING):
 					user_first_name = data["message_body"]["first_name"]
 					user_last_name = data["message_body"]["last_name"]
 				else:
