@@ -162,6 +162,7 @@ shortcut = SubResource( 3 )
 text = "CONTINUE_KS"
 
 [node name="passwSubview" type="Control" parent="."]
+editor/display_folded = true
 visible = false
 margin_top = 435.0
 margin_right = 720.0
@@ -207,6 +208,7 @@ shortcut = SubResource( 3 )
 text = "CONTINUE_KS"
 
 [node name="codeSubview" type="Control" parent="."]
+editor/display_folded = true
 margin_right = 40.0
 margin_bottom = 40.0
 theme = ExtResource( 3 )

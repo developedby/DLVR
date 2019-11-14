@@ -3,6 +3,8 @@ extends Node
 const SERVER_URL := "wss://ec2-18-229-140-84.sa-east-1.compute.amazonaws.com:443/"
 const CLIENT_SCENE = preload("res://scenes/Client.tscn")
 
+signal name_changed(first_name, last_name)
+
 var debug := true setget set_debug
 
 var user_email:String = "dlvr@dlvr.com"
@@ -169,6 +171,7 @@ func __get_user_profile():
 				if (data['status_code'] == 200) and (typeof(data['message_body']) != TYPE_STRING):
 					user_first_name = data["message_body"]["first_name"]
 					user_last_name = data["message_body"]["last_name"]
+					emit_signal("name_changed", user_first_name, user_last_name)
 				else:
 					Utils.print_log("%s: Error %s" % [str(self), 'No user data'])
 			else:

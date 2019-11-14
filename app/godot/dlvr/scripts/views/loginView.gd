@@ -39,11 +39,11 @@ func _on_data_entered(email:String, first_name:String, last_name:String, passw:S
 
 func _on_passw_entered(email:String, passw:String):
 	var r = DLVR.login(email, passw)
-	if typeof(r) != TYPE_BOOL:
+	while typeof(r) != TYPE_BOOL:
 		r = yield(r, 'completed') 
 	if r:
 		$passwSubview.initial()
-		get_tree().change_scene("res://scenes/views/mapView.tscn")
+		get_tree().call_deferred('change_scene', "res://scenes/views/mapView.tscn")
 	else:
 		$passwSubview/passwField.set_invalid()
 
