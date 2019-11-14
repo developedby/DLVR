@@ -74,6 +74,13 @@ follow_road:  ./build/test_follow_road.o ./build/movement.o ./build/dc_motor.o .
 turn: ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/movement.cpp
 	gcc -Wall -o ./build/test_turn ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp ../src/movement.cpp ../src/pidz.cpp ./test_turn.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -I../include -I./
 
+#Test Alefe Control
+test_control: ./build/move_straigth.o ./build/dc_motor.o ./build/encoder.o ./build/wheel.o 
+	gcc -Wall -o ./build/test_control ./build/move_straigth.o ./build/dc_motor.o ./build/encoder.o ./build/wheel.o \
+		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
+		-I../include
+
+
 # Teste semaforo
 traffic_light: test_camera_traffic_light.cpp
 	gcc -Wall -o ./build/test_camera_traffic_light test_camera_traffic_light.cpp \
@@ -99,6 +106,11 @@ traffic_light: test_camera_traffic_light.cpp
 		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
 		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lraspicam -lraspicam_cv -lopencv_aruco\
 		-I../include -I/usr/local/include -I/usr/local/include/opencv4
+
+./build/move_straigth.o: move_straight.cpp
+	gcc -c -Wall -o ./build/move_straigth.o move_straight.cpp \
+		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
+		-I../include
 
 ./build/movement.o: ../src/movement.cpp
 	gcc -c -Wall -o ./build/movement.o ../src/movement.cpp \

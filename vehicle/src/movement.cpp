@@ -8,9 +8,14 @@
 #define LEFT_BALANCE    (1.0f - balance)
 #define RIGHT_BALANCE   (1.0f + balance) 
 #define CMATERIAL 1.0f
+#define D_SPEED 0.0015
 
 void tickPID(void* args) {
 	((Movement*)args)->tick();
+}
+
+void tickP(void* args) {
+    ((Movement*)args)->calculateSpeed();
 }
 
 Movement::Movement() : left_pid(0), right_pid(1), left_wheel(0),  right_wheel(1)
@@ -24,8 +29,11 @@ Movement::Movement() : left_pid(0), right_pid(1), left_wheel(0),  right_wheel(1)
     r_dir = 0;
     turn_ticks = -1;
     initial_wheel_flag = false;
+    lm_speed = 0.5;
+    rm_speed = 0.5;
     wheel_distance = constants::vehicle_wheel_distance;
     gpioSetTimerFuncEx(9, constants::pid_T_ms, tickPID, this);
+    gpioSetTimerFuncEx(8, 250, tickP, this);
     
 }
 
@@ -43,8 +51,7 @@ void Movement::turn(float degrees) {
 // Speed is in milimeters per second
 // This function doesn't block execution
 void Movement::goStraight(int direction, float speed){
-    lr = abs(speed);
-    rr = abs(speed);
+    this->required_speed = speed;
     //Dir L = Dir R
     r_dir = l_dir = direction * (speed > 0);
 }
@@ -97,40 +104,43 @@ void Movement::stop()
 }
 
 void Movement::tick(void) {
-    float aux;
-    // Left
-    aux = this->left_wheel.getSpeed();
-    if (aux < 3.7f) {
-        aux = 0.0;
-    }
-    else if(aux > 1000.0) {
-        aux /= 2.0f;
-    }
-    float l_dc = std::clamp(this->left_pid.push_error(lr * lb, aux), 0.0f, 1.0f);
-    // Right
-    aux = this->right_wheel.getSpeed();
-    if (aux < 3.7f) {
-        aux = 0.0;
-    }
-    else if(aux > 1000.0) {
-        aux /= 2.0f;
-    }
-    float r_dc = std::clamp(this->right_pid.push_error(rr * rb, aux), 0.0f, 1.0f);
-    // Adjust
-    if(initial_wheel_flag) {
-        this->right_wheel.spin(r_dir, r_dc);
-        this->left_wheel.spin(l_dir, l_dc);
-    }
-    else {
-        this->left_wheel.spin(l_dir, l_dc);
-        this->right_wheel.spin(r_dir, r_dc);
-    }
-    this->initial_wheel_flag = !(this->initial_wheel_flag);
-    if(this->turn_ticks >= 0) {
-        if(this->turn_ticks == 0) {
-            this->goStraight(0, 0);
+    if(this->turn_ticks >= 0)
+    {
+        float aux;
+        // Left
+        aux = this->left_wheel.getSpeed();
+        if (aux < 3.7f) {
+            aux = 0.0;
         }
-        this->turn_ticks -= 1;
+        else if(aux > 1000.0) {
+            aux /= 2.0f;
+        }
+        float l_dc = std::clamp(this->left_pid.push_error(lr * lb, aux), 0.0f, 1.0f);
+        // Right
+        aux = this->right_wheel.getSpeed();
+        if (aux < 3.7f) {
+            aux = 0.0;
+        }
+        else if(aux > 1000.0) {
+            aux /= 2.0f;
+        }
+        float r_dc = std::clamp(this->right_pid.push_error(rr * rb, aux), 0.0f, 1.0f);
+        // Adjust
+        if(initial_wheel_flag) {
+            this->right_wheel.spin(r_dir, r_dc);
+            this->left_wheel.spin(l_dir, l_dc);
+        }
+        else {
+            this->left_wheel.spin(l_dir, l_dc);
+            this->right_wheel.spin(r_dir, r_dc);
+        }
+        this->initial_wheel_flag = !(this->initial_wheel_flag);
+        if(this->turn_ticks >= 0) {
+            if(this->turn_ticks == 0) {
+                this->goStraight(0, 0);
+            }
+            this->turn_ticks -= 1;
+        }
     }
 }
 
@@ -154,5 +164,42 @@ float Movement::setBalance(float balance_) {
 
 bool Movement::isTurning(void) {
     return (this->turn_ticks > 0);
+}
+
+void Movement::calculateSpeed(void)
+{
+    if(this->turn_ticks < 0)
+    {
+        int l_error = this->left_wheel.getSpeed() - this->required_speed;
+        int r_error = this->right_wheel.getSpeed() - this->required_speed;
+        this->lm_speed -= l_error*D_SPEED;
+        this->rm_speed -= r_error*D_SPEED;
+        if (l_error > r_error) //roda esquerda esta mais rapida
+        {
+            this->lm_speed -= 0.01;
+        }
+        else if(r_error > l_error)
+        {
+            this->rm_speed -= 0.01;
+        }
+        if(lm_speed < 0)
+        {
+            this->lm_speed = 0;
+        }
+        else if(lm_speed > 1)
+        {
+            this->lm_speed = 1;
+        }
+        if(rm_speed < 0)
+        {
+            this->rm_speed = 0;
+        }
+        else if(rm_speed > 1)
+        {
+            this->rm_speed = 1;
+        }
+        this->left_wheel.spin(l_dir, lm_speed);
+        this->right_wheel.spin(r_dir, rm_speed);
+    }
 }
 

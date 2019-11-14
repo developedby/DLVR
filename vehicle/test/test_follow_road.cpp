@@ -33,7 +33,7 @@ void goAhead(Movement& movement, float angle, float distance)
     }
     gpioDelay(500000);
     std::cout << "andando reto" <<std::endl;
-    movement.goStraightMm(1, distance, 500);
+    movement.goStraightMm(1, distance, 200);
 }
 
 int main ()
