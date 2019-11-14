@@ -22,11 +22,16 @@ func _ready():
 	client.connection_timeout = 3.0
 	# client.connect("server_disconnected", self, "_server_disconnected")
 	add_child(client)
+	get_tree().set_auto_accept_quit(false)
 
 
-#func _server_disconnected():
-#	if logout():
-#		get_tree().change_scene("res://scenes/views/loginView.tscn")
+func _notification(what):
+	if what == MainLoop.NOTIFICATION_WM_QUIT_REQUEST:
+		var r = logout()
+		while typeof(r) != TYPE_BOOL:
+			r = yield(r, 'completed')
+		get_tree().quit()
+
 
 func _exit_tree():
 	logout()
@@ -178,6 +183,7 @@ func __get_user_profile():
 				Utils.print_log("%s: Error %s" % [str(self), data.error_string])
 		else:
 			Utils.print_log("%s: Error receive timeout" % str(self))
+
 
 func set_first_name(val:String):
 	user_first_name = val.strip_edges()
