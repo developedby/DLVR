@@ -287,6 +287,20 @@ async def handler():
                         await websocket.send(json.dumps(data))
                         print("logout")
                         return
+                    elif resp["path"] == "/debug/open":
+                        msg = {"command" : "open_box"}
+                        vehicle_server.handle_server_request(1, msg)
+                        data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "state": 2, "qr": 14}
+                        data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
+                        await websocket.send(json.dumps(data))
+                        print("Container aberto")
+                    elif resp["path"] == "/debug/close":
+                        print("Container fechado")
+                        msg = {"command" : "close_box"}
+                        vehicle_server.handle_server_request(1, msg)
+                        data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "state": 3}
+                        data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
+                        await websocket.send(json.dumps(data))
         else:
             print(resp)
             print("Signin incorreto")

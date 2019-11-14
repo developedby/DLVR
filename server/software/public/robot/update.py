@@ -42,6 +42,8 @@ async def main(websocket, path, open_sockets, script_cache, data = None):
                     data2["message_body"].pop("signature")
                     data2["message_body"].pop("timestamp")
                     if "qr" in data2["message_body"] and data2["message_body"]["qr"] < 32:
+                        if len(delivery.path) == 0 or delivery.path[-1] != data2["message_body"]["qr"]:
+                            delivery.path = delivery.path + [data2["message_body"]["qr"]]
                         data2["message_body"]["position"] = data2["message_body"]["qr"]
                         data2["message_body"].pop("qr")
                     data2 = json.dumps(data2)

@@ -41,5 +41,7 @@ int main()
 	for(unsigned int i=0; i < ids.size(); i++)
 	{
 		std::cout << "encontrou " << ids[i] << " " << positions[i] <<std::endl;
+		cv::rectangle(vision.top_img, positions[i][0], positions[i][2], cv::Scalar(0,255,0),  3, cv::LINE_8, 0); 
 	}
+	cv::imwrite("results.jpg", vision.top_img);
 }

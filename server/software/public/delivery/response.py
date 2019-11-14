@@ -21,17 +21,18 @@ async def main(websocket, path, open_sockets, script_cache, data = None):
                     if data["accept"]:
                         origin = delivery.origin
                         if origin != None:
-                            robot = objects.Robot.choose(origin)
-                            if robot:
+                            nearest = objects.Robot.choose(origin)
+                            if nearest:
+                                robot = nearest[0]
+                                robot_path = nearest[1]
+                                robot.route = robot_path
                                 if delivery.response(data["destination"], robot.id):
                                     for login in logins:
-                                        data2 = {"status_code": 200, "reason_message": "OK", "path": "/delivery/response", "message_body": {"id": delivery.id, "accept": True, "destination": data["destination"]}}
+                                        data2 = {"status_code": 200, "reason_message": "OK", "path": "/delivery/response", "message_body": {"id": delivery.id, "accept": True, "destination": data["destination"], "path": robot_path}}
                                         await open_sockets["users"][login.cookie].send(json.dumps(data2))
-                                    robot_path = ""
-                                    #choose_robot.choose_path(origin)
                                     data3 = {"status_code": 200, "reason_message": "OK", "path": "/delivery/response", "message_body": {"path": robot_path}}
                                     await open_sockets["robots"][robot.id].send(json.dumps(data3))
-                                    resp["message_body"] = "true"
+                                    resp["message_body"] = {"path": robot_path}
                                     await websocket.send(json.dumps(resp))
                                 else:
                                     resp["message_body"] = "false"

@@ -21,16 +21,6 @@ def full_class_name(o):
 def init_logging(filename):
     logging.basicConfig(filename = filename, format = "%(message)s", level = logging.INFO)
 
-xy_map = [(1, 0), (3, 0), (4, 0), (6, 0), (4, 1), (5, 1), (6, 1), (5, 2),
-          (6, 2), (3, 3), (4, 3), (5, 3), (6, 3), (5, 4), (6, 4), (3, 5),
-          (4, 5), (5, 5), (6, 5), (1, 7), (3, 7), (4, 7), (6, 7), (2, 3),
-          (1, 2), (0, 2), (0, 6), (1, 6), (2, 5)]
-
-def distance(p1, p2):
-    x1, y1 = xy_map[p1]
-    x2, y2 = xy_map[p2]
-    return math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
-
 def send_email(email_address, first_name, last_name, number):
     try:
         msg = email.mime.multipart.MIMEMultipart("alternative")
@@ -62,6 +52,50 @@ def send_email(email_address, first_name, last_name, number):
     except Exception as e:
         module.error(e)
     return False
+
+city = {
+    1: {2},
+    2: {1, 3, 10},
+    3: {2, 4},
+    4: {3},
+    5: {3, 6},
+    6: {7, 8},
+    7: {6},
+    8: {9, 12},
+    9: {8},
+    10: {24, 16},
+    11: {10, 5},
+    12: {11, 13},
+    13: {12},
+    14: {12, 15},
+    15: {14},
+    16: {21, 17},
+    17: {11, 18},
+    18: {14, 19},
+    19: {18},
+    20: {21},
+    21: {20, 22},
+    22: {17, 21, 23},
+    23: {22},
+    24: {25},
+    25: {26},
+    26: {27},
+    27: {28},
+    28: {29},
+    29: {16}
+}
+
+garages = [1, 4, 7, 9, 13, 15, 19, 20, 23]
+
+def shortest_path(graph, start, goal):
+    queue = [(start, [start])]
+    while queue:
+        (vertex, path) = queue.pop(0)
+        for next in graph[vertex] - set(path):
+            if next == goal:
+                return path + [next]
+            else:
+                queue.append((next, path + [next]))
 
 class ScriptCache:
     def __init__(self):
@@ -428,12 +462,13 @@ class Robot:
     @classmethod
     def choose(cls, position):
         available = cls.available_robots()
+        nearest = None
         if available and len(available) > 0:
-            nearest = available[0]
             for robot in available:
-                if distance(robot.position, position) < distance(nearest.position, position):
-                    nearest = robot
-            return nearest
+                route = shortest_path(city, robot.position, position)
+                if nearest == None or len(route) < len(nearest[1]):
+                    nearest = (robot, route)
+        return nearest
 
     @classmethod
     def available_robots(cls):
@@ -548,7 +583,7 @@ class Robot:
                 cursor.execute(query, values)
                 result = cursor.fetchone()
                 if result:
-                    return result[0]
+                    return json.loads(result[0])
             except Exception as e:
                 module.error(e)
             finally:
@@ -559,7 +594,7 @@ class Robot:
         with connect.connect() as connection:
             cursor = connection.cursor(prepared = True)
             query = "UPDATE Robot SET route = %s WHERE id = %s"
-            values = (value, self._id)
+            values = (json.dumps(value), self._id)
             try:
                 cursor.execute(query, values)
                 connection.commit()
@@ -1004,7 +1039,7 @@ class Delivery:
     def create(cls, origin, sender, receiver):
         with connect.connect() as connection:
             cursor = connection.cursor(prepared = True)
-            query = "INSERT INTO Delivery(id, start_time, origin, state, sender, receiver) VALUES (%s, %s, %s, 0, %s, %s)"
+            query = "INSERT INTO Delivery(id, start_time, origin, state, sender, receiver, path) VALUES (%s, %s, %s, 0, %s, %s, '[]')"
             id = cls.next_id()
             start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             values = (id, start_time, origin, sender, receiver)
@@ -1104,7 +1139,7 @@ class Delivery:
                     cursor.execute(query, values)
                     result = cursor.fetchone()
                     if result:
-                        return result[0]
+                        return json.loads(result[0])
                 except Exception as e:
                     module.error(e)
                 finally:
@@ -1116,7 +1151,7 @@ class Delivery:
             with connect.connect() as connection:
                 cursor = connection.cursor(prepared = True)
                 query = "UPDATE Delivery SET path = %s WHERE id = %s"
-                values = (value, self._id)
+                values = (json.dumps(value), self._id)
                 try:
                     cursor.execute(query, values)
                     connection.commit()

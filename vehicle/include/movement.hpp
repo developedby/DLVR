@@ -20,6 +20,9 @@ class Movement {
         int r_dir;
         int turn_ticks;
         bool initial_wheel_flag;
+        float lm_speed;
+        float rm_speed;
+        float required_speed;
     public:
         Movement();
         void tick(void);
@@ -31,6 +34,7 @@ class Movement {
         float getBalance(void);
         float setBalance(float balance);
         bool isTurning(void);
+        void calculateSpeed();
 };
 
 #endif
