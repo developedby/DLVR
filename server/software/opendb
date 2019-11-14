@@ -1,0 +1,3 @@
+#!/bin/bash
+
+mysql -h dlvr.cvxnw3a2asye.sa-east-1.rds.amazonaws.com -u admin -p
