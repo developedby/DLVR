@@ -8,8 +8,6 @@
 namespace street_lines
 {
 	std::vector<cv::Vec4i> getStreetLines(const cv::Mat& lines_mask);
-
-	float getStreetLineAngle(const cv::Vec4i& line);
 	
 	cv::Vec4f imgSegToRealSeg(const cv::Vec4i& line);
 

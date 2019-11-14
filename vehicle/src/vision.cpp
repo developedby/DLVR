@@ -326,10 +326,13 @@ vector<StreetSection> Vision::findStreets()
                     seg_in_construction = section.end_points;
                     secs_in_result = 1;
                 }
-                else if (seg_in_construction[used_axis+2] < section.end_points[used_axis+2])
+                else
                 {
-                    seg_in_construction[2] = section.end_points[2];
-                    seg_in_construction[3] = section.end_points[3];
+                    if (seg_in_construction[used_axis+2] < section.end_points[used_axis+2]) 
+                    {
+                        seg_in_construction[2] = section.end_points[2];
+                        seg_in_construction[3] = section.end_points[3];
+                    }
                     secs_in_result++;
                 }
             }

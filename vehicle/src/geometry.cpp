@@ -84,8 +84,8 @@ namespace street_lines
         float u;
         if (u_den != 0)
             u = u_num / u_den;
-        else
-            u = std::numeric_limits<float>::infinity();
+        else //it's a point
+            return (distXYPoints(pt, cv::Point2f(seg[0], seg[1])));
 
         if (0 <= u && u <= 1)
         {

@@ -74,30 +74,6 @@ namespace street_lines
         return Vec4f(x1_m, y1_m, x2_m, y2_m);
     }
 
-    // Finds the line segment's angle relative to the vehicle
-    // Adjusts for perspective and camera rotation
-    float getStreetLineAngle(const Vec4i& line)
-    {
-        // Finds the point of intersection at the horizon
-        // Vector given by pt1 + v*(pt2 - pt1)
-        float x_horizon;
-        if (line[3] != line[1])
-        {
-            float v = float(img_y_horizon - line[1]) / float(line[3] - line[1]);
-            x_horizon = line[0] + v*(line[2] - line[0]);
-        }
-        // If parallel to the horizon
-        else
-            x_horizon = std::numeric_limits<float>::infinity();
-        
-        // Finds the angle
-        float angle = std::atan2(img_height*(1 - img_y_horizon), (x_horizon - img_width/2));
-        // Corrects the angle to the vehicle
-        angle -= img_real_zero_rad;
-        
-        return angle;
-    }
-
     // Finds the distance between the vehicle and a line segment
     // Assumes that the segment doesn't cross the vehicle
     float lineAbsDist(const Vec4i& line)
