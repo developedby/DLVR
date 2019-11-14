@@ -92,8 +92,8 @@ margin_bottom = 1280.0
 script = ExtResource( 5 )
 
 [node name="background" type="ColorRect" parent="leftBar"]
-margin_right = 40.0
-margin_bottom = 40.0
+margin_right = 600.0
+margin_bottom = 1280.0
 rect_min_size = Vector2( 600, 1280 )
 color = Color( 0.117647, 0.176471, 0.243137, 1 )
 
@@ -133,6 +133,7 @@ custom_colors/font_color = Color( 1, 1, 1, 1 )
 text = "Nome Sobrenome"
 
 [node name="menu" type="VBoxContainer" parent="leftBar"]
+editor/display_folded = true
 margin_top = 410.0
 margin_right = 600.0
 margin_bottom = 660.0
@@ -143,6 +144,22 @@ margin_bottom = 53.2
 rect_min_size = Vector2( 150, 0 )
 shortcut_in_tooltip = false
 text = "EXIT_KS"
+
+[node name="debug_open" type="ToolButton" parent="leftBar"]
+margin_left = 128.569
+margin_top = 837.648
+margin_right = 438.369
+margin_bottom = 890.848
+text = "DEBUG_OPEN_KS"
+
+[node name="debug_close" type="ToolButton" parent="leftBar"]
+margin_left = 128.569
+margin_top = 991.648
+margin_right = 449.369
+margin_bottom = 1044.85
+text = "DEBUG_CLOSE_KS"
 [connection signal="pressed" from="toolBar/sideMenuButton" to="." method="_on_sideMenuButton_pressed"]
 [connection signal="pressed" from="leftBar/back" to="leftBar" method="_on_back_pressed"]
 [connection signal="pressed" from="leftBar/menu/exit" to="." method="_on_exit_pressed"]
+[connection signal="pressed" from="leftBar/debug_open" to="." method="_on_debug_open_pressed"]
+[connection signal="pressed" from="leftBar/debug_close" to="." method="_on_debug_close_pressed"]

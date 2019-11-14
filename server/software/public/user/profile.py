@@ -2,9 +2,10 @@ import json
 import asyncio
 import objects
 
-async def main(websocket, path, open_sockets, data = None):
-    data = await websocket.recv()
-    data = json.loads(data)
+async def main(websocket, path, open_sockets, script_cache, data = None):
+    if data == None:
+        data = await websocket.recv()
+        data = json.loads(data)
     if "cookie" in data:
         resp = {
             "status_code": 200,

@@ -9,6 +9,7 @@ import logging
 import email.mime.multipart
 import email.mime.text
 import smtplib
+import importlib
 
 def full_class_name(o):
     module = o.__class__.__module__
@@ -61,6 +62,31 @@ def send_email(email_address, first_name, last_name, number):
     except Exception as e:
         module.error(e)
     return False
+
+class ScriptCache:
+    def __init__(self):
+        self.script_cache = {}
+
+    def import_(self, local_path):
+        local_path = "./" + local_path.strip("/")
+        if not os.path.exists(local_path):
+            local_path += ".py"
+        elif not os.path.isfile(local_path):
+            local_path += "index.py"
+        module_name = "public." + local_path.replace(".py", "").replace("/", ".").strip(".")
+        if module_name in self.script_cache:
+            if self.script_cache[module_name]["lastmodified"] < os.path.getmtime(local_path):
+                self.script_cache[module_name]["module"] = importlib.reload(self.script_cache[module_name]["module"])
+                self.script_cache[module_name]["lastmodified"] = os.path.getmtime(local_path)
+
+            script = self.script_cache[module_name]["module"]
+        else:
+            script = importlib.import_module(module_name)
+            self.script_cache[module_name] = {
+                "module": script,
+                "lastmodified": os.path.getmtime(local_path)
+            }
+        return script
 
 class Request:
     def __init__(self, websocket):

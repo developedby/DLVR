@@ -2,7 +2,7 @@ import json
 import asyncio
 import objects
 
-async def main(websocket, path, open_sockets):
+async def main(websocket, path, open_sockets, script_cache):
     data = await websocket.recv()
     data = json.loads(data)
     if "email" in data and "code" in data and "password" in data:

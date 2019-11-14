@@ -3,7 +3,7 @@ import asyncio
 import objects
 import websockets
 
-async def main(websocket, path, open_sockets):
+async def main(websocket, path, open_sockets, script_cache):
     module = objects.Module(__name__)
     login = None
     try:
@@ -29,79 +29,79 @@ async def main(websocket, path, open_sockets):
                             path = data["path"]
                             req.log(path)
                             if path == "/debug/close":
-                                import public.debug.close as script
+                                script = script_cache.import_(path)
                                 try:
-                                    await script.main(websocket, path, open_sockets, data)
+                                    await script.main(websocket, path, open_sockets, script_cache, data)
                                 except Exception as e:
                                     module.error(e, script.__name__)
                                     await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                             elif path == "/debug/open":
-                                import public.debug.open as script
+                                script = script_cache.import_(path)
                                 try:
-                                    await script.main(websocket, path, open_sockets, data)
+                                    await script.main(websocket, path, open_sockets, script_cache, data)
                                 except Exception as e:
                                     module.error(e, script.__name__)
                                     await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                             elif path == "/delivery/finish":
-                                import public.delivery.finish as script
+                                script = script_cache.import_(path)
                                 try:
-                                    await script.main(websocket, path, open_sockets, data)
+                                    await script.main(websocket, path, open_sockets, script_cache, data)
                                 except Exception as e:
                                     module.error(e, script.__name__)
                                     await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                             elif path == "/delivery/qr":
-                                import public.delivery.qr as script
+                                script = script_cache.import_(path)
                                 try:
-                                    await script.main(websocket, path, open_sockets, data)
+                                    await script.main(websocket, path, open_sockets, script_cache, data)
                                 except Exception as e:
                                     module.error(e, script.__name__)
                                     await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                             elif path == "/delivery/request":
-                                import public.delivery.request as script
+                                script = script_cache.import_(path)
                                 try:
-                                    await script.main(websocket, path, open_sockets, data)
+                                    await script.main(websocket, path, open_sockets, script_cache, data)
                                 except Exception as e:
                                     module.error(e, script.__name__)
                                     await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                             elif path == "/delivery/response":
-                                import public.delivery.response as script
+                                script = script_cache.import_(path)
                                 try:
-                                    await script.main(websocket, path, open_sockets, data)
+                                    await script.main(websocket, path, open_sockets, script_cache, data)
                                 except Exception as e:
                                     module.error(e, script.__name__)
                                     await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                             elif path == "/delivery/send":
-                                import public.delivery.send as script
+                                script = script_cache.import_(path)
                                 try:
-                                    await script.main(websocket, path, open_sockets, data)
+                                    await script.main(websocket, path, open_sockets, script_cache, data)
                                 except Exception as e:
                                     module.error(e, script.__name__)
                                     await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                             elif path == "/user/delete":
-                                import public.user.delete as script
+                                script = script_cache.import_(path)
                                 try:
-                                    await script.main(websocket, path, open_sockets, data)
+                                    await script.main(websocket, path, open_sockets, script_cache, data)
                                 except Exception as e:
                                     module.error(e, script.__name__)
                                     await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                             elif path == "/user/profile":
-                                import public.user.profile as script
+                                script = script_cache.import_(path)
                                 try:
-                                    await script.main(websocket, path, open_sockets, data)
+                                    await script.main(websocket, path, open_sockets, script_cache, data)
                                 except Exception as e:
                                     module.error(e, script.__name__)
                                     await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                             elif path == "/user/signout":
-                                import public.user.signout as script
+                                script = script_cache.import_(path)
                                 try:
-                                    await script.main(websocket, path, open_sockets, data)
+                                    await script.main(websocket, path, open_sockets, script_cache, data)
                                 except Exception as e:
                                     module.error(e, script.__name__)
                                     await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")
                             elif path == "/user/update":
-                                import public.user.update as script
+                                script = script_cache.import_(path)
                                 try:
-                                    await script.main(websocket, path, open_sockets, data)
+                                    await script.main(websocket, path, open_sockets, script_cache, data)
                                 except Exception as e:
                                     module.error(e, script.__name__)
                                     await websocket.send("{\"status_code\": 500, \"reason_message\": \"Internal Server Error\"}")

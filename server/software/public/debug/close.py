@@ -2,7 +2,7 @@ import json
 import asyncio
 import objects
 
-async def main(websocket, path, open_sockets, data = None, id = 0):
+async def main(websocket, path, open_sockets, script_cache, data = None, id = 0):
     module = objects.Module(__name__)
     if data == None:
         data = await websocket.recv()
