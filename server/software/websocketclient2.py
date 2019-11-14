@@ -71,7 +71,7 @@ async def handler():
                             id = resp["message_body"]["id"]
                             print("Delivery accepted")
                         elif resp["path"] == "/robot/update":
-                            if "position" in resp["message_body"] and resp["message_body"]["position"] == ORIG:
+                            if "position" in resp["message_body"] and "state" in resp["message_body"] and resp["message_body"]["state"] == 1 and resp["message_body"]["position"] == ORIG:
                                 print("Robot arrived at origin")
                                 print("Press enter to continue...", end = "")
                                 await loop.run_in_executor(None, input)

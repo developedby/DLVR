@@ -82,7 +82,7 @@ async def handler():
                             print("Press enter to continue...", end = "")
                             await loop.run_in_executor(None, input)
                             return
-                        elif "position" in resp["message_body"] and resp["message_body"]["position"] == DEST:
+                        elif "position" in resp["message_body"] and "state" in resp["message_body"] and resp["message_body"]["state"] == 1 and resp["message_body"]["position"] == DEST:
                             print("Robot arrived at destination")
                             print("Press enter to continue...", end = "")
                             await loop.run_in_executor(None, input)

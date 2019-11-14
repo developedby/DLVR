@@ -20,12 +20,14 @@ async def main(websocket, path, open_sockets, script_cache, data = None):
                 if len(logins) > 0:
                     robot = delivery.robot
                     delivery.send()
-                    data2 = {"status_code": 200, "reason_message": "OK", "path": "/delivery/send", "message_body": "true"}
+                    robot_path = objects.shortest_path(objects.city, delivery.origin, delivery.destination)
+                    robot.route = robot_path
+                    data2 = {"status_code": 200, "reason_message": "OK", "path": "/delivery/send", "message_body": {"path": robot_path}}
                     data2 = json.dumps(data2)
                     for login in logins:
                         await open_sockets["users"][login.cookie].send(data2)
                     await open_sockets["robots"][robot.id].send(data2)
-                    resp["message_body"] = "true"
+                    resp["message_body"] = {"path": robot_path}
                     await websocket.send(json.dumps(resp))
                 else:
                     resp["message_body"] = "false"

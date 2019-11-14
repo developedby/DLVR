@@ -85,6 +85,8 @@ city = {
     29: {16}
 }
 
+garages = [1, 4, 7, 9, 13, 15, 19, 20, 23]
+
 def shortest_path(graph, start, goal):
     queue = [(start, [start])]
     while queue:
@@ -581,7 +583,7 @@ class Robot:
                 cursor.execute(query, values)
                 result = cursor.fetchone()
                 if result:
-                    return result[0]
+                    return json.loads(result[0])
             except Exception as e:
                 module.error(e)
             finally:
@@ -592,7 +594,7 @@ class Robot:
         with connect.connect() as connection:
             cursor = connection.cursor(prepared = True)
             query = "UPDATE Robot SET route = %s WHERE id = %s"
-            values = (value, self._id)
+            values = (json.dumps(value), self._id)
             try:
                 cursor.execute(query, values)
                 connection.commit()
@@ -1037,7 +1039,7 @@ class Delivery:
     def create(cls, origin, sender, receiver):
         with connect.connect() as connection:
             cursor = connection.cursor(prepared = True)
-            query = "INSERT INTO Delivery(id, start_time, origin, state, sender, receiver) VALUES (%s, %s, %s, 0, %s, %s)"
+            query = "INSERT INTO Delivery(id, start_time, origin, state, sender, receiver, path) VALUES (%s, %s, %s, 0, %s, %s, '[]')"
             id = cls.next_id()
             start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             values = (id, start_time, origin, sender, receiver)
@@ -1137,7 +1139,7 @@ class Delivery:
                     cursor.execute(query, values)
                     result = cursor.fetchone()
                     if result:
-                        return result[0]
+                        return json.loads(result[0])
                 except Exception as e:
                     module.error(e)
                 finally:
@@ -1149,7 +1151,7 @@ class Delivery:
             with connect.connect() as connection:
                 cursor = connection.cursor(prepared = True)
                 query = "UPDATE Delivery SET path = %s WHERE id = %s"
-                values = (value, self._id)
+                values = (json.dumps(value), self._id)
                 try:
                     cursor.execute(query, values)
                     connection.commit()

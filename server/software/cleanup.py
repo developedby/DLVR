@@ -7,6 +7,7 @@ async def main():
     robot = objects.Robot(0)
     robot.state = 0
     robot.position = 1
+    robot.route = []
     robot.alive = False
     user1 = objects.User("subject@example.com")
     for delivery in user1.deliveries:
