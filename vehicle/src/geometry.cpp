@@ -17,7 +17,7 @@ namespace street_lines
     {
         const float a = seg[0];
         const float b = seg[3];
-        const float c = sqrt(square(a) + square(b) - 2*a*b*cos(abs(seg[1]-seg[3])));
+        const float c = sqrt(square(a) + square(b) - 2*a*b*cos(std::abs(seg[1]-seg[3])));
         return cv::Vec2f(sqrt((a*b)*(a+b+c)*(a+b-c)) / (a+b),
                          (seg[1] + seg[3])/2);
     }
@@ -132,6 +132,7 @@ namespace street_lines
         // If the lines are parallel, intersection is said to be at infinity
         if (linesAreParallel(line1, line2, 0.01))
         {
+            //std::cout << line1 << "eh paralelo com " << line2 << std::endl;
             return cv::Vec2f(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
         }
         
@@ -154,10 +155,11 @@ namespace street_lines
     // Considers a certain precision and that angles are always between [-M_PI/2, M_PI/2]
     bool linesHaveAngle(const cv::Vec2f& line1, const cv::Vec2f& line2, const float angle, const float max_theta_diff)
     {
-        float angle_diff = abs(line1[1] - line2[1]);
-        if (angle_diff > M_PI/2)
-            angle_diff = abs(angle_diff - M_PI);
-            
+        float angle_diff = std::abs(line1[1] - line2[1]);
+        if(angle_diff > 3*M_PI_2)
+            angle_diff = std::abs(angle_diff - 2*M_PI);
+        else if (angle_diff > M_PI/2)
+            angle_diff = std::abs(angle_diff - M_PI);
         if ((angle - max_theta_diff) < angle_diff && angle_diff < (angle + max_theta_diff))
             return true;
         else
@@ -176,8 +178,10 @@ namespace street_lines
 
     bool linesAreCollinear(const cv::Vec2f& line1, const cv::Vec2f& line2, const float max_theta_diff, const float max_rho_diff)
     {
-        return (linesAreParallel(line1, line2, max_theta_diff)
-                && (abs(line1[0] - line2[0]) <= max_rho_diff));
+        bool lines_are_parallel = linesAreParallel(line1, line2, max_theta_diff);
+        bool lines_are_close = std::abs(line1[0] - line2[0]) <= max_rho_diff;
+        //std:: cout << "linhas sao paralelas: " << lines_are_parallel << " linhas sao pertas: " << lines_are_close <<std::endl;
+        return (lines_are_parallel && lines_are_close);
     }
 
     // Transforms a (rho1, theta1, rho2, theta2) segment to a (x1, y1, x2, y2) segment

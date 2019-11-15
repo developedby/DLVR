@@ -15,6 +15,7 @@
 #include "street_section.hpp"
 #include "geometry.hpp"
 
+
 using std::vector;
 using std::pair;
 using std::cout;
@@ -79,26 +80,24 @@ vector<StreetSection> Vision::findStreets()
     // Finds the binary mask for each marker type
     Mat blue_tape_mask;
     this->getBlueTapeMask(blue_tape_mask);
-    //cv::imwrite("teste_linhas_blue.jpg", blue_tape_mask);
     Mat green_tape_mask;
     this->getGreenTapeMask(green_tape_mask);
-    //cv::imwrite("teste_linhas_green.jpg", green_tape_mask);
     Mat yellow_tape_mask;
     this->getYellowTapeMask(yellow_tape_mask);
-    //cv::imwrite("teste_linhas_yellow.jpg", yellow_tape_mask);
+    if (constants::save_img)
+    {
+        cv::imwrite("teste_linhas_blue.jpg", blue_tape_mask);
+        cv::imwrite("teste_linhas_green.jpg", green_tape_mask);    
+        cv::imwrite("teste_linhas_yellow.jpg", yellow_tape_mask);
+    }
 
     //cout << "Calculou as mascaras de cor." << endl;
 
     // Finds the lines passing through those masks
     vector<Vec4i> lines;
     vector<Color> line_colors;
-    
-    auto lines_aux = street_lines::getStreetLines(green_tape_mask);
-    ////cout << "Achou linhas verdes." << endl;
-    lines.insert(lines.end(), lines_aux.begin(), lines_aux.end());
-    line_colors.insert(line_colors.end(), lines_aux.size(), Color::green);
-    
-    lines_aux = street_lines::getStreetLines(yellow_tape_mask);
+
+    auto lines_aux = street_lines::getStreetLines(yellow_tape_mask);
     ////cout << "Achou linhas amarelas." << endl;
     lines.insert(lines.end(), lines_aux.begin(), lines_aux.end());
     line_colors.insert(line_colors.end(), lines_aux.size(), Color::yellow);
@@ -110,8 +109,14 @@ vector<StreetSection> Vision::findStreets()
     line_colors.insert(line_colors.end(), lines_aux.size(), Color::blue);
     ////cout << "insert line_colors." << endl;
     
+    lines_aux = street_lines::getStreetLines(green_tape_mask);
+    ////cout << "Achou linhas verdes." << endl;
+    lines.insert(lines.end(), lines_aux.begin(), lines_aux.end());
+    line_colors.insert(line_colors.end(), lines_aux.size(), Color::green);
+    
     Mat img_lines = street_lines::drawSegments(lines, this->img);
-    cv::imwrite("teste_linhas_linhas.jpg", img_lines);
+    if (constants::save_img)
+        cv::imwrite("teste_linhas_linhas.jpg", img_lines);
     
     //cout << "Calculou as linhas. Encontradas: " << lines.size() << endl;
     for (unsigned int i = 0; i < lines.size(); i++)
@@ -155,7 +160,7 @@ vector<StreetSection> Vision::findStreets()
             else if (j > i
                      && street_lines::linesAreParallel(undistort_lines[i], undistort_lines[j], max_theta_diff)
                      && (lane_width*0.7 < dist && dist < lane_width*1.3)
-                     && (abs(undistort_lines[i][0] - undistort_lines[j][0]) > lane_width/4))
+                     && (std::abs(undistort_lines[i][0] - undistort_lines[j][0]) > lane_width/4))
             {
                 opposite_segs.emplace_back(line_colors[j], undistort_lines[i], undistort_segs[j]);
             }
@@ -173,6 +178,7 @@ vector<StreetSection> Vision::findStreets()
             const Vec4f transl_half2(mid_pt_transl[0], mid_pt_transl[1], translated[2], translated[3]);
             imaginable_sections.emplace_back(Color::blue, xySegmentToLine(transl_half1), transl_half1);
             imaginable_sections.emplace_back(Color::blue, xySegmentToLine(transl_half2), transl_half2);
+            //std::cout << "segmentos azuis: " << transl_half1 << " " << transl_half2 <<std::endl;
 
         }
         // If there are opposite segments, try to create sections between them
@@ -245,6 +251,7 @@ vector<StreetSection> Vision::findStreets()
             const Vec4f new_seg2(mid_pt[0], mid_pt[1], pt2[0], pt2[1]);
             possible_sections.emplace_back(Color::green, xySegmentToLine(new_seg1), new_seg1);
             possible_sections.emplace_back(Color::green, xySegmentToLine(new_seg2), new_seg2);
+            //std::cout << "segmentos verdes " << new_seg1 << ' ' << new_seg2 << std::endl;
         }
         // If the segment is yellow and it is perpendicular to the vehicle, add a section crossing it
         else if (line_colors[i] == Color::yellow
@@ -273,10 +280,23 @@ vector<StreetSection> Vision::findStreets()
     // Transforms overlapping sections into a single long section
     vector<StreetSection> long_sections;
     vector<Vec2f> possible_lines(possible_sections.size());
+    //std::cout << "possible_lines"<<std::endl;
     for (unsigned int i = 0; i < possible_sections.size(); i++)
+    {
         possible_lines[i] = possible_sections[i].line;
+        //std::cout << possible_lines[i] << std::endl;
+    }
     // For each group of sections that have the same angle
-    const auto angle_groups = street_lines::groupCollinearLines(possible_lines, max_theta_diff, lane_width/3);
+    const auto angle_groups = street_lines::groupCollinearLines(possible_lines, 2*max_theta_diff, lane_width/4);
+    /*for(auto group: angle_groups)
+    {
+        std::cout << "group: ";
+        for (auto idx:group)
+        {
+            std::cout << idx << " ";
+        }
+        std::cout << std::endl;
+    }*/
     ////cout << "Agrupou as linhas colineares" << endl;
     for (auto group: angle_groups)
     {
@@ -319,7 +339,7 @@ vector<StreetSection> Vision::findStreets()
             }
             else
             {
-                if (distXYSegments(seg_in_construction, section.end_points) > lane_width/3)
+                if (distXYSegments(seg_in_construction, section.end_points) > lane_width/4)
                 {
                     //cout << "coloquei em result o " << seg_in_construction <<endl;
                     result_segs.push_back(seg_in_construction);
@@ -328,6 +348,7 @@ vector<StreetSection> Vision::findStreets()
                 }
                 else
                 {
+                    //cout << "seg in construc: " <<  xySegmentToLine(seg_in_construction) << " section: " << section.line << endl;
                     if (seg_in_construction[used_axis+2] < section.end_points[used_axis+2]) 
                     {
                         seg_in_construction[2] = section.end_points[2];
@@ -369,7 +390,9 @@ vector<StreetSection> Vision::findStreets()
             if (distXYSegments(long_sections[i].end_points, long_sections[j].end_points) < lane_width/4)
             {
                 // Break the i section at the projected intersection point
-                cut_pts.push_back(street_lines::linesIntersection(long_sections[i].line, long_sections[j].line));
+                auto intersection_pt = street_lines::linesIntersection(long_sections[i].line, long_sections[j].line);
+                if (! std::isinf(intersection_pt[0]))
+                    cut_pts.push_back(intersection_pt);
             }
         }
         ////cout << "cut_pts i=" << i << ":" << endl;
@@ -505,7 +528,7 @@ void Vision::getBlueTapeMask(Mat& dst)
 
 void Vision::getGreenTapeMask(Mat& dst)
 {
-    this->getTapeMask(dst, cv::Scalar(40, 130, 40), cv::Scalar(60, 250, 255));
+    this->getTapeMask(dst, cv::Scalar(40, 100, 60), cv::Scalar(60, 250, 255));
 }
 
 void Vision::getYellowTapeMask(Mat& dst)

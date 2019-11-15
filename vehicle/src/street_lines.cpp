@@ -35,10 +35,17 @@ namespace street_lines
     vector<Vec4i> getStreetLines(const Mat& lines_mask)
     {
         vector<Vec4i> lines;
+        Mat labelImage(lines_mask.size(), CV_32S);
         cv::HoughLinesP(lines_mask, lines, 1, max_theta_diff-0.01, 100, 100, 8);
-        //cv::imwrite("teste_linha_ruffles.jpg", drawSegments(lines, Mat::zeros(img_height, img_width, CV_8UC3)));
+        if(constants::save_img)
+            cv::imwrite("teste_linha_ruffles.jpg", drawSegments(lines, Mat::zeros(img_height, img_width, CV_8UC3)));
         //std::cout << "Linhas: " << lines.size() << std::endl;
-        lines = reduceSegments(lines);
+        //auto initial_tick = cv::getTickCount();
+        int nLabels = cv::connectedComponents(lines_mask, labelImage, 8);
+        //std::cout << "numero de labels" << nLabels<<std::endl;
+        lines = reduceSegments(lines, labelImage, nLabels);
+        //auto time_to_process = (cv::getTickCount() - initial_tick) / cv::getTickFrequency();
+        //std::cout << "Tempo para calcular componentes conexos " << time_to_process << std::endl;
         return lines;
     }
 
@@ -125,8 +132,10 @@ namespace street_lines
                 groups.push_back(vector{i});
                 for (unsigned int j = i+1; j < lines.size(); j++)
                 {
-                    if (classification[j] == -1
-                        && linesAreCollinear(lines[i], lines[j], max_theta_diff, max_rho_diff))
+                    bool lines_are_collinear = linesAreCollinear(lines[i], lines[j], max_theta_diff, max_rho_diff);
+                    //std::cout << lines[i] << " " <<lines[j] <<std::endl;
+                    //std::cout << "colineares: " << lines_are_collinear << std::endl;
+                    if ((classification[j] == -1) && lines_are_collinear)
                     {
                         classification[j] = counter;
                         groups[counter].push_back(j);

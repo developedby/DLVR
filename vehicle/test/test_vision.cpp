@@ -34,7 +34,7 @@ int main()
 	}
 	cv::imwrite("teste_linhas_secoes.jpg", out_img);
 	vision.getTopCamImg();
-	cv::imwrite("teste_top_img.jpg", vision.top_img);
+	//cv::imwrite("teste_top_img.jpg", vision.top_img);
 	std::vector<int> ids;
     std::vector<std::vector<cv::Point2f>> positions;
 	std::tie(ids, positions) = vision.findARMarkers();
@@ -43,5 +43,5 @@ int main()
 		std::cout << "encontrou " << ids[i] << " " << positions[i] <<std::endl;
 		cv::rectangle(vision.top_img, positions[i][0], positions[i][2], cv::Scalar(0,255,0),  3, cv::LINE_8, 0); 
 	}
-	cv::imwrite("results.jpg", vision.top_img);
+	//cv::imwrite("results.jpg", vision.top_img);
 }

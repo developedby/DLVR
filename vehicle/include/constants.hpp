@@ -19,6 +19,7 @@ namespace constants
 	float constexpr lane_width = 0.26;
 	float constexpr tape_width = 0.018;
 	float constexpr max_theta_diff = 5 * M_PI/180;
+	bool constexpr save_img = false;
 
 	// Radio
 	int constexpr radio_delay_transmitting = 0;
