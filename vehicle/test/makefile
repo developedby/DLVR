@@ -1,6 +1,14 @@
 dummy:
 	echo "Please choose one of the tests"
 
+# Remove os .o de ./build
+clean:
+	rm ./build/*.o
+
+# Limpa a pasta ,/build	
+clean_all:
+	rm ./build/*
+
 # Teste encoder
 encoder: ../src/encoder.cpp test_encoder.cpp
 	gcc -Wall -o ./build/test_encoder ../src/encoder.cpp test_encoder.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lraspicam -lrf24-bcm -I../include

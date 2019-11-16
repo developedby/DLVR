@@ -19,20 +19,41 @@ int main()
 	cv::imwrite("teste_linhas.jpg", img);
 	//std::cout << "Tirou a foto." << std::endl;
 	auto initial_tick = cv::getTickCount();
-	std::vector<street_finder::StreetSection> sections = vision.findStreets();
+	auto [tape_secs, street_secs] = vision.findStreets();
 	auto time_to_process = (cv::getTickCount() - initial_tick) / cv::getTickFrequency();
 	std::cout << "Tempo para processar: " << time_to_process << std::endl;
 	
-	cv::Mat out_img = cv::Mat::zeros(100, 100, CV_8U);
-	for (auto& sec: sections)
+	cv::Mat out_img = cv::Mat::zeros(500, 500, CV_8UC3);
+	for (auto& sec: street_secs)
 	{
-		cv::Vec4f line = sec.seg * 100;
-		line[1] = -line[1];
-		line[3] = -line[3];
-		line += cv::Vec4f(50, 50, 50, 50);
-		cv::line(out_img, cv::Point(line[0], line[1]), cv::Point(line[2], line[3]), 255, 1, cv::LINE_AA);
-		std::cout << int(sec.color) << ' ' << sec.line << ' ' << sec.seg << std::endl;
+		cv::Vec4f line = sec.seg;
+		line[0] = 250 + line[0]*500;
+		line[1] = 500 - line[1]*1000;
+		line[2] = 250 + line[2]*500;
+		line[3] = 500 - line[3]*1000;
+		cv::line(out_img, cv::Point(line[0], line[1]), cv::Point(line[2], line[3]), cv::Scalar(255, 255, 255), 5, cv::LINE_AA);
+		sec.print();
 	}
+	for (auto& sec: tape_secs)
+	{
+		cv::Vec4f line = sec.seg;
+		line[0] = 250 + line[0]*500;
+		line[1] = 500 - line[1]*1000;
+		line[2] = 250 + line[2]*500;
+		line[3] = 500 - line[3]*1000;
+		cv::Scalar color;
+		if (sec.color == street_finder::Color::blue)
+			color = cv::Scalar(255, 200, 65);
+		else if (sec.color == street_finder::Color::green)
+			color = cv::Scalar(0, 255, 0);
+		else if (sec.color == street_finder::Color::yellow)
+			color = cv::Scalar(0, 255, 255);
+		else
+			color = cv::Scalar(0, 0, 255);
+		cv::line(out_img, cv::Point(line[0], line[1]), cv::Point(line[2], line[3]), color, 5, cv::LINE_AA);
+		sec.print();
+	}
+	
 	cv::imwrite("teste_linhas_secoes.jpg", out_img);
 	
 	

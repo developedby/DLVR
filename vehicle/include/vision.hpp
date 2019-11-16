@@ -22,7 +22,7 @@ class Vision
 		Vision();
 		void getDownwardCamImg();
 		void getForwardCamImg();
-		std::vector<street_finder::StreetSection> findStreets();
+		std::pair<std::vector<street_finder::StreetSection>, std::vector<street_finder::StreetSection>> findStreets();
 		bool isTrafficLightRed();
 		std::pair<std::vector<int>, std::vector<std::vector<cv::Point2f>>> findARMarkers();
 };

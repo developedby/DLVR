@@ -21,6 +21,7 @@ namespace street_finder
             StreetSection() {}
             StreetSection(Color color_, cv::Vec2f line_, cv::Vec4f seg_) :
                 color(color_), line(line_), seg(seg_), connects_end_pt1(), connects_end_pt2() {}
+	    void print();
     };
     
     // Big functions
@@ -37,6 +38,7 @@ namespace street_finder
     cv::Vec4f imgSegToRealSeg(const cv::Vec4i& line);
     std::vector<std::vector<unsigned int>> groupLinesByDistance(const std::vector<cv::Vec2f>& lines, const float max_rho_diff);
     std::vector<std::vector<unsigned int>> groupCollinearLines(const std::vector<cv::Vec2f>& lines, const float max_theta_diff, const float max_rho_diff);
+    std::vector<std::vector<unsigned int>> groupCollinearSections(const std::vector<StreetSection>& secs, const float max_theta_diff, const float max_dist);
     void orderCollinearSections(std::vector<StreetSection>& sections, const int used_axis);
     std::tuple<cv::Mat, cv::Mat, cv::Mat> getTapeMasks(const cv::Mat& img);
     cv::Mat getColorMask(const cv::Mat& img, const cv::Scalar min, const cv::Scalar max);
@@ -52,7 +54,7 @@ namespace street_finder
     void insertMiddleSection(const StreetSection& sec1, const StreetSection& sec2, const Color color, std::vector<StreetSection>& sec_vec);
     
     // Drawing functions
-    cv::Mat drawSegments(const std::vector<cv::Vec4i>& lines, const cv::Mat& img);
+    cv::Mat drawSegments(const std::vector<cv::Vec4i>& lines, const cv::Mat& img, const bool cvt_color=true);
     void drawLine(const cv::Vec2f& line, const cv::Mat& img);
     void drawLabelImage(const cv::Mat& labelImage, int nLabels);
 }
