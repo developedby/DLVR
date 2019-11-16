@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <cmath>
 
-namespace constants
+namespace consts
 {
 	// Vision
 	int constexpr img_height = 960;
