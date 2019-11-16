@@ -143,6 +143,12 @@ ReceivedMessage RadioCommunication::getData()
     {
         command = (Commands)received_data[i];
         i++;
+        if(command == GET_QR_CODE)
+        {
+             qr_code = (received_data[i] << 8) + received_data[i+1];
+             i += 2;
+        }
+            
     }
     if((received_data[2] & 0x2) == 0x2)
     {
