@@ -7,6 +7,11 @@
 
 namespace geometry
 {
+    float segmentLength(const cv::Vec4f& seg)
+    {
+        return norm(seg[2]-seg[0], seg[3]-seg[1]);
+    }
+    
     cv::Vec2f segmentHalfPoint(const cv::Vec4f& seg)
     {
         return cv::Vec2f((seg[0]+seg[2])/2, (seg[1]+seg[3])/2);

@@ -24,6 +24,11 @@ using cv::Point2f;
 
 namespace street_finder
 {
+    void StreetSection::print()
+    {
+        std::cout << this->line << ' ' << this->seg << ' ' << int(this->color) << std::endl;
+    }
+    
     // Finds the lines that go through the tapes in the image
     tuple<vector<Vec4i>, vector<Color>> findTapeLines(const Mat& img)
     {
@@ -35,7 +40,7 @@ namespace street_finder
             cv::imwrite("teste_linhas_green.jpg", green_mask);    
             cv::imwrite("teste_linhas_yellow.jpg", yellow_mask);
         }
-        //cout << "Calculou as mascaras de cor." << endl;
+        //std::cout << "Calculou as mascaras de cor." << std::endl;
 
         // Finds the lines passing through those masks
         vector<Vec4i> lines;
@@ -44,30 +49,23 @@ namespace street_finder
         auto lines_aux = getStreetLines(yellow_mask);
         lines.insert(lines.end(), lines_aux.begin(), lines_aux.end());
         line_colors.insert(line_colors.end(), lines_aux.size(), Color::yellow);
-        ////cout << "Achou linhas amarelas." << endl;
+        //std::cout << "Achou linhas amarelas." << std::endl;
         
         lines_aux = getStreetLines(blue_mask);
         lines.insert(lines.end(), lines_aux.begin(), lines_aux.end());
         line_colors.insert(line_colors.end(), lines_aux.size(), Color::blue);
-        //cout << "Achou linhas azuis." << endl;
+        //std::cout << "Achou linhas azuis." << std::endl;
         
         lines_aux = getStreetLines(green_mask);
         lines.insert(lines.end(), lines_aux.begin(), lines_aux.end());
         line_colors.insert(line_colors.end(), lines_aux.size(), Color::green);
-        ////cout << "Achou linhas verdes." << endl;
+        //std::cout << "Achou linhas verdes." << std::endl;
 
         if (consts::save_img)
         {
             Mat img_lines = drawSegments(lines, img);
             cv::imwrite("teste_linhas_linhas.jpg", img_lines);
-        }
-
-        /*cout << "Calculou as linhas. Encontradas: " << lines.size() << endl;
-        for (unsigned int i = 0; i < lines.size(); i++)
-        {
-            cout << lines[i] << ' ' << int(line_colors[i]) << endl;
-        }*/
-        
+        }        
         return tuple(lines, line_colors);
     }
     
@@ -81,12 +79,6 @@ namespace street_finder
             const auto undistorted_seg = imgSegToRealSeg(img_lines[i]);
             undistorted_secs.emplace_back(line_colors[i], geometry::segmentToLine(undistorted_seg), undistorted_seg);
         }
-
-        /*cout << "Reverteu a distorcao de perspectiva" << endl;
-        for (unsigned int i = 0; i < undistorted_secs.size(); i++)
-        {
-            cout << undistorted_sec.line[i] << ' ' << undistorted_sec.seg[i] << endl;
-        }*/
         return undistorted_secs;
     }
     
@@ -165,34 +157,31 @@ namespace street_finder
             }
             // If the segment is yellow and it is perpendicular to the vehicle, add a section crossing it
             else if (tape_secs[i].color == Color::yellow
-                     && geometry::linesAreParallel(tape_secs[i].line, Vec2f(0, M_PI/2), 3*consts::max_theta_diff))
+                     && geometry::linesAreParallel(tape_secs[i].line, Vec2f(0, M_PI/2), consts::max_theta_diff))
             {
                 insertPerpendicularSection(tape_secs[i], Color::yellow, short_secs);
             }
         }
-        /*cout << "Calculou todas as mini seções. Encontradas: " << short_secs.size() << endl;
-        for (unsigned int i = 0; i < short_secs.size(); i++)
+        
+        // Remove sections that are too short
+        // When they are too short they often have a bad angle 
+        vector<StreetSection> not_so_short_secs;
+        for (const auto& sec: short_secs)
         {
-            cout << short_secs[i].line << ' ' << short_secs[i].seg << ' ' << int(short_secs[i].color) << endl;
-        }*/
-        return short_secs;
+            if (geometry::segmentLength(sec.seg) > 0.05)
+                not_so_short_secs.push_back(sec);
+        }
+        
+        return not_so_short_secs;
     }
     
     // Fuses overlapping collinear sections into long sections
     vector<StreetSection> groupIntoLongSections(const vector<StreetSection>& short_secs)
     {
-        vector<StreetSection> long_secs;
-        vector<Vec2f> short_lines(short_secs.size());
-        std::transform(short_secs.begin(), short_secs.end(), short_lines.begin(), [](StreetSection sec){return sec.line;});
-        /*std::cout << "short_lines" << std::endl;
-        for (unsigned int i = 0; i < short_secs.size(); i++)
-        {
-            std::cout << short_lines[i] << std::endl;
-        }*/
-        
+        vector<StreetSection> long_secs;        
         // Group lines that can be potentially fused together
-        const auto angle_groups = groupCollinearLines(short_lines, 2*consts::max_theta_diff, consts::lane_width/4);
-        /*for(auto group: angle_groups)
+        const auto angle_groups = groupCollinearSections(short_secs, consts::max_theta_diff, consts::lane_width/4);
+        for(auto group: angle_groups)
         {
             std::cout << "group: ";
             for (auto idx:group)
@@ -200,7 +189,7 @@ namespace street_finder
                 std::cout << idx << " ";
             }
             std::cout << std::endl;
-        }*/
+        }
         //cout << "Agrupou as linhas colineares" << endl;
         // For each group of collinear sections
         for (const auto& group: angle_groups)
@@ -272,12 +261,6 @@ namespace street_finder
             for (const auto& result_seg: result_segs)
                 long_secs.emplace_back(Color::none, geometry::segmentToLine(result_seg), result_seg);
         }
-
-        /*cout << "Calculou todas as seções longas. Encontradas: " << long_secs.size() << endl;
-        for (unsigned int i = 0; i < long_secs.size(); i++)
-        {
-            cout << long_secs[i].line << ' ' << long_secs[i].seg << ' ' << int(long_secs[i].color) << endl;
-        }*/
         return long_secs;
     }
     
@@ -355,12 +338,6 @@ namespace street_finder
                 broken_secs.emplace_back(Color::none, geometry::segmentToLine(seg), seg); 
             }
         }
-        
-        /*cout << "Calculou as seções finais. Encontradas: " << secs.size() << endl;
-        for (unsigned int i = 0; i < secs.size(); i++)
-        {
-            cout << secs[i].line << ' ' << secs[i].seg << ' ' << int(secs[i].color) << endl;
-        }*/
         return broken_secs;
     }
    
@@ -406,7 +383,7 @@ namespace street_finder
     {
         vector<Vec4i> lines;
         Mat labelImage(lines_mask.size(), CV_32S);
-        cv::HoughLinesP(lines_mask, lines, 1, consts::max_theta_diff-0.001, 100, 100, 8);
+        cv::HoughLinesP(lines_mask, lines, 1, consts::hough_precision_rad, 100, 100, 8);
         if(consts::save_img)
             cv::imwrite("teste_linha_ruffles.jpg", drawSegments(lines, Mat::zeros(consts::img_height, consts::img_width, CV_8UC3)));
         //std::cout << "Linhas: " << lines.size() << std::endl;
@@ -441,7 +418,7 @@ namespace street_finder
             //std::cout << "esse blob tem tamanho " << blob.size() << std::endl;
             vector<Vec2f> lines(blob.size());
             std::transform(blob.begin(), blob.end(), lines.begin(), geometry::segmentToLine);
-            auto groups = groupCollinearLines(lines, 2*consts::max_theta_diff, 200);
+            auto groups = groupCollinearLines(lines, consts::max_theta_diff, 200);
             //int a = 0;
             for (const auto& group: groups)
             {         
@@ -569,6 +546,36 @@ namespace street_finder
         return groups;
     }
 
+    // Separate the lines in different groups of collinear sections
+    vector<vector<unsigned int>> groupCollinearSections(const vector<StreetSection>& secs, const float max_theta_diff, const float max_dist)
+    {
+        vector<int> classification(secs.size(), -1);
+        vector<vector<unsigned int>> groups;
+        int counter = 0;
+        for (unsigned int i = 0; i < secs.size(); i++)
+        {
+            if (classification[i] == -1)
+            {
+                classification[i] = counter;
+                groups.push_back(vector{i});
+                for (unsigned int j = i+1; j < secs.size(); j++)
+                {
+                    bool secs_are_parallel = geometry::linesAreParallel(secs[i].line, secs[j].line, max_theta_diff);
+                    bool secs_are_close = geometry::distSegments(secs[i].seg, secs[j].seg) < max_dist;
+                    //std::cout << lines[i] << " " <<lines[j] <<std::endl;
+                    //std::cout << "colineares: " << lines_are_collinear << std::endl;
+                    if ((classification[j] == -1) && secs_are_parallel && secs_are_close)
+                    {
+                        classification[j] = counter;
+                        groups[counter].push_back(j);
+                    }
+                }
+                counter++;
+            }
+        }
+        return groups;
+    }
+
     // Does a stable in-place sort of collinear street sections
     void orderCollinearSections(std::vector<StreetSection>& sections, const int used_axis)
     {
@@ -612,11 +619,10 @@ namespace street_finder
         vector<vector<cv::Point>> cnts;
         vector<Vec4i> hierarchy;
         cv::findContours(raw_mask, cnts, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
-        vector<vector<cv::Point>> filtered_cnts;
-        std::copy_if(
-            cnts.begin(), cnts.end(),
-            filtered_cnts.begin(), [](vector<cv::Point> cnt){return cv::contourArea(cnt) > 2000;}
-        );
+        vector<vector<cv::Point>> filtered_cnts(cnts.size());
+        auto it = std::copy_if(cnts.begin(), cnts.end(), filtered_cnts.begin(),
+                               [](auto cnt){return cv::contourArea(cnt) > 2000;});
+        filtered_cnts.resize(std::distance(filtered_cnts.begin(), it));
         Mat filtered_mask = cv::Mat::zeros(raw_mask.size(), CV_8U);
         cv::drawContours(filtered_mask, filtered_cnts, -1, 255, cv::FILLED);
         return filtered_mask;
@@ -629,16 +635,19 @@ namespace street_finder
 
     Mat getBlueTapeMask(const Mat& img)
     {
+        //std::cout << "Pegando mascara azul" << std::endl;
         return getTapeMask(img, cv::Scalar(85, 200, 40), cv::Scalar(105, 250, 255));
     }
 
     Mat getGreenTapeMask(const Mat& img)
     {
+        //std::cout << "Pegando mascara verde" << std::endl;
         return getTapeMask(img, cv::Scalar(40, 100, 60), cv::Scalar(60, 250, 255));
     }
 
     Mat getYellowTapeMask(const Mat& img)
     {
+        //std::cout << "Pegando mascara amarela" << std::endl;
         return getTapeMask(img, cv::Scalar(20, 130, 30), cv::Scalar(40, 190, 170));
     }
 

@@ -24,6 +24,7 @@ namespace geometry
         return angle;
     }
 
+    float segmentLength(const cv::Vec4f& seg);
     cv::Vec2f segmentHalfPoint(const cv::Vec4f& seg);
     float distSegments(const cv::Vec4f& seg1, const cv::Vec4f& seg2);
     bool segmentsIntersect(const cv::Vec4f& seg1, const cv::Vec4f& seg2);

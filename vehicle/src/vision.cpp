@@ -57,28 +57,43 @@ void Vision::getForwardCamImg()
 
 // Looks at the image and finds the streets
 // Returns a graph of the StreetSections identified
-vector<StreetSection> Vision::findStreets()
+pair<vector<StreetSection>, vector<StreetSection>> Vision::findStreets()
 {
+    //cout << "Procurando linhas" << endl;
+    
     // Finds the lines that go through the tapes in the image
     const auto [lines, lines_colors] = street_finder::findTapeLines(this->downward_img);
+    /*cout << "Calculou as linhas. Encontradas: " << lines.size() << endl;
+    for (unsigned int i = 0; i < lines.size(); i++)
+    {
+        cout << lines[i] << ' ' << int(lines_colors[i]) << endl;
+    }*/
     
     // Reverts the projection distortion, converting to StreetSection
     const vector<StreetSection> tape_sections = street_finder::undoProjectionDistortion(lines, lines_colors);
+    /*cout << "Reverteu a distorcao de perspectiva" << endl;
+    std::for_each(tape_sections.begin(), tape_sections.end(), [](auto sec){sec.print();});*/
 
     // Find all the possible street sections
     const vector<StreetSection> possible_sections = street_finder::findPossibleStreetSections(tape_sections);
+    cout << "Calculou todas as mini seções. Encontradas: " << possible_sections.size() << endl;
+    std::for_each(possible_sections.begin(), possible_sections.end(), [](auto sec){sec.print();});
 
     // Transforms overlapping sections into a single long section
     const vector<StreetSection> long_sections = street_finder::groupIntoLongSections(possible_sections);
+    /*cout << "Calculou todas as seções longas. Encontradas: " << long_sections.size() << endl;
+    std::for_each(long_sections.begin(), long_sections.end(), [](auto sec){sec.print();});*/
 
     // Break the sections where they intersect
     vector<StreetSection> final_sections = street_finder::breakIntersectingSections(long_sections);
+    /*cout << "Calculou as seções finais. Encontradas: " << final_sections.size() << endl;
+    std::for_each(final_sections.begin(), final_sections.end(), [](auto sec){sec.print();});*/
     
     // Link the sections
     buildSectionGraph(final_sections);
-    
-    //cout << "Juntou as seções."<< endl;
-    return final_sections;
+    //cout << "Juntou as seções" << endl;
+
+    return pair(tape_sections, final_sections);
 }
 
 cv::Mat Vision::getColorMask(const cv::Mat& img, const cv::Scalar min, const cv::Scalar max)
