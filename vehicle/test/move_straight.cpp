@@ -4,7 +4,7 @@
 
 //#define SPEED_TO_UPDATE_TIME 3
 #define REQUIRED_SPEED 200
-#define D_SPEED 0.0015
+#define D_SPEED 0.001
 
 Wheel *lw;
 Wheel *rw;

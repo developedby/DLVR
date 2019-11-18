@@ -23,6 +23,7 @@ class Movement {
         float lm_speed;
         float rm_speed;
         float required_speed;
+        bool is_to_move;
     public:
         Movement();
         void tick(void);

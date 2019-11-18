@@ -54,9 +54,10 @@ int main ()
     for(int i = 0; i<4; i++)
     {
         movement.goStraightMm(1, 500, 200);
-        gpioDelay(500000);
+        gpioDelay(2000000);
+        std::cout << "parei" <<std::endl;
         movement.turn(90);
-        gpioDelay(500000);
+        gpioDelay(1000000);
     }
         
     /*vision.getCamImg();

@@ -8,11 +8,7 @@
 #define LEFT_BALANCE    (1.0f - balance)
 #define RIGHT_BALANCE   (1.0f + balance) 
 #define CMATERIAL 1.0f
-#define D_SPEED 0.0015
-
-void tickPID(void* args) {
-	((Movement*)args)->tick();
-}
+#define D_SPEED 0.001
 
 void tickP(void* args) {
     ((Movement*)args)->calculateSpeed();
@@ -32,18 +28,36 @@ Movement::Movement() : left_pid(0), right_pid(1), left_wheel(0),  right_wheel(1)
     lm_speed = 0.5;
     rm_speed = 0.5;
     wheel_distance = consts::vehicle_wheel_distance;
-    gpioSetTimerFuncEx(9, consts::pid_T_ms, tickPID, this);
+
     gpioSetTimerFuncEx(8, 250, tickP, this);
+    is_to_move = false;
     
 }
 
 void Movement::turn(float degrees) {
-    lr = 450;
-    rr = 450;
-    r_dir = 2*(degrees > 0) - 1;
-    l_dir = -r_dir;                    //83.775804096
-    this->turn_ticks = roundf(CMATERIAL * (abs(degrees * 83.775804096)/(4*lr/consts::vehicle_wheel_distance)) / consts::pid_T_ms);
-    while(this->isTurning());
+    int moved_right = 0;
+    int moved_left = 0;
+    int total_moved = 0;
+	int r_previous_read = this->right_wheel.encoder.ticks;
+    int l_previous_read = this->left_wheel.encoder.ticks;
+    int value_to_turn = ((degrees/90)*20)/2;
+    float speed_to_turn = 0.5;
+    int r_dir = (degrees > 0) ? 1 : -1;
+    while(total_moved < value_to_turn)
+    {
+        if(moved_left < value_to_turn)
+            this->left_wheel.spin(-r_dir, speed_to_turn);
+        else
+            this->left_wheel.stop();
+        if(moved_right < value_to_turn)
+            this->right_wheel.spin(r_dir, speed_to_turn);
+        else
+            this->right_wheel.stop();
+        moved_right = this->right_wheel.encoder.ticks - r_previous_read;
+        moved_left = this->left_wheel.encoder.ticks - l_previous_read;
+        total_moved = (moved_right + moved_left)/2;
+    }
+    this->stop();
 }
 
 // Tries to move in a straight line.
@@ -51,9 +65,12 @@ void Movement::turn(float degrees) {
 // Speed is in milimeters per second
 // This function doesn't block execution
 void Movement::goStraight(int direction, float speed){
+    this->is_to_move = true;
     this->required_speed = speed;
     //Dir L = Dir R
     r_dir = l_dir = direction * (speed > 0);
+    this->left_wheel.spin(l_dir, lm_speed);
+    this->right_wheel.spin(r_dir, rm_speed);
 }
 
 
@@ -70,11 +87,11 @@ float Movement::goStraightMm(int direction, float mm, float speed=300)
     while((moved_left + moved_right) < 2*mm)
     {
         if (moved_left > mm)
-            lr = 0;
+            this->left_wheel.stop();
         else
             moved_left += this->left_wheel.mmMovedSinceLastCall();
         if (moved_right > mm)
-            rr = 0;
+            this->right_wheel.stop();
         else
             moved_right += this->right_wheel.mmMovedSinceLastCall();
     }
@@ -101,6 +118,7 @@ void Movement::stop()
     this->rr = 0;
     this->l_dir = 0;
     this->r_dir = 0;
+    this->is_to_move = false;
 }
 
 void Movement::tick(void) {
@@ -137,7 +155,7 @@ void Movement::tick(void) {
         this->initial_wheel_flag = !(this->initial_wheel_flag);
         if(this->turn_ticks >= 0) {
             if(this->turn_ticks == 0) {
-                this->goStraight(0, 0);
+                this->stop();
             }
             this->turn_ticks -= 1;
         }
@@ -168,8 +186,10 @@ bool Movement::isTurning(void) {
 
 void Movement::calculateSpeed(void)
 {
-    if(this->turn_ticks < 0)
+    if(this->is_to_move)
     {
+        std::cout << "l: " << this->left_wheel.getSpeed() << " send: "  << this->lm_speed << std::endl;
+        std::cout << "r: " << this->right_wheel.getSpeed() << " send: " << this->lm_speed << std::endl;
         int l_error = this->left_wheel.getSpeed() - this->required_speed;
         int r_error = this->right_wheel.getSpeed() - this->required_speed;
         this->lm_speed -= l_error*D_SPEED;
