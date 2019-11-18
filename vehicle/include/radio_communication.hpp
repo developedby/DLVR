@@ -9,8 +9,8 @@
 #include "constants.hpp"
 
 class RadioCommunication{
-    unsigned char received_data[constants::radio_width_data];
-    uint8_t last_address[constants::radio_width_address];
+    unsigned char received_data[consts::radio_width_data];
+    uint8_t last_address[consts::radio_width_address];
 
 public:
     SentMessage last_sended_message;

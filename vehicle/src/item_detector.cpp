@@ -4,8 +4,8 @@
 
 ItemDetector::ItemDetector()
 {
-    pin_read1 = constants::item_detector_pin1;
-    pin_read2 = constants::item_detector_pin2;
+    pin_read1 = consts::item_detector_pin1;
+    pin_read2 = consts::item_detector_pin2;
     gpioSetMode(pin_read1, PI_INPUT);
     gpioSetMode(pin_read2, PI_INPUT);
 }

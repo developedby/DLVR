@@ -70,12 +70,12 @@ vehicle: ./build/vehicle_run.o ./build/movement.o ./build/dc_motor.o ./build/enc
 	gcc -Wall -o ./build/vehicle_run ./build/vehicle_run.o ./build/movement.o ./build/dc_motor.o ./build/encoder.o ./build/wheel.o ./build/pidz.o ./build/vision.o ./build/street_finder.o ./build/geometry.o ./build/radio.o ./build/radio_communication.o ./build/lock.o ./build/item_detector.o ./build/intelligence.o ./build/vehicle.o ./build/delivery_box.o ./build/servo.o \
 		-lstdc++ -std=c++17 \
 		-lpigpio -lrt -lm -lpthread -lrf24-bcm -lraspicam -lraspicam_cv\
-		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lopencv_aruco \
+		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lopencv_aruco -lopencv_videoio\
 		-I../include -I/usr/local/include -I/usr/local/include/opencv4
 
 #teste seguir rua
-follow_road:  ./build/test_follow_road.o ./build/movement.o ./build/dc_motor.o ./build/encoder.o ./build/wheel.o ./build/pidz.o ./build/vision.o ./build/street_lines.o ./build/reduce_lines.o ./build/geometry.o ./build/street_section.o 
-	gcc -Wall -o ./build/test_follow_road ./build/test_follow_road.o ./build/movement.o ./build/dc_motor.o ./build/encoder.o ./build/wheel.o ./build/pidz.o ./build/vision.o ./build/street_lines.o ./build/reduce_lines.o ./build/geometry.o ./build/street_section.o \
+follow_road:  ./build/test_follow_road.o ./build/movement.o ./build/dc_motor.o ./build/encoder.o ./build/wheel.o ./build/pidz.o ./build/vision.o ./build/street_finder.o ./build/geometry.o 
+	gcc -Wall -o ./build/test_follow_road ./build/test_follow_road.o ./build/movement.o ./build/dc_motor.o ./build/encoder.o ./build/wheel.o ./build/pidz.o ./build/vision.o ./build/street_finder.o ./build/geometry.o \
 		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
 		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lraspicam -lraspicam_cv -lopencv_aruco -lopencv_videoio\
 		-I../include -I/usr/local/include -I/usr/local/include/opencv4

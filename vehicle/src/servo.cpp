@@ -5,7 +5,7 @@
 
 Servo::Servo()
 {
-    pwm_pin = constants::servo_pin;
+    pwm_pin = consts::servo_pin;
     assert(pwm_pin == 12 || pwm_pin == 13 || pwm_pin == 18 || pwm_pin == 19);
     if (pwm_pin == 12 || pwm_pin == 13)
         gpioSetMode(pwm_pin, PI_ALT0);

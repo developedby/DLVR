@@ -9,15 +9,15 @@ DCMotor::DCMotor(int motor_num)
 {
 	if(motor_num == 0)
 	{
-		pin_fwd = constants::left_motor_pin_fwd;
-		pin_bkwd = constants::left_motor_pin_bkwd;
-		pin_pwm = constants::left_motor_pin_pwm;
+		pin_fwd = consts::left_motor_pin_fwd;
+		pin_bkwd = consts::left_motor_pin_bkwd;
+		pin_pwm = consts::left_motor_pin_pwm;
 	}
 	else
 	{
-		pin_fwd = constants::right_motor_pin_fwd;
-		pin_bkwd = constants::right_motor_pin_bkwd;
-		pin_pwm = constants::right_motor_pin_pwm;
+		pin_fwd = consts::right_motor_pin_fwd;
+		pin_bkwd = consts::right_motor_pin_bkwd;
+		pin_pwm = consts::right_motor_pin_pwm;
 	}
 	assert(pin_pwm == 18 || pin_pwm == 19 || pin_pwm == 12 || pin_pwm == 13);
 	if (pin_pwm == 18 || pin_pwm == 19)

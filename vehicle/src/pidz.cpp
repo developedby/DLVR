@@ -2,14 +2,14 @@
 #include "constants.hpp"
 
 PIDZ::PIDZ(int pid_num) {
-    this->T = constants::pid_T_ms;
+    this->T = consts::pid_T_ms;
     if(pid_num == 0)
     {
-        this->tune(constants::pid_l_Kp, constants::pid_l_Ki, constants::pid_l_Kd);
+        this->tune(consts::pid_l_Kp, consts::pid_l_Ki, consts::pid_l_Kd);
     }
     else
     {
-        this->tune(constants::pid_r_Kp, constants::pid_r_Ki, constants::pid_r_Kd);
+        this->tune(consts::pid_r_Kp, consts::pid_r_Ki, consts::pid_r_Kd);
     }
     this->omin = 0.0f;
     this->omax =  1.0f;

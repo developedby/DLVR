@@ -11,11 +11,11 @@ Encoder::Encoder(int encoder_num) : ticks(0), last_measure(gpioTick()), sigma_sp
 {
     if(encoder_num == 0)
     {
-        pin_read = constants::left_encoder_pin;
+        pin_read = consts::left_encoder_pin;
     }
     else
     {
-        pin_read = constants::right_encoder_pin;
+        pin_read = consts::right_encoder_pin;
     }
     this->instances++;
     this->createSpatialWeights();

@@ -51,7 +51,15 @@ int main ()
     float required_distance = 110;
     bool stop = false;
     float previous_angle = 0;
-    vision.getCamImg();
+    for(int i = 0; i<4; i++)
+    {
+        movement.goStraightMm(1, 500, 200);
+        gpioDelay(500000);
+        movement.turn(90);
+        gpioDelay(500000);
+    }
+        
+    /*vision.getCamImg();
     found_streets = vision.findStreets();
     while(!stop) //andar 120 cm com 0 graus, virar para a rua da direita, andar mais 30
     {
@@ -189,7 +197,7 @@ int main ()
             movement.goStraightMm(1, 70, 500);
             gpioDelay(500000);
         }
-    }
+    }*/
     gpioTerminate();
     return 0;
 }
