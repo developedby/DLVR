@@ -181,7 +181,7 @@ namespace street_finder
         vector<StreetSection> long_secs;        
         // Group lines that can be potentially fused together
         const auto angle_groups = groupCollinearSections(short_secs, consts::max_theta_diff, consts::lane_width/4);
-        for(auto group: angle_groups)
+        /*for(auto group: angle_groups)
         {
             std::cout << "group: ";
             for (auto idx:group)
@@ -189,7 +189,7 @@ namespace street_finder
                 std::cout << idx << " ";
             }
             std::cout << std::endl;
-        }
+        }*/
         //cout << "Agrupou as linhas colineares" << endl;
         // For each group of collinear sections
         for (const auto& group: angle_groups)

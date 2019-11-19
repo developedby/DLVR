@@ -76,8 +76,8 @@ pair<vector<StreetSection>, vector<StreetSection>> Vision::findStreets()
 
     // Find all the possible street sections
     const vector<StreetSection> possible_sections = street_finder::findPossibleStreetSections(tape_sections);
-    cout << "Calculou todas as mini seções. Encontradas: " << possible_sections.size() << endl;
-    std::for_each(possible_sections.begin(), possible_sections.end(), [](auto sec){sec.print();});
+    //cout << "Calculou todas as mini seções. Encontradas: " << possible_sections.size() << endl;
+    //std::for_each(possible_sections.begin(), possible_sections.end(), [](auto sec){sec.print();});
 
     // Transforms overlapping sections into a single long section
     const vector<StreetSection> long_sections = street_finder::groupIntoLongSections(possible_sections);
