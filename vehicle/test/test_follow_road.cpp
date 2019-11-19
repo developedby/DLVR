@@ -28,13 +28,13 @@ float setAngleInRange(float angle, float precision)
 void goAhead(Movement& movement, float angle, float distance)
 {
     std:: cout << "girando com angulo " << angle <<std::endl;
-    if(std::abs(angle) > 5)
+    if(std::abs(angle) > 1)
     {
-        //movement.turn(angle/3);
+        movement.turn(angle);
     }
-    gpioDelay(500000);
+    //gpioDelay(500000);
     std::cout << "andando reto" <<std::endl;
-    //movement.goStraightMm(1, distance, 200);
+    movement.goStraightMm(1, distance, 200);
 }
 
 int main ()
@@ -52,7 +52,7 @@ int main ()
     std::vector<street_finder::StreetSection> found_tapes;
     float my_angle = 0;
     float ran_distance = 0;
-    float required_distance = 20;//110;
+    float required_distance = 100;//110;
     bool stop = false;
     float previous_angle = 0;
     /*for(int i = 0; i<4; i++)
@@ -120,7 +120,7 @@ int main ()
             }
         }
         
-        //choose close tape to compare later and get the real run distance
+        //choose close tape to compare later and get the real run distance //tem que tentar ordenar pq n esta funcionando
         float minimal_distance = 200;
         for (auto tape : horizontal_tape)
         {
@@ -155,10 +155,11 @@ int main ()
         }
         else //nao encontrou nenhuma rua horizontal
         {
+            std::cout << "girando pra ver se encontra uma linha" <<std::endl;
             if(my_angle > 0)
-                movement.turn(-2);
+                movement.turn(-15);
             else
-                movement.turn(2);
+                movement.turn(15);
         }       
         
         //correct the robot
@@ -227,7 +228,7 @@ int main ()
         if((close_tape.line[0] != 0) && (correction_tape.line[0] != 0))
         {
             float real_distance = (std::max(correction_tape.seg[1], correction_tape.seg[3]) - std::max(close_tape.seg[1], close_tape.seg[3])) * 100;
-            ran_distance = ran_distance - 10 + std::abs(real_distance);
+            //ran_distance = ran_distance - 10 + std::abs(real_distance);
             std::cout << "achei que andei 10 mas na verdade andei " << real_distance << std::endl;
         }
         std::cout << "ate agora andei " << ran_distance <<std::endl;

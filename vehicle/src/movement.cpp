@@ -40,9 +40,11 @@ void Movement::turn(float degrees) {
     int total_moved = 0;
 	int r_previous_read = this->right_wheel.encoder.ticks;
     int l_previous_read = this->left_wheel.encoder.ticks;
-    int value_to_turn = ((degrees/90)*20)/2;
+    int value_to_turn = std::ceil(((degrees/90)*20)/2);
+    value_to_turn = (value_to_turn > 0) ? value_to_turn : 1; 
     float speed_to_turn = 0.5;
     int r_dir = (degrees > 0) ? 1 : -1;
+    //std::cout << "value to turn " << value_to_turn <<std::endl;
     while(total_moved < value_to_turn)
     {
         if(moved_left < value_to_turn)
@@ -188,8 +190,8 @@ void Movement::calculateSpeed(void)
 {
     if(this->is_to_move)
     {
-        std::cout << "l: " << this->left_wheel.getSpeed() << " send: "  << this->lm_speed << std::endl;
-        std::cout << "r: " << this->right_wheel.getSpeed() << " send: " << this->lm_speed << std::endl;
+        //std::cout << "l: " << this->left_wheel.getSpeed() << " send: "  << this->lm_speed << std::endl;
+        //std::cout << "r: " << this->right_wheel.getSpeed() << " send: " << this->lm_speed << std::endl;
         int l_error = this->left_wheel.getSpeed() - this->required_speed;
         int r_error = this->right_wheel.getSpeed() - this->required_speed;
         this->lm_speed -= l_error*D_SPEED;
