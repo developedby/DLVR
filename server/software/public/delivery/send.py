@@ -22,6 +22,7 @@ async def main(websocket, path, open_sockets, script_cache, data = None):
                     delivery.send()
                     robot_path = objects.shortest_path(objects.city, delivery.origin, delivery.destination)
                     robot.route = robot_path
+                    robot_path = objects.path_to_directions(objects.city, robot_path, robot.orientation)
                     data2 = {"status_code": 200, "reason_message": "OK", "path": "/delivery/send", "message_body": {"path": robot_path}}
                     data2 = json.dumps(data2)
                     for login in logins:

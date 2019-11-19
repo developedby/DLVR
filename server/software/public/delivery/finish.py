@@ -26,6 +26,7 @@ async def main(websocket, path, open_sockets, script_cache, data = None):
                         if robot_path == None or len(route) < len(robot_path):
                             robot_path = route
                     robot.route = robot_path
+                    robot_path = objects.path_to_directions(objects.city, robot_path, robot.orientation)
                     data2 = {"status_code": 200, "reason_message": "OK", "path": "/delivery/finish", "message_body": {"path": robot_path}}
                     await open_sockets["robots"][robot.id].send(json.dumps(data2))
                     data2["message_body"] = "true"
