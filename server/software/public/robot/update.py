@@ -6,7 +6,7 @@ async def main(websocket, path, open_sockets, script_cache, data = None):
     if not data:
         data = await websocket.recv()
         data = json.loads(data)
-    if "id" in data and "signature" in data and "timestamp" in data and ("state" in data or "item" in data or "qr" in data or "speed" in data or "curve_radius" in data or "left_encoder" in data or "right_encoder" in data or "ultrasound" in data):
+    if "id" in data and "signature" in data and "timestamp" in data and ("state" in data or "item" in data or "qr" in data or "direction" in data or "speed" in data or "curve_radius" in data or "left_encoder" in data or "right_encoder" in data or "ultrasound" in data):
         resp = {
             "status_code": 200,
             "reason_message": "OK"
@@ -22,6 +22,8 @@ async def main(websocket, path, open_sockets, script_cache, data = None):
                 if "qr" in data:
                     if data["qr"] < 32:
                         robot.position = data["qr"]
+                if "direction" in data:
+                    robot.orientation += objects.Direction.fromstr(data["direction"])
                 if "speed" in data:
                     robot.speed = data["speed"]
                 if "curve_radius" in data:

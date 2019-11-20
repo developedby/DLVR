@@ -10,6 +10,7 @@ import email.mime.multipart
 import email.mime.text
 import smtplib
 import importlib
+import enum
 
 def full_class_name(o):
     module = o.__class__.__module__
@@ -53,49 +54,107 @@ def send_email(email_address, first_name, last_name, number):
         module.error(e)
     return False
 
+class Direction(enum.Enum):
+    FRONT = 0
+    LEFT = 1
+    BACK = 2
+    RIGHT = 3
+
+    @classmethod
+    def fromstr(cls, str):
+        if str == 'front':
+            return cls(0)
+        elif str == 'left':
+            return cls(1)
+        elif str == 'back':
+            return cls(2)
+        elif str == 'right':
+            return cls(3)
+
+    def __str__(self):
+        if int(self) == 0:
+            return 'front'
+        elif int(self) == 1:
+            return 'left'
+        elif int(self) == 2:
+            return 'back'
+        elif int(self) == 3:
+            return 'right'
+
+    def __int__(self):
+        return self.value
+
+    def __eq__(self, other):
+        return int(self) == int(other) % 4
+
+    def __neg__(self):
+        return Direction(-int(self) % 4)
+
+    def __add__(self, other):
+        return Direction((int(self) + int(other)) % 4)
+
+    def __sub__(self, other):
+        return self + (-other)
+
+    def __radd__(self, other):
+        return self + other
+
+    def __rsub__(self, other):
+        return (-self) + other
+
 city = {
-    1: {2},
-    2: {1, 3, 10},
-    3: {2, 4},
-    4: {3},
-    5: {3, 6},
-    6: {7, 8},
-    7: {6},
-    8: {9, 12},
-    9: {8},
-    10: {24, 16},
-    11: {10, 5},
-    12: {11, 13},
-    13: {12},
-    14: {12, 15},
-    15: {14},
-    16: {21, 17},
-    17: {11, 18},
-    18: {14, 19},
-    19: {18},
-    20: {21},
-    21: {20, 22},
-    22: {17, 21, 23},
-    23: {22},
-    24: {25},
-    25: {26},
-    26: {27},
-    27: {28},
-    28: {29},
-    29: {16}
+    1: {2: Direction.RIGHT},
+    2: {1: Direction.LEFT, 3: Direction.RIGHT, 10: Direction.BACK},
+    3: {2: Direction.LEFT, 4: Direction.RIGHT},
+    4: {3: Direction.LEFT},
+    5: {3: Direction.FRONT, 6: Direction.RIGHT},
+    6: {7: Direction.RIGHT, 8: Direction.BACK},
+    7: {6: Direction.LEFT},
+    8: {9: Direction.RIGHT, 12: Direction.BACK},
+    9: {8: Direction.LEFT},
+    10: {24: Direction.LEFT, 16: Direction.BACK},
+    11: {10: Direction.LEFT, 5: Direction.FRONT},
+    12: {11: Direction.LEFT, 13: Direction.RIGHT},
+    13: {12: Direction.LEFT},
+    14: {12: Direction.FRONT, 15: Direction.RIGHT},
+    15: {14: Direction.LEFT},
+    16: {21: Direction.BACK, 17: Direction.RIGHT},
+    17: {11: Direction.FRONT, 18: Direction.RIGHT},
+    18: {14: Direction.FRONT, 19: Direction.RIGHT},
+    19: {18: Direction.LEFT},
+    20: {21: Direction.RIGHT},
+    21: {20: Direction.LEFT, 22: Direction.RIGHT},
+    22: {17: Direction.FRONT, 21: Direction.LEFT, 23: Direction.RIGHT},
+    23: {22: Direction.LEFT},
+    24: {25: Direction.LEFT},
+    25: {26: Direction.LEFT},
+    26: {30: Direction.BACK},
+    27: {28: Direction.RIGHT},
+    28: {29: Direction.RIGHT},
+    29: {16: Direction.RIGHT},
+    30: {27: Direction.BACK, 31: Direction.RIGHT},
+    31: {30: Direction.LEFT},
 }
 
-garages = [1, 4, 7, 9, 13, 15, 19, 20, 23]
+garages = [1, 4, 20, 23]
 
 def shortest_path(graph, start, goal):
     queue = [(start, [start])]
     while queue:
         (vertex, path) = queue.pop(0)
-        for next in graph[vertex] - set(path):
+        for next in set(graph[vertex]) - set(path):
             if next == goal:
                 return path + [next]
             else:
                 queue.append((next, path + [next]))
+
+def path_to_directions(graph, path, orientation):
+    ret = []
+    for origin, destination in zip(path[:-1], path[1:]):
+        direction = graph[origin][destination] - orientation
+        orientation = graph[origin][destination]
+        ret.append((str(direction), destination))
+    return ret
 
 class ScriptCache:
     def __init__(self):
@@ -564,6 +623,37 @@ class Robot:
             cursor = connection.cursor(prepared = True)
             query = "UPDATE Robot SET position = %s WHERE id = %s"
             values = (value, self._id)
+            try:
+                cursor.execute(query, values)
+                connection.commit()
+            except Exception as e:
+                module.error(e)
+                connection.rollback()
+            finally:
+                cursor.close()
+
+    @property
+    def orientation(self):
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "SELECT orientation FROM Robot WHERE id = %s"
+            values = (self._id,)
+            try:
+                cursor.execute(query, values)
+                result = cursor.fetchone()
+                if result:
+                    return Direction(result[0])
+            except Exception as e:
+                module.error(e)
+            finally:
+                cursor.close()
+
+    @orientation.setter
+    def orientation(self, value):
+        with connect.connect() as connection:
+            cursor = connection.cursor(prepared = True)
+            query = "UPDATE Robot SET orientation = %s WHERE id = %s"
+            values = (int(value), self._id)
             try:
                 cursor.execute(query, values)
                 connection.commit()
@@ -1246,12 +1336,12 @@ class Delivery:
                 finally:
                     cursor.close()
 
-    def response(self, destination, robot):
+    def response(self, position, destination, robot):
         if self._id != None:
             with connect.connect() as connection:
                 cursor = connection.cursor(prepared = True)
-                query = "UPDATE Delivery SET state = 1, destination = %s, robot = %s WHERE id = %s"
-                values = (destination, robot, self._id)
+                query = "UPDATE Delivery SET state = 1, path = %s, destination = %s, robot = %s WHERE id = %s"
+                values = (json.dumps([position]), destination, robot, self._id)
                 try:
                     cursor.execute(query, values)
                     connection.commit()
