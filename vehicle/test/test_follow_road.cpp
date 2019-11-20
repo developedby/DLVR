@@ -65,7 +65,7 @@ int main ()
     }*/
         
     vision.getDownwardCamImg();
-    std::tie(found_tapes, found_streets) = vision.findStreets();
+    auto [found_tapes, found_streets] = vision.findStreets();
     while(!stop) //andar 120 cm com 0 graus, virar para a rua da direita, andar mais 30
     {
         street_finder::StreetSection chosen_street;
@@ -74,8 +74,10 @@ int main ()
         street_finder::StreetSection correction_tape;
         cv::Point2f chosen_point;
         cv::Point2f correction_point;
+        
         previous_streets = found_streets;
         previous_tapes = found_tapes;
+        
         //choose the street to follow
         std::vector<int> horizontal_street;
         std::vector<int> vertical_street;
@@ -108,17 +110,45 @@ int main ()
             }
         }
         
-        //choose street to follow
-        float further_point = 0;
-        for (auto street : horizontal_street)
+        // Choose the next point to aim for
+        std::vector<Vec2f> horizontal_street_pts;
+        for (const auto street: horizontal_street)
         {
-            float fair = std::max(previous_streets[street].seg[3], previous_streets[street].seg[1]);
-            if (fair > further_point)
-            {
-                chosen_street =  previous_streets[street];
-                further_point = fair;
-            }
+            horizontal_street_pts.emplace_back(previous_street[street].seg[0],
+                                               previous_street[street].seg[1]);
+            horizontal_street_pts.emplace_back(previous_street[street].seg[2],
+                                               previous_street[street].seg[3]);
         }
+        std::sort(horizontal_street_pts.begin(), horizontal_street_pts.end(),
+                  [](auto pt1, auto pt2){return pt1[1] < pt2[1];});
+        
+        cv::Vec4f avg_seg(0, 0, 0, 0);
+        int num_pts = len(horizontal_street_pts);
+        int pt_counter = 0;
+        for (const auto& pt : horizontal_street_pts)
+        {
+            if (pt_counter < num_pts/2)
+            {
+                avg_seg[0] += pt[0];
+                avg_seg[1] += pt[1];
+            }
+            else
+            {
+                avg_seg[2] += pt[0];
+                avg_seg[3] += pt[1];
+            }
+            pt_counter++;
+        }
+        if (num_pts)
+        {
+            avg_seg[0] /= num_pts/2;
+            avg_seg[1] /= num_pts/2;
+            avg_seg[2] /= num_pts/2;
+            avg_seg[3] /= num_pts/2;
+        }
+        
+        avg_line = geometry::segmentToLine(avg_seg);
+        // Calcular rho^2 + u^2 = d^2
         
         //choose close tape to compare later and get the real run distance //tem que tentar ordenar pq n esta funcionando
         float minimal_distance = 200;
