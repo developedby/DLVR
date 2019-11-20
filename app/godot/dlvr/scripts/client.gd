@@ -1,22 +1,29 @@
 extends Node
 
+
 class_name Client
 
+
 signal packet_received_or_timeout(status, data)
+signal packet_received(data)
 signal connected_or_timeout(status)
 signal server_disconnected()
+
 
 enum {
 	OK = 0,
 	TIMEOUT = 1
 }
 
+
 var _ws = WebSocketClient.new()
 var _write_mode = WebSocketPeer.WRITE_MODE_TEXT
 var last_connected_client = 0
 
+
 export(float) var connection_timeout:float = 1.0 setget set_connection_timeout
 export(float) var received_timeout:float = 1.0 setget set_received_timeout
+
 
 func _init():
 	_ws.connect("connection_established", self, "_client_connected")
@@ -32,7 +39,9 @@ func _init():
 
 
 func _ready():
+	# warning-ignore:return_value_discarded
 	$connection_timer.connect("timeout", self, "_connection_timeout")
+	# warning-ignore:return_value_discarded
 	$receive_timer.connect("timeout", self, "_received_timeout")
 	set_connection_timeout(connection_timeout)
 	set_received_timeout(received_timeout)
@@ -82,6 +91,7 @@ func _client_received(p_id = 1):
 	var is_string = _ws.get_peer(p_id).was_string_packet()
 	var data = Utils.decode_data(packet, is_string)
 	emit_signal("packet_received_or_timeout", OK, data)
+	emit_signal("packet_received", data)
 	Utils.print_log( "Received data. BINARY: %s: %s" % [not is_string, data])
 
 
@@ -119,6 +129,7 @@ func send_data(data, peer=1, write_mode=WebSocketPeer.WRITE_MODE_TEXT):
 
 func set_write_mode(mode):
 	_write_mode = mode
+
 
 func start_receive_timer():
 	$receive_timer.start(received_timeout)

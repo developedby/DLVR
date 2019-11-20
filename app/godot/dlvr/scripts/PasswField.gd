@@ -12,10 +12,11 @@ var valid := false
 export(int) var min_size = -1
 export(NodePath) var passw_equals:NodePath = "" setget set_passw_equals
 
+func _init():
+	hint_tooltip = "password"
 
 func _ready():
 	set_passw_equals(passw_equals)
-
 
 func set_valid():
 	get_stylebox("focus").border_color = VALID_COLOR
