@@ -128,10 +128,12 @@ city = {
     23: {22: Direction.LEFT},
     24: {25: Direction.LEFT},
     25: {26: Direction.LEFT},
-    26: {27: Direction.BACK},
+    26: {30: Direction.BACK},
     27: {28: Direction.RIGHT},
     28: {29: Direction.RIGHT},
-    29: {16: Direction.RIGHT}
+    29: {16: Direction.RIGHT},
+    30: {27: Direction.BACK, 31: Direction.RIGHT},
+    31: {30: Direction.LEFT},
 }
 
 garages = [1, 4, 20, 23]
