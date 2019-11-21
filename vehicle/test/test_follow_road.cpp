@@ -7,6 +7,8 @@
 #include "geometry.hpp"
 #include "constants.hpp"
 
+constexpr float dist_per_step_m = 0.1;
+
 float setAngleInRange(float angle, float precision)
 {
     float result_angle = angle;
@@ -23,7 +25,6 @@ float setAngleInRange(float angle, float precision)
     }
     return (result_angle * 180) / M_PI;
 }
-
 
 void goAhead(Movement& movement, float angle, float distance)
 {
@@ -55,14 +56,6 @@ int main ()
     float required_distance = 100;//110;
     bool stop = false;
     float previous_angle = 0;
-    /*for(int i = 0; i<4; i++)
-    {
-        movement.goStraightMm(1, 500, 200);
-        gpioDelay(2000000);
-        std::cout << "parei" <<std::endl;
-        movement.turn(90);
-        gpioDelay(1000000);
-    }*/
         
     vision.getDownwardCamImg();
     auto [found_tapes, found_streets] = vision.findStreets();
@@ -81,7 +74,7 @@ int main ()
         //choose the street to follow
         std::vector<int> horizontal_street;
         std::vector<int> vertical_street;
-        std::vector<int> horizontal_tape;
+        std::vector<street_finder::StreetSection> prev_tape_sorted_x;
         std::cout << "escolhendo a rua para seguir"<<std::endl;
         
         //classify streets by angle
@@ -98,19 +91,23 @@ int main ()
                 vertical_street.push_back(i);
         }
         
-        //get horizontal tapes
-        for (unsigned int i=0; i < previous_tapes.size(); i++)
+        //get horizontal tapes and sorted by x
+        for (auto tape: previous_tapes)
         {
-            float angle = setAngleInRange(previous_tapes[i].line[1], (20*M_PI)/180);
+            float angle = setAngleInRange(tape.line[1], (20*M_PI)/180);
             //std::cout << previous_tapes[i].line << ' ' << previous_tapes[i].seg <<" " << " angulo eh " <<angle <<std::endl;
             if(std::abs(my_angle - angle) < 40)
             {
-                horizontal_tape.push_back(i);
-                //std::cout << "essa fita eh horizontal" << std::endl;
+                if(tape.seg[0] < 0)
+                    prev_tape_sorted_x[0].emplace_back(tape);
+                else
+                    prev_tape_sorted_x[1].emplace_back(tape);
             }
         }
         
         // Choose the next point to aim for
+        // Find the average line of all the lines considered to be parallel
+        // Separate the segment points
         std::vector<Vec2f> horizontal_street_pts;
         for (const auto street: horizontal_street)
         {
@@ -119,11 +116,13 @@ int main ()
             horizontal_street_pts.emplace_back(previous_street[street].seg[2],
                                                previous_street[street].seg[3]);
         }
+        // Sort the points
         std::sort(horizontal_street_pts.begin(), horizontal_street_pts.end(),
                   [](auto pt1, auto pt2){return pt1[1] < pt2[1];});
-        
+        // Separate the points in two groups, calculating the average of each group
+        // The segment is the two average points
         cv::Vec4f avg_seg(0, 0, 0, 0);
-        int num_pts = len(horizontal_street_pts);
+        int num_pts = horizontal_street_pts.size();
         int pt_counter = 0;
         for (const auto& pt : horizontal_street_pts)
         {
@@ -146,12 +145,47 @@ int main ()
             avg_seg[2] /= num_pts/2;
             avg_seg[3] /= num_pts/2;
         }
+        const Vec2f avg_line = geometry::segmentToLine(avg_seg);
+        // Project that line and find the point on it that is the distance the vehicle wants to move
+        // The line is defined as 'pt0 + u*delta'
+        const Vec2f pt0(avg_line[0]*cos(avg_line[1]), avg_line[0]*sin(avg_line[1]));
+        const Vec2f delta(-sin(avg_line[1]), cos(avg_line[1]));
+        const float u = norm(avg_line[0], dist_per_step_m);
+        const Vec2f next_pt = (delta[1] > 0) ? (pt0 + u*delta) : (pt0 - u*delta);
         
-        avg_line = geometry::segmentToLine(avg_seg);
-        // Calcular rho^2 + u^2 = d^2
+        float angle = atan2(next_point[1], next_point[0]) * (180/M_PI) - 90;
+        std::cout << "Escolhi a rua " << avg_line << ' ' << avg_seg << " angulo: " << angle << std::endl;
+            
+        previous_angle = my_angle;
+        if(angle >= 0)
+            my_angle = angle;
+        else if((angle + 180) < std::abs(angle))
+            my_angle = (angle + 180);
+        else
+            my_angle = angle;
         
-        //choose close tape to compare later and get the real run distance //tem que tentar ordenar pq n esta funcionando
+        //choose close tape to compare later and get the real run distance
+        //tem que tentar ordenar pq n esta funcionando
         float minimal_distance = 200;
+        std::sort(prev_tape_sorted_x[0].begin(), prev_tape_sorted_x[0].end(),
+                  [](auto sec1, auto sec2)
+                  {
+                      const float y1 = (sec1.seg[3] > sec1.seg[1]) ? sec1.seg[1] : sec1.seg[3];
+                      const float y2 = (sec2.seg[3] > sec2.seg[1]) ? sec2.seg[1] : sec2.seg[3];
+                      return y1 < y2;
+                  });
+          
+        std::sort(prev_tape_sorted_x[1].begin(), prev_tape_sorted_x[1].end(),
+                  [](auto sec1, auto sec2)
+                  {
+                      const float y1 = (sec1.seg[3] > sec1.seg[1]) ? sec1.seg[1] : sec1.seg[3];
+                      const float y2 = (sec2.seg[3] > sec2.seg[1]) ? sec2.seg[1] : sec2.seg[3];
+                      return y1 < y2;
+                  });
+        for (auto tape : previous_tape)
+        {
+            
+        }
         for (auto tape : horizontal_tape)
         {
             float distance = std::min(previous_tapes[tape].seg[1], previous_tapes[tape].seg[3]);
@@ -164,24 +198,11 @@ int main ()
         std::cout <<"fita mais proxima: " << int(close_tape.color) << " "<<close_tape.seg <<std::endl; 
         
         //follow street
-        if(chosen_street.line[0] != 0)
+        if(num_pts)
         {
-            if(chosen_street.seg[3] > chosen_street.seg[1])
-                chosen_point = cv::Point2f(chosen_street.seg[2], chosen_street.seg[3]);
-            else
-                chosen_point = cv::Point2f(chosen_street.seg[0], chosen_street.seg[1]);
-            float angle = atan2(chosen_point.y, chosen_point.x) * (180/M_PI) - 90;
-            std::cout << "Escolhi a rua " << int(chosen_street.color) << ' ' << chosen_street.line << ' ' << chosen_street.seg << " angulo: " << angle << std::endl ;
-            
-            previous_angle = my_angle;
-            if(angle >= 0)
-                my_angle = angle;
-            else if((angle + 180) < std::abs(angle))
-                my_angle = (angle + 180);
-            else
-                my_angle = angle;
             ran_distance += 10;
             goAhead(movement, my_angle, 70);
+            movement.turn(-(my_angle - avg_line[1]));
         }
         else //nao encontrou nenhuma rua horizontal
         {
@@ -265,31 +286,7 @@ int main ()
         if(ran_distance >= required_distance)
             stop = true;
     }
-    /*bool found = false;
-    while(!found)
-    {
-        vision.getTopCamImg();
-        std::vector<int> ids;
-        std::vector<std::vector<cv::Point2f>> positions;
-        std::tie(ids, positions) = vision.findARMarkers();
-        for(unsigned int i=0; i < ids.size(); i++)
-        {
-            if(ids[i] == 1)
-            {
-                found = true;
-                break;
-            }
-        }
-        movement.turn(5);
-        gpioDelay(500000);
-        if(found)
-        {
-            movement.goStraightMm(1, 70, 500);
-            gpioDelay(500000);
-            movement.goStraightMm(1, 70, 500);
-            gpioDelay(500000);
-        }
-    }*/
+
     gpioTerminate();
     return 0;
 }
