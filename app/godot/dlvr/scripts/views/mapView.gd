@@ -8,6 +8,7 @@ enum STATE {
 	TRACKING_ORIGIN,
 	WAITING_SEND,
 	TRACKING,
+	ARRIVED,
 	DELIVERY_REQUESTED,
 	SETTING_CURRENT_LOCATION,
 }
@@ -25,6 +26,7 @@ var current_state = STATE.IDLE setget set_state
 var origin:int = -1
 var destination:int = -1
 var last_request_id = -1
+var qr_id = -1
 
 func _ready():
 	DLVR.connect("name_changed", self, "_on_name_changed")
@@ -57,25 +59,39 @@ func _on_packet_received(data_r):
 					else:
 						self.current_state = STATE.REFUSED
 			elif resp["path"] == "/robot/update":
-				if current_state == STATE.TRACKING:
-					if ("message_body" in resp) and ("position" in resp["message_body"]):
-						var pid = resp["message_body"]["position"]
+				if ("message_body" in resp) and ("position" in resp["message_body"]):			
+					var pid = resp["message_body"]["position"]
+					if current_state == STATE.TRACKING:
 						var n = get_node("city/node%d"%pid)
 						if n:
 							$pointer_tracking.position = n.positon
 							$pointer_tracking.pop(pid)
-					if current_client == CLIENT_TYPE.RECEIVER:
-						pass
-				elif current_state == STATE.TRACKING_ORIGIN:
-					if ("message_body" in resp) and ("position" in resp["message_body"]):
-						var pid = resp["message_body"]["position"]
+						if (current_client == CLIENT_TYPE.RECEIVER) and \
+						   ("state" in resp["message_body"]) and \
+						   (resp["message_body"]["state"] == 1) and \
+						   (pid == destination):
+							data = {"path": "/delivery/qr", "cookie": DLVR.cookie, "id": last_request_id}
+							DLVR.client.send_data(JSON.print(data))
+							var r = yield(DLVR.client, "packet_received")
+							while r is GDScriptFunctionState:
+								r = yield(r, "completed")
+							json_parser = JSON.parse(r)
+							if json_parser.error == OK:
+								resp = json_parser.result
+								if resp["status_code"] == 200:
+									qr_id = resp["message_body"]
+							self.current_state = STATE.ARRIVED
+					elif current_state == STATE.TRACKING_ORIGIN:
 						var n = get_node("city/node%d"%pid)
 						if n:
 							$pointer_tracking.position = n.positon
 							$pointer_tracking.pop(pid)
-					if current_client == CLIENT_TYPE.SENDER:
-						self.current_state = STATE.WAITING_SEND
-			#TODO Finish
+						if (pid == origin) and (current_client == CLIENT_TYPE.SENDER):
+							Utils.print_log("Robot arrive at origin")
+							self.current_state = STATE.WAITING_SEND
+			elif resp["path"] == "/delivery/finish":
+				self.current_state = STATE.IDLE
+				self.current_clien = CLIENT_TYPE.NONE
 
 func _on_house_pressed(id):
 	if current_state in [STATE.IDLE, STATE.ORIGIN_SET]:
@@ -135,7 +151,9 @@ func _on_confirm_button_pressed():
 			var r = yield(DLVR.client, "packet_received_or_timeout")
 			while r is GDScriptFunctionState:
 				r = yield(r, "completed")
-			var jsonparser = JSON.parse(r)
+			if r[0] != Client.OK:
+				return
+			var jsonparser = JSON.parse(r[1])
 			if jsonparser.error == OK:
 				var resp = jsonparser.result
 				if (resp["status_code"] == 200) and (resp["message_body"] == "true"):
@@ -155,7 +173,9 @@ func _on_confirm_button_pressed():
 		var r = yield(DLVR.client, "packet_received_or_timeout")
 		while r is GDScriptFunctionState:
 			r = yield(r, "completed")
-		var jsonparser = JSON.parse(r)
+		if r[0] != Client.OK:
+			return
+		var jsonparser = JSON.parse(r[1])
 		if jsonparser.error == OK:
 			var resp = jsonparser.result
 			if (resp["status_code"] == 200) and (resp["message_body"] == "true"):
@@ -173,4 +193,3 @@ func set_state(val):
 	#	$pointer_destination.unpop()
 	#	$pointer_origin.unpop()
 	emit_signal("state_changed", val)
-
