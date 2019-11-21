@@ -13,11 +13,19 @@ func _on_state_changed(val):
 		$email.visible = false
 		$cancel_button.visible = false
 		$confirm_button.visible = false
+		$send_button.visible = false
 	elif val == parent.STATE.ORIGIN_SET:
 		$email.visible = true
 		$cancel_button.visible = true
 		$confirm_button.visible = true
+		$send_button.visible = false
 	elif val == parent.STATE.SETTING_CURRENT_LOCATION:
 		$email.visible = false
 		$cancel_button.visible = false
 		$confirm_button.visible = true
+		$send_button.visible = false
+	elif val == parent.STATE.WAITING_SEND:
+		$email.visible = false
+		$cancel_button.visible = false
+		$confirm_button.visible = false
+		$send_button.visible = true

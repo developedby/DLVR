@@ -3,7 +3,7 @@ extends Node2D
 
 
 export(int,"origin","destination","tracking") var pointer_type:int = 0 setget set_pointer
-
+var point_id:int = -1
 
 func _ready():
 	pass
@@ -20,9 +20,12 @@ func set_pointer(val):
 	pointer_type = val
 	update()
 
-func pop():
+func pop(val=null):
 	$anim.play("pop")
+	if (val as int) != null:
+		point_id = (val as int)
 
 func unpop():
+	point_id = -1
 	$anim.play("unpop")
 	yield($anim, "animation_finished")

@@ -15,7 +15,6 @@ var valid := false
 func _init():
 	hint_tooltip = "email"
 
-
 func _ready():
 	_re = RegEx.new()
 	# warning-ignore: return_value_discarded

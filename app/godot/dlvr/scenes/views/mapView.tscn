@@ -55,14 +55,21 @@ script = ExtResource( 2 )
 margin_right = 720.0
 margin_bottom = 1280.0
 
+[node name="Label" type="Label" parent="."]
+margin_top = 125.0
+margin_right = 720.0
+margin_bottom = 180.0
+text = "TRACKING_KS"
+align = 1
+
 [node name="toolBar" type="Control" parent="."]
-editor/display_folded = true
 margin_right = 720.0
 margin_bottom = 100.0
 
 [node name="background" type="ColorRect" parent="toolBar"]
+margin_top = 0.949997
 margin_right = 720.0
-margin_bottom = 100.0
+margin_bottom = 100.95
 color = Color( 0.752941, 0.8, 0.854902, 1 )
 
 [node name="Label" type="Label" parent="toolBar"]
@@ -288,7 +295,6 @@ pointer_type = 2
 position = Vector2( 1174.95, 806.28 )
 
 [node name="delivery_menu" type="Control" parent="."]
-editor/display_folded = true
 margin_right = 40.0
 margin_bottom = 40.0
 script = ExtResource( 9 )
@@ -316,8 +322,14 @@ margin_right = 340.0
 margin_bottom = 1215.0
 text = "CONFIRM_KS"
 
+[node name="send_button" type="Button" parent="delivery_menu"]
+margin_left = 180.0
+margin_top = 1135.0
+margin_right = 500.0
+margin_bottom = 1215.0
+text = "SEND_KS"
+
 [node name="confirm_window" type="Control" parent="."]
-editor/display_folded = true
 visible = false
 margin_left = 20.0
 margin_top = 480.0
@@ -358,6 +370,7 @@ rect_min_size = Vector2( 200, 50 )
 text = "NO_KS"
 
 [node name="refused_window" type="Control" parent="."]
+editor/display_folded = true
 margin_left = 20.0
 margin_top = 480.0
 margin_right = 60.0
@@ -394,6 +407,7 @@ text = "OK"
 [connection signal="pressed" from="leftBar/debug_close" to="." method="_on_debug_close_pressed"]
 [connection signal="pressed" from="delivery_menu/cancel_button" to="." method="_on_cancel_button_pressed"]
 [connection signal="pressed" from="delivery_menu/confirm_button" to="." method="_on_confirm_button_pressed"]
+[connection signal="pressed" from="delivery_menu/send_button" to="." method="_on_send_button_pressed"]
 [connection signal="pressed" from="confirm_window/yes" to="confirm_window" method="_on_yes_pressed"]
 [connection signal="pressed" from="confirm_window/no" to="confirm_window" method="_on_no_pressed"]
 [connection signal="pressed" from="refused_window/ok" to="refused_window" method="_on_ok_pressed"]

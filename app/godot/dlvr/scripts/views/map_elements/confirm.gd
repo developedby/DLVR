@@ -1,6 +1,5 @@
 extends Control
 
-export var id:int = -1 setget set_id
 onready var parent = get_parent()
 
 func _ready():
@@ -14,11 +13,7 @@ func _on_state_changed(state):
 		visible = false
 
 func _draw():
-	$label.text = ("%d " + tr("DLVR_REQ_MEM_KS")) % id
-
-func set_id(val):
-	id = val
-	update()
+	$label.text = tr("DLVR_REQ_MEM_KS")
 
 func _on_yes_pressed():
 	parent.current_state = parent.STATE.SETTING_CURRENT_LOCATION
