@@ -1,4 +1,4 @@
-#include "street_finder.hpp"
+#include "streets.hpp"
 #include <cmath>
 #include <iostream>
 #include <limits>
@@ -22,7 +22,7 @@ using cv::Mat;
 using cv::Scalar;
 using cv::Point2f;
 
-namespace street_finder
+namespace streets
 {
     void StreetSection::print()
     {

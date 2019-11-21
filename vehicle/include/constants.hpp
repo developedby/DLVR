@@ -59,6 +59,10 @@ namespace consts
 	float constexpr pid_r_Ki = 0.0018;
 	float constexpr pid_r_Kd = 0.0;
 	float constexpr pid_T_ms = 100;
+	
+	// Intelligence
+	float constexpr turn_angle_threshold = 5.0;
+	float constexpr step_size_mm = 100;
 }
 
 #endif

@@ -7,7 +7,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/aruco.hpp>
 #include <opencv2/videoio.hpp>
-#include "street_finder.hpp"
+#include "streets.hpp"
 
 class Vision
 {
@@ -22,7 +22,7 @@ class Vision
 		Vision();
 		void getDownwardCamImg();
 		void getForwardCamImg();
-		std::pair<std::vector<street_finder::StreetSection>, std::vector<street_finder::StreetSection>> findStreets();
+		std::pair<std::vector<streets::StreetSection>, std::vector<streets::StreetSection>> findStreets();
 		bool isTrafficLightRed();
 		std::pair<std::vector<int>, std::vector<std::vector<cv::Point2f>>> findARMarkers();
 };

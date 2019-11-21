@@ -10,14 +10,14 @@
 #include <opencv2/aruco.hpp>
 #include <opencv2/videoio.hpp>
 #include "constants.hpp"
-#include "street_finder.hpp"
+#include "streets.hpp"
 #include "geometry.hpp"
 
 using std::vector;
 using std::pair;
 using std::cout;
 using std::endl;
-using street_finder::StreetSection;
+using streets::StreetSection;
 
 Vision::Vision() :
     downward_cam(), forward_cam(),
@@ -62,7 +62,7 @@ pair<vector<StreetSection>, vector<StreetSection>> Vision::findStreets()
     //cout << "Procurando linhas" << endl;
     
     // Finds the lines that go through the tapes in the image
-    const auto [lines, lines_colors] = street_finder::findTapeLines(this->downward_img);
+    const auto [lines, lines_colors] = streets::findTapeLines(this->downward_img);
     /*cout << "Calculou as linhas. Encontradas: " << lines.size() << endl;
     for (unsigned int i = 0; i < lines.size(); i++)
     {
@@ -70,22 +70,22 @@ pair<vector<StreetSection>, vector<StreetSection>> Vision::findStreets()
     }*/
     
     // Reverts the projection distortion, converting to StreetSection
-    const vector<StreetSection> tape_sections = street_finder::undoProjectionDistortion(lines, lines_colors);
+    const vector<StreetSection> tape_sections = streets::undoProjectionDistortion(lines, lines_colors);
     /*cout << "Reverteu a distorcao de perspectiva" << endl;
     std::for_each(tape_sections.begin(), tape_sections.end(), [](auto sec){sec.print();});*/
 
     // Find all the possible street sections
-    const vector<StreetSection> possible_sections = street_finder::findPossibleStreetSections(tape_sections);
+    const vector<StreetSection> possible_sections = streets::findPossibleStreetSections(tape_sections);
     //cout << "Calculou todas as mini seções. Encontradas: " << possible_sections.size() << endl;
     //std::for_each(possible_sections.begin(), possible_sections.end(), [](auto sec){sec.print();});
 
     // Transforms overlapping sections into a single long section
-    const vector<StreetSection> long_sections = street_finder::groupIntoLongSections(possible_sections);
+    const vector<StreetSection> long_sections = streets::groupIntoLongSections(possible_sections);
     /*cout << "Calculou todas as seções longas. Encontradas: " << long_sections.size() << endl;
     std::for_each(long_sections.begin(), long_sections.end(), [](auto sec){sec.print();});*/
 
     // Break the sections where they intersect
-    vector<StreetSection> final_sections = street_finder::breakIntersectingSections(long_sections);
+    vector<StreetSection> final_sections = streets::breakIntersectingSections(long_sections);
     /*cout << "Calculou as seções finais. Encontradas: " << final_sections.size() << endl;
     std::for_each(final_sections.begin(), final_sections.end(), [](auto sec){sec.print();});*/
     
@@ -98,7 +98,7 @@ pair<vector<StreetSection>, vector<StreetSection>> Vision::findStreets()
 
 cv::Mat Vision::getColorMask(const cv::Mat& img, const cv::Scalar min, const cv::Scalar max)
 {
-    // TODO: Remover a copia dessa versão em street_finder. Passar as duas pra outro lugar
+    // TODO: Remover a copia dessa versão em streets. Passar as duas pra outro lugar
     cv::Mat out;
     cv::inRange(img, min, max, out);
     const cv::Mat krn_open = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
