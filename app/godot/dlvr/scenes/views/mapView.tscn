@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=2]
+[gd_scene load_steps=15 format=2]
 
 [ext_resource path="res://resources/theme.tres" type="Theme" id=1]
 [ext_resource path="res://scripts/views/mapView.gd" type="Script" id=2]
@@ -6,6 +6,12 @@
 [ext_resource path="res://sprites/map.jpg" type="Texture" id=4]
 [ext_resource path="res://scripts/views/map_elements/leftBar.gd" type="Script" id=5]
 [ext_resource path="res://resources/name_font.tres" type="DynamicFont" id=6]
+[ext_resource path="res://scenes/mapnode.tscn" type="PackedScene" id=7]
+[ext_resource path="res://scenes/pointer.tscn" type="PackedScene" id=8]
+[ext_resource path="res://scripts/views/map_elements/deliverymenu.gd" type="Script" id=9]
+[ext_resource path="res://scripts/EmailField.gd" type="Script" id=10]
+[ext_resource path="res://scripts/views/map_elements/confirm.gd" type="Script" id=11]
+[ext_resource path="res://scripts/views/map_elements/refused.gd" type="Script" id=12]
 
 [sub_resource type="Animation" id=1]
 resource_name = "hide"
@@ -68,15 +74,15 @@ custom_colors/font_color = Color( 1, 1, 1, 1 )
 text = "DLVR"
 
 [node name="sideMenuButton" type="TextureButton" parent="toolBar"]
-margin_left = 5.0
-margin_top = 5.0
-margin_right = 105.0
-margin_bottom = 105.0
-rect_scale = Vector2( 0.9, 0.9 )
+margin_left = 2.0
+margin_top = 2.0
+margin_right = 1202.0
+margin_bottom = 1202.0
+rect_scale = Vector2( 0.081, 0.081 )
 shortcut_in_tooltip = false
 texture_normal = ExtResource( 3 )
 
-[node name="TextureRect" type="TextureRect" parent="."]
+[node name="map" type="TextureRect" parent="."]
 margin_left = 10.0
 margin_top = 240.0
 margin_right = 710.0
@@ -86,13 +92,15 @@ texture = ExtResource( 4 )
 expand = true
 
 [node name="leftBar" type="Control" parent="."]
+editor/display_folded = true
 margin_left = -721.0
 margin_right = -1.0
 margin_bottom = 1280.0
 script = ExtResource( 5 )
 
 [node name="background" type="ColorRect" parent="leftBar"]
-margin_right = 600.0
+margin_left = -2.27203
+margin_right = 597.728
 margin_bottom = 1280.0
 rect_min_size = Vector2( 600, 1280 )
 color = Color( 0.117647, 0.176471, 0.243137, 1 )
@@ -103,9 +111,9 @@ anims/show = SubResource( 2 )
 
 [node name="back" type="TextureButton" parent="leftBar"]
 margin_left = 600.0
-margin_top = -1.22772
+margin_top = 0.204287
 margin_right = 720.0
-margin_bottom = 1278.77
+margin_bottom = 1280.2
 rect_min_size = Vector2( 100, 0 )
 shortcut_in_tooltip = false
 
@@ -146,20 +154,246 @@ shortcut_in_tooltip = false
 text = "EXIT_KS"
 
 [node name="debug_open" type="ToolButton" parent="leftBar"]
-margin_left = 128.569
-margin_top = 837.648
-margin_right = 438.369
-margin_bottom = 890.848
+margin_left = 100.0
+margin_top = 850.0
+margin_right = 500.0
+margin_bottom = 910.0
+rect_min_size = Vector2( 400, 60 )
 text = "DEBUG_OPEN_KS"
 
 [node name="debug_close" type="ToolButton" parent="leftBar"]
-margin_left = 128.569
-margin_top = 991.648
-margin_right = 449.369
-margin_bottom = 1044.85
+margin_left = 100.0
+margin_top = 990.0
+margin_right = 500.0
+margin_bottom = 1050.0
 text = "DEBUG_CLOSE_KS"
+
+[node name="city" type="Node2D" parent="."]
+editor/display_folded = true
+
+[node name="node1" type="Position2D" parent="city"]
+position = Vector2( 60, 292 )
+
+[node name="node2" type="Position2D" parent="city"]
+position = Vector2( 305, 292 )
+
+[node name="node3" type="Position2D" parent="city"]
+position = Vector2( 415, 292 )
+
+[node name="node4" type="Position2D" parent="city"]
+position = Vector2( 660, 292 )
+
+[node name="node5" type="Position2D" parent="city"]
+position = Vector2( 415, 385 )
+
+[node name="node6" type="Position2D" parent="city"]
+position = Vector2( 570, 385 )
+
+[node name="node7" parent="city" instance=ExtResource( 7 )]
+position = Vector2( 659, 385 )
+id = 7
+
+[node name="node8" type="Position2D" parent="city"]
+position = Vector2( 570, 479 )
+
+[node name="node9" parent="city" instance=ExtResource( 7 )]
+position = Vector2( 659, 479 )
+id = 9
+
+[node name="node10" type="Position2D" parent="city"]
+position = Vector2( 305, 573 )
+
+[node name="node11" type="Position2D" parent="city"]
+position = Vector2( 415, 573 )
+
+[node name="node12" type="Position2D" parent="city"]
+position = Vector2( 570, 573 )
+
+[node name="node13" parent="city" instance=ExtResource( 7 )]
+position = Vector2( 659, 573 )
+id = 13
+
+[node name="node14" type="Position2D" parent="city"]
+position = Vector2( 570, 667 )
+
+[node name="node15" parent="city" instance=ExtResource( 7 )]
+position = Vector2( 659, 667 )
+id = 15
+
+[node name="node16" type="Position2D" parent="city"]
+position = Vector2( 305, 761 )
+
+[node name="node17" type="Position2D" parent="city"]
+position = Vector2( 415, 761 )
+
+[node name="node18" type="Position2D" parent="city"]
+position = Vector2( 570, 761 )
+
+[node name="node19" parent="city" instance=ExtResource( 7 )]
+position = Vector2( 659, 761 )
+id = 19
+
+[node name="node20" type="Position2D" parent="city"]
+position = Vector2( 60, 890 )
+
+[node name="node21" type="Position2D" parent="city"]
+position = Vector2( 305, 890 )
+
+[node name="node22" type="Position2D" parent="city"]
+position = Vector2( 415, 890 )
+
+[node name="node23" type="Position2D" parent="city"]
+position = Vector2( 659, 890 )
+
+[node name="node24" type="Position2D" parent="city"]
+position = Vector2( 205, 573 )
+
+[node name="node25" type="Position2D" parent="city"]
+position = Vector2( 143, 484 )
+
+[node name="node26" type="Position2D" parent="city"]
+position = Vector2( 60, 484 )
+
+[node name="node27" type="Position2D" parent="city"]
+position = Vector2( 60, 761 )
+
+[node name="node28" type="Position2D" parent="city"]
+position = Vector2( 132, 784 )
+
+[node name="node29" type="Position2D" parent="city"]
+position = Vector2( 209, 762 )
+
+[node name="node30" type="Position2D" parent="city"]
+position = Vector2( 60, 667 )
+
+[node name="node31" parent="city" instance=ExtResource( 7 )]
+position = Vector2( 155, 667 )
+id = 31
+
+[node name="pointer_origin" parent="." instance=ExtResource( 8 )]
+position = Vector2( 1172.17, 284.336 )
+scale = Vector2( 0.2, 0.2 )
+
+[node name="pointer_destination" parent="." instance=ExtResource( 8 )]
+position = Vector2( 1169.08, 469.789 )
+scale = Vector2( 0.2, 0.2 )
+pointer_type = 1
+
+[node name="pointer_tracking" parent="." instance=ExtResource( 8 )]
+position = Vector2( 1170.75, 643.488 )
+scale = Vector2( 0.2, 0.2 )
+pointer_type = 2
+
+[node name="rest_area" type="Position2D" parent="."]
+position = Vector2( 1174.95, 806.28 )
+
+[node name="delivery_menu" type="Control" parent="."]
+editor/display_folded = true
+margin_right = 40.0
+margin_bottom = 40.0
+script = ExtResource( 9 )
+
+[node name="email" type="LineEdit" parent="delivery_menu"]
+margin_left = 35.0
+margin_top = 1015.16
+margin_right = 685.0
+margin_bottom = 1063.16
+clear_button_enabled = true
+placeholder_text = "RECEIVER_EMAIL_KS"
+script = ExtResource( 10 )
+
+[node name="cancel_button" type="Button" parent="delivery_menu"]
+margin_left = 380.0
+margin_top = 1135.0
+margin_right = 700.0
+margin_bottom = 1215.0
+text = "CANCEL_KS"
+
+[node name="confirm_button" type="Button" parent="delivery_menu"]
+margin_left = 20.0
+margin_top = 1135.0
+margin_right = 340.0
+margin_bottom = 1215.0
+text = "CONFIRM_KS"
+
+[node name="confirm_window" type="Control" parent="."]
+editor/display_folded = true
+visible = false
+margin_left = 20.0
+margin_top = 480.0
+margin_right = 60.0
+margin_bottom = 520.0
+theme = ExtResource( 1 )
+script = ExtResource( 11 )
+
+[node name="background" type="ColorRect" parent="confirm_window"]
+margin_right = 680.0
+margin_bottom = 320.0
+
+[node name="label" type="Label" parent="confirm_window"]
+margin_left = 20.0
+margin_top = 20.0
+margin_right = 660.0
+margin_bottom = 187.0
+text = "PLACEHOLDER"
+align = 1
+valign = 1
+autowrap = true
+clip_text = true
+
+[node name="yes" type="Button" parent="confirm_window"]
+margin_left = 60.0
+margin_top = 240.0
+margin_right = 260.0
+margin_bottom = 290.0
+rect_min_size = Vector2( 200, 50 )
+text = "YES_KS"
+
+[node name="no" type="Button" parent="confirm_window"]
+margin_left = 420.0
+margin_top = 240.0
+margin_right = 620.0
+margin_bottom = 290.0
+rect_min_size = Vector2( 200, 50 )
+text = "NO_KS"
+
+[node name="refused_window" type="Control" parent="."]
+margin_left = 20.0
+margin_top = 480.0
+margin_right = 60.0
+margin_bottom = 520.0
+theme = ExtResource( 1 )
+script = ExtResource( 12 )
+
+[node name="background" type="ColorRect" parent="refused_window"]
+margin_right = 680.0
+margin_bottom = 320.0
+
+[node name="label" type="Label" parent="refused_window"]
+margin_left = 20.0
+margin_top = 20.0
+margin_right = 660.0
+margin_bottom = 187.0
+text = "REFUSED_KS"
+align = 1
+valign = 1
+autowrap = true
+clip_text = true
+
+[node name="ok" type="Button" parent="refused_window"]
+margin_left = 240.0
+margin_top = 240.0
+margin_right = 440.0
+margin_bottom = 290.0
+rect_min_size = Vector2( 200, 50 )
+text = "OK"
 [connection signal="pressed" from="toolBar/sideMenuButton" to="." method="_on_sideMenuButton_pressed"]
 [connection signal="pressed" from="leftBar/back" to="leftBar" method="_on_back_pressed"]
 [connection signal="pressed" from="leftBar/menu/exit" to="." method="_on_exit_pressed"]
 [connection signal="pressed" from="leftBar/debug_open" to="." method="_on_debug_open_pressed"]
 [connection signal="pressed" from="leftBar/debug_close" to="." method="_on_debug_close_pressed"]
+[connection signal="pressed" from="delivery_menu/cancel_button" to="." method="_on_cancel_button_pressed"]
+[connection signal="pressed" from="delivery_menu/confirm_button" to="." method="_on_confirm_button_pressed"]
+[connection signal="pressed" from="confirm_window/yes" to="confirm_window" method="_on_yes_pressed"]
+[connection signal="pressed" from="confirm_window/no" to="confirm_window" method="_on_no_pressed"]
+[connection signal="pressed" from="refused_window/ok" to="refused_window" method="_on_ok_pressed"]

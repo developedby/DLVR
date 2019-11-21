@@ -55,3 +55,7 @@ func _on_codeSubview_code_entered(code, email):
 		$passwSubview.set_email(email)
 		change_subview($passwSubview.id)
 
+
+func _on_back_pressed():
+	$emailSubview.initial()
+	change_subview($emailSubview.id)

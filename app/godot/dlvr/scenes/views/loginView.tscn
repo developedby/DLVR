@@ -1,15 +1,16 @@
-[gd_scene load_steps=16 format=2]
+[gd_scene load_steps=17 format=2]
 
 [ext_resource path="res://scripts/views/loginView.gd" type="Script" id=1]
-[ext_resource path="res://resources/theme.tres" type="Theme" id=2]
-[ext_resource path="res://scripts/views/login_subviews/emailSubview.gd" type="Script" id=3]
-[ext_resource path="res://scripts/EmailField.gd" type="Script" id=4]
-[ext_resource path="res://scripts/views/login_subviews/signinSubview.gd" type="Script" id=5]
-[ext_resource path="res://scripts/PasswField.gd" type="Script" id=6]
-[ext_resource path="res://resources/gui/TextEdit_Normal.tres" type="StyleBox" id=7]
-[ext_resource path="res://scripts/views/login_subviews/passwSubview.gd" type="Script" id=8]
-[ext_resource path="res://scripts/CodeSubview.gd" type="Script" id=9]
-[ext_resource path="res://sprites/placeholder_city.jpg" type="Texture" id=10]
+[ext_resource path="res://sprites/placeholder_city.jpg" type="Texture" id=2]
+[ext_resource path="res://resources/theme.tres" type="Theme" id=3]
+[ext_resource path="res://scripts/views/login_subviews/emailSubview.gd" type="Script" id=4]
+[ext_resource path="res://scripts/EmailField.gd" type="Script" id=5]
+[ext_resource path="res://scripts/views/login_subviews/signinSubview.gd" type="Script" id=6]
+[ext_resource path="res://scripts/PasswField.gd" type="Script" id=7]
+[ext_resource path="res://resources/gui/TextEdit_Normal.tres" type="StyleBox" id=8]
+[ext_resource path="res://sprites/back.png" type="Texture" id=9]
+[ext_resource path="res://scripts/views/login_subviews/passwSubview.gd" type="Script" id=10]
+[ext_resource path="res://scripts/CodeSubview.gd" type="Script" id=11]
 
 [sub_resource type="StyleBoxFlat" id=1]
 bg_color = Color( 1, 1, 1, 1 )
@@ -39,15 +40,19 @@ script = ExtResource( 1 )
 margin_right = 720.0
 margin_bottom = 1280.0
 
+[node name="city" type="Sprite" parent="."]
+scale = Vector2( 2.73, 2.73 )
+texture = ExtResource( 2 )
+centered = false
+
 [node name="emailSubview" type="Control" parent="."]
-editor/display_folded = true
 visible = false
 margin_top = 435.0
 margin_right = 720.0
 margin_bottom = 635.0
 rect_min_size = Vector2( 720, 200 )
-theme = ExtResource( 2 )
-script = ExtResource( 3 )
+theme = ExtResource( 3 )
+script = ExtResource( 4 )
 
 [node name="emailField" type="LineEdit" parent="emailSubview"]
 margin_left = 10.0
@@ -58,7 +63,7 @@ custom_styles/focus = SubResource( 1 )
 placeholder_text = "EMAIL_KS"
 caret_blink = true
 caret_blink_speed = 0.5
-script = ExtResource( 4 )
+script = ExtResource( 5 )
 
 [node name="button" type="Button" parent="emailSubview"]
 anchor_left = 0.5
@@ -71,16 +76,18 @@ margin_right = 135.0
 margin_bottom = 205.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource( 2 )
+theme = ExtResource( 3 )
 shortcut_in_tooltip = false
 shortcut = SubResource( 3 )
 text = "CONTINUE_KS"
 
 [node name="signinSubview" type="Control" parent="."]
+editor/display_folded = true
+visible = false
 margin_right = 40.0
 margin_bottom = 40.0
-theme = ExtResource( 2 )
-script = ExtResource( 5 )
+theme = ExtResource( 3 )
+script = ExtResource( 6 )
 id = 1
 
 [node name="emailLabel" type="Label" parent="signinSubview"]
@@ -119,7 +126,7 @@ secret = true
 placeholder_text = "PASSW_KS"
 caret_blink = true
 caret_blink_speed = 0.5
-script = ExtResource( 6 )
+script = ExtResource( 7 )
 min_size = 5
 
 [node name="re_passw" type="LineEdit" parent="signinSubview"]
@@ -128,12 +135,12 @@ margin_top = 770.0
 margin_right = 710.0
 margin_bottom = 818.0
 custom_styles/focus = SubResource( 5 )
-custom_styles/normal = ExtResource( 7 )
+custom_styles/normal = ExtResource( 8 )
 secret = true
 placeholder_text = "REPASSW_KS"
 caret_blink = true
 caret_blink_speed = 0.5
-script = ExtResource( 6 )
+script = ExtResource( 7 )
 min_size = 5
 passw_equals = NodePath("../passw")
 
@@ -148,15 +155,16 @@ margin_right = 475.0
 margin_bottom = 1030.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource( 2 )
+theme = ExtResource( 3 )
 shortcut_in_tooltip = false
 shortcut = SubResource( 3 )
 text = "CONTINUE_KS"
 
 [node name="back" type="ToolButton" parent="signinSubview"]
-margin_right = 64.0
-margin_bottom = 65.0
-text = "hii"
+margin_right = 523.0
+margin_bottom = 519.2
+rect_scale = Vector2( 0.15, 0.15 )
+icon = ExtResource( 9 )
 
 [node name="passwSubview" type="Control" parent="."]
 editor/display_folded = true
@@ -165,8 +173,8 @@ margin_top = 435.0
 margin_right = 720.0
 margin_bottom = 635.0
 rect_min_size = Vector2( 720, 200 )
-theme = ExtResource( 2 )
-script = ExtResource( 8 )
+theme = ExtResource( 3 )
+script = ExtResource( 10 )
 id = 2
 
 [node name="emailLabel" type="Label" parent="passwSubview"]
@@ -181,11 +189,12 @@ margin_left = 10.0
 margin_top = 90.0
 margin_right = 710.0
 margin_bottom = 138.0
+hint_tooltip = "password"
 secret = true
 placeholder_text = "PASSW_KS"
 caret_blink = true
 caret_blink_speed = 0.5
-script = ExtResource( 6 )
+script = ExtResource( 7 )
 min_size = 5
 
 [node name="button" type="Button" parent="passwSubview"]
@@ -199,18 +208,24 @@ margin_right = 135.0
 margin_bottom = 205.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource( 2 )
+theme = ExtResource( 3 )
 shortcut_in_tooltip = false
 shortcut = SubResource( 3 )
 text = "CONTINUE_KS"
 
+[node name="back" type="ToolButton" parent="passwSubview"]
+margin_top = -435.0
+margin_right = 523.0
+margin_bottom = 84.2
+rect_scale = Vector2( 0.15, 0.15 )
+icon = ExtResource( 9 )
+
 [node name="codeSubview" type="Control" parent="."]
 editor/display_folded = true
-visible = false
 margin_right = 40.0
 margin_bottom = 40.0
-theme = ExtResource( 2 )
-script = ExtResource( 9 )
+theme = ExtResource( 3 )
+script = ExtResource( 11 )
 id = 3
 
 [node name="code" type="LineEdit" parent="codeSubview"]
@@ -233,7 +248,7 @@ margin_right = 475.0
 margin_bottom = 797.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource( 2 )
+theme = ExtResource( 3 )
 shortcut_in_tooltip = false
 shortcut = SubResource( 3 )
 text = "CONTINUE_KS"
@@ -243,24 +258,27 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-margin_left = 205.0
+margin_left = 202.608
 margin_top = 830.0
-margin_right = 475.0
+margin_right = 472.608
 margin_bottom = 910.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource( 2 )
+theme = ExtResource( 3 )
 shortcut_in_tooltip = false
 shortcut = SubResource( 3 )
 text = "REGEN_KS"
 
-[node name="city" type="Sprite" parent="."]
-scale = Vector2( 2.73, 2.73 )
-z_index = 1
-texture = ExtResource( 10 )
-centered = false
+[node name="back" type="ToolButton" parent="codeSubview"]
+margin_right = 523.0
+margin_bottom = 519.2
+rect_scale = Vector2( 0.15, 0.15 )
+icon = ExtResource( 9 )
 [connection signal="pressed" from="emailSubview/button" to="emailSubview" method="_on_button_pressed"]
 [connection signal="pressed" from="signinSubview/button" to="signinSubview" method="_on_button_pressed"]
+[connection signal="pressed" from="signinSubview/back" to="." method="_on_back_pressed"]
 [connection signal="pressed" from="passwSubview/button" to="passwSubview" method="_on_button_pressed"]
+[connection signal="pressed" from="passwSubview/back" to="." method="_on_back_pressed"]
 [connection signal="code_entered" from="codeSubview" to="." method="_on_codeSubview_code_entered"]
 [connection signal="pressed" from="codeSubview/button_c" to="codeSubview" method="_on_button_c_pressed"]
+[connection signal="pressed" from="codeSubview/back" to="." method="_on_back_pressed"]

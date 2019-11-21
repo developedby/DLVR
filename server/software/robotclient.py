@@ -43,11 +43,11 @@ async def handler():
                         data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "state": 2}
                         data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                         await websocket.send(json.dumps(data))
-                        for direction, position in resp["message_body"]["path"]:
+                        for direction, _, position in resp["message_body"]["path"]:
                             data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "qr": position, "direction": direction}
                             data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                             await websocket.send(json.dumps(data))
-                        data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "state": 1, "qr": resp["message_body"]["path"][-1][1]}
+                        data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "state": 1, "qr": resp["message_body"]["path"][-1][2]}
                         data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                         await websocket.send(json.dumps(data))
                         print("Container opened")
@@ -58,11 +58,11 @@ async def handler():
                         data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "state": 2}
                         data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                         await websocket.send(json.dumps(data))
-                        for direction, position in resp["message_body"]["path"]:
+                        for direction, _, position in resp["message_body"]["path"]:
                             data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "qr": position, "direction": direction}
                             data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                             await websocket.send(json.dumps(data))
-                        data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "state": 1, "qr": resp["message_body"]["path"][-1][1]}
+                        data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "state": 1, "qr": resp["message_body"]["path"][-1][2]}
                         data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                         await websocket.send(json.dumps(data))
                         print("Container opened")
@@ -78,11 +78,11 @@ async def handler():
                         data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "state": 2}
                         data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                         await websocket.send(json.dumps(data))
-                        for direction, position in resp["message_body"]["path"]:
+                        for direction, _, position in resp["message_body"]["path"]:
                             data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "qr": position, "direction": direction}
                             data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                             await websocket.send(json.dumps(data))
-                        data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "state": 1, "qr": resp["message_body"]["path"][-1][1]}
+                        data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "state": 1, "qr": resp["message_body"]["path"][-1][2]}
                         data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                         await websocket.send(json.dumps(data))
                         data = {"path": "/robot/signout", "id": 0, "timestamp": datetime.datetime.now().timestamp()}

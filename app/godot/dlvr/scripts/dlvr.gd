@@ -20,7 +20,6 @@ func _ready():
 	set_debug(true)
 	client.received_timeout = 2.0
 	client.connection_timeout = 3.0
-	# client.connect("server_disconnected", self, "_server_disconnected")
 	add_child(client)
 	get_tree().set_auto_accept_quit(false)
 
@@ -28,7 +27,7 @@ func _ready():
 func _notification(what):
 	if what == MainLoop.NOTIFICATION_WM_QUIT_REQUEST:
 		var r = logout()
-		while typeof(r) != TYPE_BOOL:
+		while (typeof(r) != TYPE_BOOL) and (typeof(r) != TYPE_NIL):
 			r = yield(r, 'completed')
 		get_tree().quit()
 
