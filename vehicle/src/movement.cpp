@@ -42,7 +42,7 @@ void Movement::turn(float degrees) {
     int l_previous_read = this->left_wheel.encoder.ticks;
     int value_to_turn = std::ceil(((degrees/90)*20)/2);
     value_to_turn = (value_to_turn > 0) ? value_to_turn : 1; 
-    float speed_to_turn = 0.5;
+    float speed_to_turn = 0.8;
     int r_dir = (degrees > 0) ? 1 : -1;
     //std::cout << "value to turn " << value_to_turn <<std::endl;
     while(total_moved < value_to_turn)

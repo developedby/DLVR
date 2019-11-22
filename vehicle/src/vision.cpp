@@ -31,7 +31,7 @@ Vision::Vision() :
     this->downward_cam.setAWB(10);
     const auto success_cam1 = this->downward_cam.open();
     assert(success_cam1);
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 10; i++)
     {
         this->downward_cam.grab();
     }

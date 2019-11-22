@@ -473,7 +473,7 @@ namespace streets
     {
         float constexpr x_center = consts::img_width / 2;
         // Theta max e menor que theta min porque é theta da distancia maxima (mais perto do horizonte)
-        float constexpr px_per_rad = consts::img_height/(consts::img_theta_min - consts::img_theta_max);
+        float constexpr px_per_rad = (consts::img_height/(consts::img_theta_min - consts::img_theta_max));
         
         const float theta1 = seg[1]/px_per_rad + consts::img_theta_max;
         const float y1_m = consts::cam_height_m / tan(theta1);
@@ -636,7 +636,7 @@ namespace streets
     Mat getBlueTapeMask(const Mat& img)
     {
         //std::cout << "Pegando mascara azul" << std::endl;
-        return getTapeMask(img, cv::Scalar(85, 200, 40), cv::Scalar(105, 250, 255));
+        return getTapeMask(img, cv::Scalar(85, 180, 40), cv::Scalar(105, 250, 255));
     }
 
     Mat getGreenTapeMask(const Mat& img)
