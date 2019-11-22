@@ -40,8 +40,9 @@ void Movement::turn(float degrees) {
     int total_moved = 0;
 	int r_previous_read = this->right_wheel.encoder.ticks;
     int l_previous_read = this->left_wheel.encoder.ticks;
-    int value_to_turn = std::ceil(((degrees/90)*20)/2);
+    int value_to_turn = std::ceil(((std::abs(degrees)/90.0f)*20.0f)/2.0f);
     value_to_turn = (value_to_turn > 0) ? value_to_turn : 1; 
+    //std::cout << "value to turn " << value_to_turn <<std::endl;
     float speed_to_turn = 0.8;
     int r_dir = (degrees > 0) ? 1 : -1;
     //std::cout << "value to turn " << value_to_turn <<std::endl;
@@ -58,6 +59,8 @@ void Movement::turn(float degrees) {
         moved_right = this->right_wheel.encoder.ticks - r_previous_read;
         moved_left = this->left_wheel.encoder.ticks - l_previous_read;
         total_moved = (moved_right + moved_left)/2;
+        //std::cout << "ml: " << moved_left << " mr: " << moved_right << " total: " << total_moved <<std::endl;
+        //std::cout << "l: " << this->left_wheel.encoder.ticks << " r: " << this->right_wheel.encoder.ticks<<std::endl;
     }
     this->stop();
 }

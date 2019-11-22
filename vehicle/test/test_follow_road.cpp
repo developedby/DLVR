@@ -72,6 +72,8 @@ int main()
     // Sort the tapes by their closest point
     streets::orderCollinearSections(left_tapes, 1);
     streets::orderCollinearSections(right_tapes, 1);
+    int turn_direction = 0;
+    
     while(!stop) //andar 120 cm com 0 graus, virar para a rua da direita, andar mais 30
     {
         /*
@@ -92,7 +94,7 @@ int main()
         {
             const float street_angle = setAngleInRange(street.line[1], 20*(M_PI/180));
             //std::cout << found_streets[i].line << ' ' << found_streets[i].seg << std::endl << " angulo eh " <<angle <<std::endl;
-            if(std::abs(street_angle) < 20)
+            if(std::abs(street_angle) < 30)
                 parallel_streets.push_back(street);
             else
                 perpendicular_streets.push_back(street);
@@ -135,20 +137,22 @@ int main()
             avg_seg[2] /= num_pts/2;
             avg_seg[3] /= num_pts/2;
         }
+        
         // Extend the average segment to a line
         const cv::Vec2f avg_line = geometry::segmentToLine(avg_seg);
-        // Find the point on the line that is the distance the vehicle wants to move
+        /*// Find the point on the line that is the distance the vehicle wants to move
         // The line is defined as 'pt0 + u*delta'
         const cv::Vec2f pt0(avg_line[0]*cos(avg_line[1]), avg_line[0]*sin(avg_line[1]));
         const cv::Vec2f delta(-sin(avg_line[1]), cos(avg_line[1]));
         //const float u = geometry::norm(avg_line[0], dist_per_step_m);
         std::cout <<"valores para u " << avg_line[0] << " " << dist_per_step_m <<std::endl;
         const float u = sqrt(geometry::square(dist_per_step_m) - geometry::square(avg_line[0]));
-        const cv::Vec2f next_pt = (delta[1] > 0) ? (pt0 + u*delta) : (pt0 - u*delta);
+        const cv::Vec2f next_pt = (delta[1] > 0) ? (pt0 + u*delta) : (pt0 - u*delta);*/
         // Calculate the angle to the next point, where 0 means in front
+        const cv::Vec2f next_pt = cv::Vec2f(avg_seg[0], avg_seg[1]);
         const float angle = atan2(next_pt[1], next_pt[0])*(180/M_PI) - 90;
         std::cout << "Proximo ponto: " << next_pt << " Angulo: " << angle << std::endl;
-        std::cout << "Proxima rua: " << avg_line << std::endl;
+        //std::cout << "Proxima rua: " << avg_line << std::endl;
                
         /* Select the next tape to use to calculate the moved distance */
         // Choose the second closest tape, if available
@@ -176,21 +180,31 @@ int main()
         {
             dist_to_move_mm = consts::step_size_mm;
             std::cout << "Vai andar " << dist_to_move_mm << " mm" << std::endl;
-            if (std::abs(angle) > consts::turn_angle_threshold)
-                //movement.turn(angle);
-            //movement.goStraightMm(1, dist_to_move_mm, 200);
+            if (std::abs(angle/2) > consts::turn_angle_threshold)
+            {
+                movement.turn(angle/2);
+                turn_direction = 1;
+                gpioDelay(300000);
+            }
+            movement.goStraightMm(1, dist_to_move_mm, 200);
             std::cout << "corrigindo com angulo" << -(angle - avg_line[1]) << std::endl;
-            //movement.turn(-(angle - avg_line[1]));
+            gpioDelay(300000);
+            if(std::abs((angle - avg_line[1])/2) > consts::turn_angle_threshold)
+            {
+                movement.turn(-(angle - avg_line[1])/2);
+                turn_direction = -1;
+                //gpioDelay(300000);
+            }
         }
         else  // If no streets were found
         {
             // TODO: Corrigir
             dist_to_move_mm = 0;
             std::cout << "Girando pra ver se encontra uma linha" << std::endl;
-            if(avg_line[1] < 0);
-                //movement.turn(-15);
-            else;
-                //movement.turn(15);
+            if(turn_direction > 0)
+                movement.turn(-5);
+            else
+                movement.turn(5);
         }       
         
         /* Take a new picture and find the tapes and streets in it */
@@ -206,7 +220,7 @@ int main()
         {
             float angle = setAngleInRange(tape.line[1], (20*M_PI)/180);
             std::cout << tape.line << ' ' << tape.seg <<" " << " angulo eh " << angle <<std::endl;
-            if(std::abs(angle) < 20)
+            if(std::abs(angle) < 30)
             {
                 if(tape.seg[0] < 0)  // Both seg[0] and seg[2] should give the same results
                     left_tapes.push_back(tape);
@@ -264,7 +278,7 @@ int main()
         // If no tapes were found, assume the vehicle moved the correct amount
         else if (num_tapes_found == 0)
         {
-            ran_dist_step_mm = consts::step_size_mm;
+            ran_dist_step_mm = dist_to_move_mm;
         }
         std::cout << "Acha que andou: " << ran_dist_step_mm << std::endl;
         total_ran_dist_mm += ran_dist_step_mm;

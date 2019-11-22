@@ -89,7 +89,7 @@ void Encoder::registerMeasurement(int const level, uint32_t const tick)
     if(level == 1)
     {
         // Filters out measurements made too quickly, because it probably is a double reading
-        if (tick - this->last_measure < this->min_measure_interval)
+        if ((tick - this->last_measure) < this->min_measure_interval)
             return;
 
         this->measures_us[counter] = tick - this->last_measure;
