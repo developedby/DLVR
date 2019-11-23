@@ -183,7 +183,7 @@ int main()
             if (std::abs(angle/2) > consts::turn_angle_threshold)
             {
                 movement.turn(angle/2);
-                turn_direction = 1;
+                turn_direction = angle > 0 ? 1 : -1;
                 gpioDelay(300000);
             }
             movement.goStraightMm(1, dist_to_move_mm, 200);
@@ -192,7 +192,7 @@ int main()
             if(std::abs((angle - avg_line[1])/2) > consts::turn_angle_threshold)
             {
                 movement.turn(-(angle - avg_line[1])/2);
-                turn_direction = -1;
+                turn_direction = (-(angle - avg_line[1])) > 0 1 : -1;
                 //gpioDelay(300000);
             }
         }
