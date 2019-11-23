@@ -1,17 +1,18 @@
-[gd_scene load_steps=15 format=2]
+[gd_scene load_steps=16 format=2]
 
 [ext_resource path="res://resources/theme.tres" type="Theme" id=1]
 [ext_resource path="res://scripts/views/mapView.gd" type="Script" id=2]
-[ext_resource path="res://sprites/side_button.png" type="Texture" id=3]
-[ext_resource path="res://sprites/map.jpg" type="Texture" id=4]
-[ext_resource path="res://scripts/views/map_elements/leftBar.gd" type="Script" id=5]
-[ext_resource path="res://resources/name_font.tres" type="DynamicFont" id=6]
-[ext_resource path="res://scenes/mapnode.tscn" type="PackedScene" id=7]
-[ext_resource path="res://scenes/pointer.tscn" type="PackedScene" id=8]
-[ext_resource path="res://scripts/views/map_elements/deliverymenu.gd" type="Script" id=9]
-[ext_resource path="res://scripts/EmailField.gd" type="Script" id=10]
-[ext_resource path="res://scripts/views/map_elements/confirm.gd" type="Script" id=11]
-[ext_resource path="res://scripts/views/map_elements/refused.gd" type="Script" id=12]
+[ext_resource path="res://sprites/logo.png" type="Texture" id=3]
+[ext_resource path="res://sprites/side_button.png" type="Texture" id=4]
+[ext_resource path="res://sprites/map.jpg" type="Texture" id=5]
+[ext_resource path="res://scripts/views/map_elements/leftBar.gd" type="Script" id=6]
+[ext_resource path="res://resources/name_font.tres" type="DynamicFont" id=7]
+[ext_resource path="res://scenes/mapnode.tscn" type="PackedScene" id=8]
+[ext_resource path="res://scenes/pointer.tscn" type="PackedScene" id=9]
+[ext_resource path="res://scripts/views/map_elements/deliverymenu.gd" type="Script" id=10]
+[ext_resource path="res://scripts/EmailField.gd" type="Script" id=11]
+[ext_resource path="res://scripts/views/map_elements/confirm.gd" type="Script" id=12]
+[ext_resource path="res://scripts/views/map_elements/refused.gd" type="Script" id=13]
 
 [sub_resource type="Animation" id=1]
 resource_name = "hide"
@@ -55,10 +56,15 @@ script = ExtResource( 2 )
 margin_right = 720.0
 margin_bottom = 1280.0
 
-[node name="Label" type="Label" parent="."]
-margin_top = 125.0
+[node name="logo" type="Sprite" parent="."]
+position = Vector2( 638.569, 175.536 )
+scale = Vector2( 0.2, 0.2 )
+texture = ExtResource( 3 )
+
+[node name="tracking_label" type="Label" parent="."]
+margin_top = 147.292
 margin_right = 720.0
-margin_bottom = 180.0
+margin_bottom = 202.292
 text = "TRACKING_KS"
 align = 1
 
@@ -88,7 +94,7 @@ margin_right = 1202.0
 margin_bottom = 1202.0
 rect_scale = Vector2( 0.081, 0.081 )
 shortcut_in_tooltip = false
-texture_normal = ExtResource( 3 )
+texture_normal = ExtResource( 4 )
 
 [node name="map" type="TextureRect" parent="."]
 margin_left = 10.0
@@ -96,7 +102,7 @@ margin_top = 240.0
 margin_right = 710.0
 margin_bottom = 940.0
 rect_min_size = Vector2( 700, 700 )
-texture = ExtResource( 4 )
+texture = ExtResource( 5 )
 expand = true
 
 [node name="leftBar" type="Control" parent="."]
@@ -104,7 +110,7 @@ editor/display_folded = true
 margin_left = -721.0
 margin_right = -1.0
 margin_bottom = 1280.0
-script = ExtResource( 5 )
+script = ExtResource( 6 )
 
 [node name="background" type="ColorRect" parent="leftBar"]
 margin_left = -2.27203
@@ -144,7 +150,7 @@ margin_left = 100.0
 margin_top = 110.0
 margin_right = 331.2
 margin_bottom = 163.0
-custom_fonts/font = ExtResource( 6 )
+custom_fonts/font = ExtResource( 7 )
 custom_colors/font_color = Color( 1, 1, 1, 1 )
 text = "Nome Sobrenome"
 
@@ -197,14 +203,14 @@ position = Vector2( 415, 385 )
 [node name="node6" type="Position2D" parent="city"]
 position = Vector2( 570, 385 )
 
-[node name="node7" parent="city" instance=ExtResource( 7 )]
+[node name="node7" parent="city" instance=ExtResource( 8 )]
 position = Vector2( 659, 385 )
 id = 7
 
 [node name="node8" type="Position2D" parent="city"]
 position = Vector2( 570, 479 )
 
-[node name="node9" parent="city" instance=ExtResource( 7 )]
+[node name="node9" parent="city" instance=ExtResource( 8 )]
 position = Vector2( 659, 479 )
 id = 9
 
@@ -217,14 +223,14 @@ position = Vector2( 415, 573 )
 [node name="node12" type="Position2D" parent="city"]
 position = Vector2( 570, 573 )
 
-[node name="node13" parent="city" instance=ExtResource( 7 )]
+[node name="node13" parent="city" instance=ExtResource( 8 )]
 position = Vector2( 659, 573 )
 id = 13
 
 [node name="node14" type="Position2D" parent="city"]
 position = Vector2( 570, 667 )
 
-[node name="node15" parent="city" instance=ExtResource( 7 )]
+[node name="node15" parent="city" instance=ExtResource( 8 )]
 position = Vector2( 659, 667 )
 id = 15
 
@@ -237,7 +243,7 @@ position = Vector2( 415, 761 )
 [node name="node18" type="Position2D" parent="city"]
 position = Vector2( 570, 761 )
 
-[node name="node19" parent="city" instance=ExtResource( 7 )]
+[node name="node19" parent="city" instance=ExtResource( 8 )]
 position = Vector2( 659, 761 )
 id = 19
 
@@ -274,20 +280,20 @@ position = Vector2( 209, 762 )
 [node name="node30" type="Position2D" parent="city"]
 position = Vector2( 60, 667 )
 
-[node name="node31" parent="city" instance=ExtResource( 7 )]
+[node name="node31" parent="city" instance=ExtResource( 8 )]
 position = Vector2( 155, 667 )
 id = 31
 
-[node name="pointer_origin" parent="." instance=ExtResource( 8 )]
+[node name="pointer_origin" parent="." instance=ExtResource( 9 )]
 position = Vector2( 1172.17, 284.336 )
 scale = Vector2( 0.2, 0.2 )
 
-[node name="pointer_destination" parent="." instance=ExtResource( 8 )]
+[node name="pointer_destination" parent="." instance=ExtResource( 9 )]
 position = Vector2( 1169.08, 469.789 )
 scale = Vector2( 0.2, 0.2 )
 pointer_type = 1
 
-[node name="pointer_tracking" parent="." instance=ExtResource( 8 )]
+[node name="pointer_tracking" parent="." instance=ExtResource( 9 )]
 position = Vector2( 1170.75, 643.488 )
 scale = Vector2( 0.2, 0.2 )
 pointer_type = 2
@@ -298,7 +304,7 @@ position = Vector2( 1174.95, 806.28 )
 [node name="delivery_menu" type="Control" parent="."]
 margin_right = 40.0
 margin_bottom = 40.0
-script = ExtResource( 9 )
+script = ExtResource( 10 )
 
 [node name="email" type="LineEdit" parent="delivery_menu"]
 margin_left = 35.0
@@ -307,7 +313,7 @@ margin_right = 685.0
 margin_bottom = 1063.16
 clear_button_enabled = true
 placeholder_text = "RECEIVER_EMAIL_KS"
-script = ExtResource( 10 )
+script = ExtResource( 11 )
 
 [node name="cancel_button" type="Button" parent="delivery_menu"]
 margin_left = 380.0
@@ -337,7 +343,7 @@ margin_top = 480.0
 margin_right = 60.0
 margin_bottom = 520.0
 theme = ExtResource( 1 )
-script = ExtResource( 11 )
+script = ExtResource( 12 )
 
 [node name="background" type="ColorRect" parent="confirm_window"]
 margin_right = 680.0
@@ -377,7 +383,7 @@ margin_top = 480.0
 margin_right = 60.0
 margin_bottom = 520.0
 theme = ExtResource( 1 )
-script = ExtResource( 12 )
+script = ExtResource( 13 )
 
 [node name="background" type="ColorRect" parent="refused_window"]
 margin_right = 680.0

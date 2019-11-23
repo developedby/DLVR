@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://scripts/artags.gd" type="Script" id=1]
+[ext_resource path="res://sprites/artags/artag1.png" type="Texture" id=2]
+
+[node name="artags" type="Node2D"]
+script = ExtResource( 1 )
+id = 1
+
+[node name="tag" type="Sprite" parent="."]
+texture = ExtResource( 2 )

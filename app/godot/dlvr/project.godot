@@ -52,6 +52,8 @@ _global_script_class_icons={
 
 config/name="dlvr"
 run/main_scene="res://scenes/views/loginView.tscn"
+boot_splash/image="res://sprites/logo.png"
+boot_splash/bg_color=Color( 1, 1, 1, 1 )
 config/icon="res://icon.png"
 
 [autoload]
