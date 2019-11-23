@@ -5,7 +5,6 @@
 class Encoder
 {
     public:
-        int static constexpr num_holes = 20;
         int static constexpr n_measures = 10;
         int ticks;
         float measures_us[n_measures];

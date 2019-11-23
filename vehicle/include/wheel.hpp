@@ -8,7 +8,6 @@ class Wheel
 {
     private:
         DCMotor dc_motor;
-        static constexpr float radius_mm = 33.0;
     public:
         int last_encoder_ticks;
         Encoder encoder;

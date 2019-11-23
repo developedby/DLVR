@@ -35,32 +35,40 @@ Movement::Movement() : left_pid(0), right_pid(1), left_wheel(0),  right_wheel(1)
 }
 
 void Movement::turn(float degrees) {
+    this->left_wheel.stop();
+    this->right_wheel.stop();
     int moved_right = 0;
     int moved_left = 0;
     int total_moved = 0;
-	int r_previous_read = this->right_wheel.encoder.ticks;
-    int l_previous_read = this->left_wheel.encoder.ticks;
-    int value_to_turn = std::ceil(((std::abs(degrees)/90.0f)*20.0f)/2.0f);
-    value_to_turn = (value_to_turn > 0) ? value_to_turn : 1; 
-    //std::cout << "value to turn " << value_to_turn <<std::endl;
-    float speed_to_turn = 0.8;
+	const int r_previous_read = this->right_wheel.encoder.ticks;
+    const int l_previous_read = this->left_wheel.encoder.ticks;
+    int holes_to_turn = std::ceil((std::abs(degrees) / consts::vehicle_deg_per_hole) / 2.0f);
+    std::cout << "Fazendo curva de " << holes_to_turn << " furos" << std::endl;
+    float constexpr turning_speed = 0.8;
     int r_dir = (degrees > 0) ? 1 : -1;
-    //std::cout << "value to turn " << value_to_turn <<std::endl;
-    while(total_moved < value_to_turn)
+    bool moving_left = true;
+    bool moving_right = true;
+    this->left_wheel.spin(-r_dir, turning_speed);
+    this->right_wheel.spin(r_dir, turning_speed);
+    while(total_moved < holes_to_turn)
     {
-        if(moved_left < value_to_turn)
-            this->left_wheel.spin(-r_dir, speed_to_turn);
-        else
+        if (moving_left && (moved_left >= holes_to_turn))
+        {
             this->left_wheel.stop();
-        if(moved_right < value_to_turn)
-            this->right_wheel.spin(r_dir, speed_to_turn);
-        else
+            moving_left = false;
+            std::cout << "Curva: Parando roda da esquerda" << std::endl;
+        }
+        if (moving_right && (moved_right >= holes_to_turn))
+        {
             this->right_wheel.stop();
+            moving_right = false;
+            std::cout << "Curva: Parando roda da direita" << std::endl;
+        }
         moved_right = this->right_wheel.encoder.ticks - r_previous_read;
         moved_left = this->left_wheel.encoder.ticks - l_previous_read;
         total_moved = (moved_right + moved_left)/2;
         //std::cout << "ml: " << moved_left << " mr: " << moved_right << " total: " << total_moved <<std::endl;
-        //std::cout << "l: " << this->left_wheel.encoder.ticks << " r: " << this->right_wheel.encoder.ticks<<std::endl;
+        //std::cout << "l: " << this->left_wheel.encoder.ticks << " r: " << this->right_wheel.encoder.ticks << std::endl;
     }
     this->stop();
 }
@@ -84,23 +92,32 @@ void Movement::goStraight(int direction, float speed){
 // This function blocks execution
 float Movement::goStraightMm(int direction, float mm, float speed=300)
 {
+    std::cout << "Andando pra frente " << mm << " mm" << std::endl;
     float moved_left = 0;
     float moved_right = 0;
     this->left_wheel.mmMovedSinceLastCall();
     this->right_wheel.mmMovedSinceLastCall();
     this->goStraight(direction, speed);
+    bool moving_left = true;
+    bool moving_right = true;
     while((moved_left + moved_right) < 2*mm)
     {
-        if (moved_left > mm)
+        if (moving_left && moved_left > mm)
+        {
+            moving_left = false;
             this->left_wheel.stop();
-        else
-            moved_left += this->left_wheel.mmMovedSinceLastCall();
-        if (moved_right > mm)
+        }      
+        if (moving_right && moved_right > mm)
+        {
+            moving_right = false;
             this->right_wheel.stop();
-        else
-            moved_right += this->right_wheel.mmMovedSinceLastCall();
+        }
+        moved_left += this->left_wheel.mmMovedSinceLastCall();
+        moved_right += this->right_wheel.mmMovedSinceLastCall();
     }
     this->stop();
+    moved_left += this->left_wheel.mmMovedSinceLastCall();
+    moved_right += this->right_wheel.mmMovedSinceLastCall();
     return moved_left - moved_right;
 }
 

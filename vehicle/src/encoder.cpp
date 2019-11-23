@@ -80,7 +80,7 @@ float Encoder::getAngularSpeed()
     }
     avg_time /= 1000000.0;
     //std::cout << "avg_time " << avg_time << std::endl;
-    return (2*M_PI/this->num_holes) / (avg_time);
+    return (2*M_PI/consts::num_holes_encoder) / (avg_time);
 }
 
 // Registers that the encoder spun one hole

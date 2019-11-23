@@ -110,21 +110,15 @@ cv::Mat Vision::getColorMask(const cv::Mat& img, const cv::Scalar min, const cv:
 
 bool Vision::isTrafficLightRed()
 {
-    cv::Mat red_mask = this->getColorMask(this->forward_img, cv::Scalar(160, 100, 40), cv::Scalar(180, 240, 140));
+    const cv::Rect traffic_light_roi(200, 0, 240, 300);
+    const cv::Mat traffic_light_img = this->forward_img(traffic_light_roi);
+    const cv::Mat red_mask = this->getColorMask(traffic_light_img, cv::Scalar(160, 100, 40), cv::Scalar(180, 240, 140));
     vector<vector<cv::Point>> contours;
     vector<cv::Vec4i> hierarchy;
     cv::findContours(red_mask, contours, hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE);
-    if(hierarchy.size()>0)
-    {
-        for(int j=0; j>=0; j=hierarchy[j][0])
-        {
-            double area = cv::contourArea(contours[j]);
-            if(area < 20)
-            {
-                return true;
-            }
-        }
-    }
+    for (const auto& contour: contours)
+        if(cv::contourArea(contour) <= consts::max_traffic_light_area)
+            return true;
     return false;
     
 }
