@@ -13,12 +13,12 @@ int main()
 	Vision vision = Vision();
 	//cv::Mat img = cv::imread("./img/linha_verde.jpg", cv::IMREAD_COLOR);
 	//cv::cvtColor(img, vision.downward_img, cv::COLOR_BGR2HLS);
-	for(int i = 0; i< 20; i++)
+	for(int i = 0; i< 2; i++)
 	{
 		vision.getDownwardCamImg();
 		cv::Mat img;
 		cv::cvtColor(vision.downward_img, img, cv::COLOR_HLS2BGR);
-		//cv::imwrite("teste_linhas.jpg", img);
+		cv::imwrite("teste_linhas.jpg", img);
 		//std::cout << "Tirou a foto." << std::endl;
 		auto initial_tick = cv::getTickCount();
 		auto [tape_secs, street_secs] = vision.findStreets();
@@ -26,7 +26,7 @@ int main()
 		std::cout << "Tempo para processar: " << time_to_process << std::endl;
 		
 		cv::Mat out_img = cv::Mat::zeros(500, 500, CV_8UC3);
-		for (auto& sec: street_secs)
+		for (const auto& sec: street_secs)
 		{
 			cv::Vec4f line = sec.seg;
 			line[0] = 250 + line[0]*500;
@@ -36,7 +36,7 @@ int main()
 			cv::line(out_img, cv::Point(line[0], line[1]), cv::Point(line[2], line[3]), cv::Scalar(255, 255, 255), 5, cv::LINE_AA);
 			sec.print();
 		}
-		for (auto& sec: tape_secs)
+		for (const auto& sec: tape_secs)
 		{
 			cv::Vec4f line = sec.seg;
 			line[0] = 250 + line[0]*500;
@@ -56,7 +56,7 @@ int main()
 			sec.print();
 		}
 		
-		//cv::imwrite("teste_linhas_secoes.jpg", out_img);
+		cv::imwrite("teste_linhas_secoes.jpg", out_img);
 		
 		
 		/*vision.getForwardCamImg();

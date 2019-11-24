@@ -1,6 +1,7 @@
 #ifndef streets_h_
 #define streets_h_
 
+#include <string>
 #include <vector>
 #include <tuple>
 #include <utility>
@@ -21,7 +22,8 @@ namespace streets
             StreetSection() {}
             StreetSection(Color color_, cv::Vec2f line_, cv::Vec4f seg_) :
                 color(color_), line(line_), seg(seg_), connects_end_pt1(), connects_end_pt2() {}
-	    void print();
+            void print() const;
+            std::string as_str() const;
     };
     
     // Big functions

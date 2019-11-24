@@ -180,17 +180,26 @@ int main()
         float dist_to_move_mm;
         if(num_pts)
         {
+            // Turn towards the chosen point
             dist_to_move_mm = consts::step_size_mm;
             std::cout << "Angulo ate o ponto: " << angle/2 << " deg" << std::endl;
             if (std::abs(angle/2) > consts::turn_angle_threshold)
             {
                 movement.turn(angle/2);
                 turn_direction = angle > 0 ? 1 : -1;
-                gpioDelay(300000);
+                gpioDelay(200000);
             }
+            // Move forwards
             const float move_diff = movement.goStraightMm(1, dist_to_move_mm, 200);
             std::cout << "Diferença de movimento das rodas: " << move_diff << " mm" << std::endl;
-            gpioDelay(300000);
+            gpioDelay(200000);
+            // Correct the error on move forward
+            if (move_diff > 0)
+                movement.turnOneWheel(consts::WheelType::right, 1, std::abs(move_diff));
+            else if(move_diff < 0)
+                movement.turnOneWheel(consts::WheelType::left, 1, std::abs(move_diff));
+            gpioDelay(100000);
+            // Move torwards the direction of the street
             float const correction_angle = -(angle/2 - avg_line[1])/2;
             std::cout << "Angulo de correção: " << correction_angle << " deg" << std::endl;
             if(std::abs(correction_angle) > consts::turn_angle_threshold)

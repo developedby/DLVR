@@ -19,7 +19,7 @@ namespace consts
 	float constexpr tape_width = 0.018;
 	float constexpr max_theta_diff = 20 * M_PI/180;
 	float constexpr hough_precision_rad = 5 * M_PI/180;
-	bool constexpr save_img = false;
+	bool constexpr save_img = true;
 	// Traffic light finder
 	int constexpr max_traffic_light_area = 150;
 
@@ -48,16 +48,21 @@ namespace consts
 	int constexpr ultrasound_trigger_pin = 27;
 	int constexpr ultrasound_echo_pin = 22;
 	
+	// Movement
+	float constexpr turn_speed = 0.8;
+	
+	enum class WheelType {left, right};
+	
 	//vehicle const
 	int constexpr vehicle_id = 1;
 	int constexpr num_holes_encoder = 20;
 	float constexpr wheel_radius_mm = 33.0;
 	float constexpr wheel_circumference_mm = 2*M_PI*wheel_radius_mm;
-	constexpr float encoder_deg_per_hole = 360 / consts::num_holes_encoder;
-	constexpr float mm_moved_per_hole = wheel_circumference_mm / consts::num_holes_encoder;
-	float constexpr vehicle_wheel_distance = 128.9;
-	constexpr float vehicle_deg_per_mm = 360 / (2*M_PI*vehicle_wheel_distance);
-	constexpr float vehicle_deg_per_hole = mm_moved_per_hole * vehicle_deg_per_mm;
+	float constexpr encoder_deg_per_hole = 360 / num_holes_encoder;
+	float constexpr mm_moved_per_hole = wheel_circumference_mm / num_holes_encoder;
+	float constexpr wheel_distance = 128.9;
+	float constexpr vehicle_deg_per_mm = 360 / (2*M_PI*wheel_distance);
+	float constexpr vehicle_deg_per_hole = mm_moved_per_hole * vehicle_deg_per_mm;
 	
 	//pid
 	float constexpr pid_l_Kp = 0.00004;

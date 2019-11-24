@@ -5,7 +5,9 @@
 #include "constants.hpp"
 
 
-Wheel::Wheel(int wheel_num) : dc_motor(wheel_num), last_encoder_ticks(0), encoder(wheel_num) {}
+Wheel::Wheel(const consts::WheelType wheel_type) :
+    dc_motor(wheel_type), last_encoder_ticks(0), encoder(wheel_type)
+{}
 
 void Wheel::spin(int const direction, float const duty_cycle)
 {
@@ -30,5 +32,5 @@ float Wheel::mmMovedSinceLastCall()
 {
     const int num_ticks = this->encoder.ticks - this->last_encoder_ticks;
     this->last_encoder_ticks = this->encoder.ticks;
-    return num_ticks * ((2*M_PI)/consts::num_holes_encoder) * consts::wheel_radius_mm; 
+    return num_ticks * consts::mm_moved_per_hole;
 }

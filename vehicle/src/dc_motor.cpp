@@ -5,9 +5,9 @@
 #include <softPwm.h>
 #include "constants.hpp"
 
-DCMotor::DCMotor(int motor_num)
+DCMotor::DCMotor(const consts::WheelType wheel_type)
 {
-	if(motor_num == 0)
+	if(wheel_type == consts::WheelType::left)
 	{
 		pin_fwd = consts::left_motor_pin_fwd;
 		pin_bkwd = consts::left_motor_pin_bkwd;

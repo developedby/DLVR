@@ -14,27 +14,29 @@ void tickP(void* args) {
     ((Movement*)args)->calculateSpeed();
 }
 
-Movement::Movement() : left_pid(0), right_pid(1), left_wheel(0),  right_wheel(1)
+Movement::Movement() :
+    left_pid(consts::WheelType::left), right_pid(consts::WheelType::right),
+    left_wheel(consts::WheelType::left), right_wheel(consts::WheelType::right)
 {
-    lr = 0.0f;
-    rr = 0.0f;
-    balance = 0.0f;
-    lb = 1.0f;
-    rb = 1.0f;
-    l_dir = 0;
-    r_dir = 0;
-    turn_ticks = -1;
-    initial_wheel_flag = false;
-    lm_speed = 0.5;
-    rm_speed = 0.5;
-    wheel_distance = consts::vehicle_wheel_distance;
+    this->lr = 0.0f;
+    this->rr = 0.0f;
+    this->balance = 0.0f;
+    this->lb = 1.0f;
+    this->rb = 1.0f;
+    this->l_dir = 0;
+    this->r_dir = 0;
+    this->turn_ticks = -1;
+    this->initial_wheel_flag = false;
+    this->lm_speed = 0.5;
+    this->rm_speed = 0.5;
 
     gpioSetTimerFuncEx(8, 250, tickP, this);
-    is_to_move = false;
+    this->is_to_move = false;
     
 }
 
-void Movement::turn(float degrees) {
+void Movement::turn(const float degrees)
+{
     this->left_wheel.stop();
     this->right_wheel.stop();
     int moved_right = 0;
@@ -42,14 +44,14 @@ void Movement::turn(float degrees) {
     int total_moved = 0;
 	const int r_previous_read = this->right_wheel.encoder.ticks;
     const int l_previous_read = this->left_wheel.encoder.ticks;
-    int holes_to_turn = std::ceil((std::abs(degrees) / consts::vehicle_deg_per_hole) / 2.0f);
+    int holes_to_turn = std::rint((std::abs(degrees) / consts::vehicle_deg_per_hole) / 2.0f);
     std::cout << "Fazendo curva de " << holes_to_turn << " furos" << std::endl;
-    float constexpr turning_speed = 0.8;
     int r_dir = (degrees > 0) ? 1 : -1;
+
     bool moving_left = true;
     bool moving_right = true;
-    this->left_wheel.spin(-r_dir, turning_speed);
-    this->right_wheel.spin(r_dir, turning_speed);
+    this->left_wheel.spin(-r_dir, consts::turn_speed);
+    this->right_wheel.spin(r_dir, consts::turn_speed);
     while(total_moved < holes_to_turn)
     {
         if (moving_left && (moved_left >= holes_to_turn))
@@ -73,24 +75,47 @@ void Movement::turn(float degrees) {
     this->stop();
 }
 
+// Moves a single wheel for 
+void Movement::turnOneWheel(const consts::WheelType wheel_type, const int direction, const float mm)
+{
+    this->stop();
+    
+    Wheel* wheel;
+    if (wheel_type == consts::WheelType::left)
+        wheel = &(this->left_wheel);
+    else
+        wheel = &(this->right_wheel);
+    wheel->mmMovedSinceLastCall();
+
+    wheel->spin(direction, consts::turn_speed);
+    float total_moved = 0;
+    while (total_moved < mm)
+    {
+        total_moved += wheel->mmMovedSinceLastCall();
+   }
+   wheel->stop();
+}
+
 // Tries to move in a straight line.
 // Direction is 1 (forward) or -1 (backwards)
 // Speed is in milimeters per second
 // This function doesn't block execution
-void Movement::goStraight(int direction, float speed){
+void Movement::goStraight(const int direction, const float speed)
+{
     this->is_to_move = true;
     this->required_speed = speed;
     //Dir L = Dir R
-    r_dir = l_dir = direction * (speed > 0);
-    this->left_wheel.spin(l_dir, lm_speed);
-    this->right_wheel.spin(r_dir, rm_speed);
+    this->r_dir = direction * (speed > 0);
+    this->l_dir = this->r_dir;
+    this->left_wheel.spin(this->l_dir, this->lm_speed);
+    this->right_wheel.spin(this->r_dir, this->rm_speed);
 }
 
 
 // Tries to move in a straight line for 'cm' centimeters
 // Return the distance move by the left wheel minus the moved by the right wheel
 // This function blocks execution
-float Movement::goStraightMm(int direction, float mm, float speed=300)
+float Movement::goStraightMm(const int direction, const float mm, const float speed=300)
 {
     std::cout << "Andando pra frente " << mm << " mm" << std::endl;
     float moved_left = 0;
@@ -121,14 +146,14 @@ float Movement::goStraightMm(int direction, float mm, float speed=300)
     return moved_left - moved_right;
 }
 
-void Movement::goCurve(int direction, float curvature) {
+void Movement::goCurve(const int direction, const float curvature) {
     //Dir L = a * Dir R
     //TODO: It
     float v0 = (lr + rr) / 2.0f;
     float w0 = v0 / curvature;
 
-    this->lr = w0 * (curvature + wheel_distance / 2.0f);
-    this->rr = w0 * (curvature - wheel_distance / 2.0f);
+    this->lr = w0 * (curvature + consts::wheel_distance / 2.0f);
+    this->rr = w0 * (curvature - consts::wheel_distance / 2.0f);
     
 }
 
@@ -188,7 +213,7 @@ float Movement::getBalance(void) {
     return this->balance;
 }
 
-float Movement::setBalance(float balance_) {  
+float Movement::setBalance(const float balance_) {  
     this->balance = std::clamp(balance_, -1.0f, 1.0f);
 
     if(this->balance > 0) {
@@ -199,7 +224,7 @@ float Movement::setBalance(float balance_) {
         lb = 1.0f;
         rb = 1.0f + this->balance;
     }
-    return (this->balance);
+    return this->balance;
 }
 
 bool Movement::isTurning(void) {
@@ -212,8 +237,8 @@ void Movement::calculateSpeed(void)
     {
         //std::cout << "l: " << this->left_wheel.getSpeed() << " send: "  << this->lm_speed << std::endl;
         //std::cout << "r: " << this->right_wheel.getSpeed() << " send: " << this->lm_speed << std::endl;
-        int l_error = this->left_wheel.getSpeed() - this->required_speed;
-        int r_error = this->right_wheel.getSpeed() - this->required_speed;
+        const int l_error = this->left_wheel.getSpeed() - this->required_speed;
+        const int r_error = this->right_wheel.getSpeed() - this->required_speed;
         this->lm_speed -= l_error*D_SPEED;
         this->rm_speed -= r_error*D_SPEED;
         if (l_error > r_error) //roda esquerda esta mais rapida

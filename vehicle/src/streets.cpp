@@ -1,13 +1,18 @@
 #include "streets.hpp"
+
 #include <cmath>
 #include <iostream>
 #include <limits>
 #include <vector>
 #include <array>
 #include <algorithm>
+#include <sstream>
+#include <string>
+
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
+
 #include "geometry.hpp"
 #include "constants.hpp"
 
@@ -24,9 +29,16 @@ using cv::Point2f;
 
 namespace streets
 {
-    void StreetSection::print()
+    void StreetSection::print() const
     {
-        std::cout << this->line << ' ' << this->seg << ' ' << int(this->color) << std::endl;
+        std::cout << this->as_str() << std::endl;
+    }
+ 
+    std::string StreetSection::as_str() const
+    {
+        std::stringstream ss = std::stringstream();
+        ss << this->line << ' ' << this->seg << ' ' << int(this->color);
+        return ss.str();
     }
     
     // Finds the lines that go through the tapes in the image
@@ -95,19 +107,23 @@ namespace streets
             {
                 if (i == j)
                     continue;
-                const float dist = geometry::distSegments(tape_secs[i].seg, tape_secs[j].seg);
-                // If the segments are right next to each other
-                if (dist < consts::lane_width/4)
+                connected_secs.emplace_back(tape_secs[j].color, tape_secs[i].line, tape_secs[j].seg);
+                
+                if (j > i)  // To prevent repeated sections
                 {
-                    connected_secs.emplace_back(tape_secs[j].color, tape_secs[i].line, tape_secs[j].seg);
-                }
-                // If the segments are parallel, a lane's distance apart, but not collinear
-                else if (j > i
-                         && geometry::linesAreParallel(tape_secs[i].line, tape_secs[j].line, consts::max_theta_diff)
-                         && (consts::lane_width*0.7 < dist && dist < consts::lane_width*1.3)
-                         && (std::abs(tape_secs[i].line[0] - tape_secs[j].line[0]) > consts::lane_width/4))
-                {
-                    opposite_secs.emplace_back(tape_secs[j].color, tape_secs[i].line, tape_secs[j].seg);
+                    // If the segments are parallel, a lane's distance apart, but not collinear, they are opposite
+                    const float dist = geometry::distSegments(tape_secs[i].seg, tape_secs[j].seg);
+                    const bool are_parallel = geometry::linesAreParallel(tape_secs[i].line, tape_secs[j].line, consts::max_theta_diff);
+                    const bool are_a_lane_width_apart = (consts::lane_width*0.7 < dist && dist < consts::lane_width*1.3);
+                    const bool are_collinear = geometry::linesAreCollinear(tape_secs[i].line, tape_secs[j].line, consts::max_theta_diff, consts::lane_width/4);
+                    std::cout << "\tDistancia entre segmentos: " << dist << std::endl;
+                    std::cout << "\tSao paralelos: " << are_parallel << std::endl;
+                    std::cout << "\tTem a distancia certa: " << are_a_lane_width_apart << std::endl;
+                    std::cout << "\tSao colineares: " << are_collinear << std::endl << std::endl;
+                    if (are_parallel && are_a_lane_width_apart && (!are_collinear))
+                    {
+                        opposite_secs.emplace_back(tape_secs[j].color, tape_secs[j].line, tape_secs[j].seg);
+                    }
                 }
             }
             
@@ -115,7 +131,6 @@ namespace streets
             if (opposite_secs.empty())
             {
                 insertParallelSection(tape_secs[i], Color::blue, imaginable_secs);
-                //std::cout << "segmentos azuis: " << transl_half1 << " " << transl_half2 <<std::endl;
             }
             // If there are opposite segments, try to create sections between them
             else
@@ -138,7 +153,7 @@ namespace streets
                         cout << "\tsecao: " << section.seg << ' ' << int(section.color) << endl;
                         cout << "\tseg: " << seg.seg << ' ' << int(seg.color) << endl;
                         cout << "\tdist: " << dist << endl << endl;*/
-                        if (dist < consts::lane_width/3)
+                        if (dist < consts::lane_width/4)
                         {
                             sec_possible = false;
                             break;
@@ -168,7 +183,7 @@ namespace streets
         vector<StreetSection> not_so_short_secs;
         for (const auto& sec: short_secs)
         {
-            if (geometry::segmentLength(sec.seg) > 0.05)
+            if (geometry::segmentLength(sec.seg) > 0.04)
                 not_so_short_secs.push_back(sec);
         }
         
@@ -636,7 +651,7 @@ namespace streets
     Mat getBlueTapeMask(const Mat& img)
     {
         //std::cout << "Pegando mascara azul" << std::endl;
-        return getTapeMask(img, cv::Scalar(85, 180, 40), cv::Scalar(105, 250, 255));
+        return getTapeMask(img, cv::Scalar(85, 100, 40), cv::Scalar(105, 250, 255));
     }
 
     Mat getGreenTapeMask(const Mat& img)
@@ -648,7 +663,7 @@ namespace streets
     Mat getYellowTapeMask(const Mat& img)
     {
         //std::cout << "Pegando mascara amarela" << std::endl;
-        return getTapeMask(img, cv::Scalar(20, 130, 30), cv::Scalar(40, 190, 170));
+        return getTapeMask(img, cv::Scalar(20, 170, 115), cv::Scalar(45, 240, 255));
     }
 
     Mat getWhiteTapeMask(const Mat& img)
@@ -713,6 +728,10 @@ namespace streets
         const Vec2f mid_pt = geometry::segmentHalfPoint(Vec4f(pt1[0], pt1[1], pt2[0], pt2[1]));
         const Vec4f new_seg1(pt1[0], pt1[1], mid_pt[0], mid_pt[1]);
         const Vec4f new_seg2(mid_pt[0], mid_pt[1], pt2[0], pt2[1]);
+        std::cout << "Inserindo middle section das seguintes secoes" << std::endl;
+        std::cout << '\t' << sec1.as_str() << std::endl;
+        std::cout << '\t' << sec2.as_str() << std::endl;
+        std::cout << "Middle sections: " << new_seg1 << " " << new_seg2 << std::endl;
         sec_vec.emplace_back(color, geometry::segmentToLine(new_seg2), new_seg2);
         sec_vec.emplace_back(color, geometry::segmentToLine(new_seg1), new_seg1);
     }
