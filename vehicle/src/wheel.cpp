@@ -22,7 +22,8 @@ float Wheel::getSpeed()
 
 void Wheel::stop()
 {
-    this->dc_motor.spin(0, 0);
+    //this->dc_motor.lock();
+    this->dc_motor.release();
     this->encoder.resetReadings();
 }
 

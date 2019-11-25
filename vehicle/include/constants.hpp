@@ -18,8 +18,12 @@ namespace consts
 	float constexpr lane_width = 0.26;
 	float constexpr tape_width = 0.018;
 	float constexpr max_theta_diff = 20 * M_PI/180;
+	float constexpr hough_precision_px = 1;
 	float constexpr hough_precision_rad = 5 * M_PI/180;
-	bool constexpr save_img = true;
+	int constexpr hough_thresh = 100;
+	int constexpr hough_min_len = 100;
+	int constexpr hough_max_gap = 8;
+	bool constexpr save_img = false;
 	// Traffic light finder
 	int constexpr max_traffic_light_area = 150;
 
@@ -56,7 +60,7 @@ namespace consts
 	//vehicle const
 	int constexpr vehicle_id = 1;
 	int constexpr num_holes_encoder = 20;
-	float constexpr wheel_radius_mm = 33.0;
+	float constexpr wheel_radius_mm = 33.2;
 	float constexpr wheel_circumference_mm = 2*M_PI*wheel_radius_mm;
 	float constexpr encoder_deg_per_hole = 360 / num_holes_encoder;
 	float constexpr mm_moved_per_hole = wheel_circumference_mm / num_holes_encoder;

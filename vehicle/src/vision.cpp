@@ -59,39 +59,39 @@ void Vision::getForwardCamImg()
 // Returns a graph of the StreetSections identified
 pair<vector<StreetSection>, vector<StreetSection>> Vision::findStreets()
 {
-    cout << "Procurando linhas" << endl;
+    //cout << "Procurando linhas" << endl;
     
     // Finds the lines that go through the tapes in the image
     const auto [lines, lines_colors] = streets::findTapeLines(this->downward_img);
-    cout << "Calculou as linhas. Encontradas: " << lines.size() << endl;
+    /*cout << "Calculou as linhas. Encontradas: " << lines.size() << endl;
     for (unsigned int i = 0; i < lines.size(); i++)
     {
         cout << lines[i] << ' ' << int(lines_colors[i]) << endl;
-    }
+    }*/
     
     // Reverts the projection distortion, converting to StreetSection
     const vector<StreetSection> tape_sections = streets::undoProjectionDistortion(lines, lines_colors);
-    cout << "Reverteu a distorcao de perspectiva" << endl;
-    std::for_each(tape_sections.begin(), tape_sections.end(), [](const auto& sec){sec.print();});
+    //cout << "Reverteu a distorcao de perspectiva" << endl;
+    //std::for_each(tape_sections.begin(), tape_sections.end(), [](const auto& sec){sec.print();});
 
     // Find all the possible street sections
     const vector<StreetSection> possible_sections = streets::findPossibleStreetSections(tape_sections);
-    cout << "Calculou todas as mini seções. Encontradas: " << possible_sections.size() << endl;
-    std::for_each(possible_sections.begin(), possible_sections.end(), [](const auto& sec){sec.print();});
+    //cout << "Calculou todas as mini seções. Encontradas: " << possible_sections.size() << endl;
+    //std::for_each(possible_sections.begin(), possible_sections.end(), [](const auto& sec){sec.print();});
 
     // Transforms overlapping sections into a single long section
     const vector<StreetSection> long_sections = streets::groupIntoLongSections(possible_sections);
-    cout << "Calculou todas as seções longas. Encontradas: " << long_sections.size() << endl;
-    std::for_each(long_sections.begin(), long_sections.end(), [](const auto& sec){sec.print();});
+    //cout << "Calculou todas as seções longas. Encontradas: " << long_sections.size() << endl;
+    //std::for_each(long_sections.begin(), long_sections.end(), [](const auto& sec){sec.print();});
 
     // Break the sections where they intersect
     vector<StreetSection> final_sections = streets::breakIntersectingSections(long_sections);
-    cout << "Calculou as seções finais. Encontradas: " << final_sections.size() << endl;
-    std::for_each(final_sections.begin(), final_sections.end(), [](const auto& sec){sec.print();});
+    //cout << "Calculou as seções finais. Encontradas: " << final_sections.size() << endl;
+    //std::for_each(final_sections.begin(), final_sections.end(), [](const auto& sec){sec.print();});
     
     // Link the sections
     buildSectionGraph(final_sections);
-    cout << "Juntou as seções" << endl;
+    //cout << "Juntou as seções" << endl;
 
     return pair(tape_sections, final_sections);
 }

@@ -47,6 +47,14 @@ int main()
     }
     Movement movement = Movement();
     movement.stop();
+    movement.goStraightMm(1, 100, 200);
+    gpioDelay(200000);
+    //movement.goStraightMm(1, 100, 200);
+    //gpioDelay(200000);
+    //movement.goStraightMm(1, 100, 200);
+    movement.stop();
+    gpioTerminate();
+    return 0;
     Vision vision = Vision();
     vision.getDownwardCamImg();
     auto [found_tapes, found_streets] = vision.findStreets();
@@ -151,7 +159,8 @@ int main()
         const float u = sqrt(geometry::square(dist_per_step_m) - geometry::square(avg_line[0]));
         const cv::Vec2f next_pt = (delta[1] > 0) ? (pt0 + u*delta) : (pt0 - u*delta);*/
         // Calculate the angle to the next point, where 0 means in front
-        const cv::Vec2f next_pt = cv::Vec2f(avg_seg[0], avg_seg[1]);
+        const cv::Vec2f next_pt = cv::Vec2f(avg_seg[0] + (avg_seg[2]-avg_seg[0])/2,
+                                            avg_seg[1] + (avg_seg[3]-avg_seg[1])/2);
         const float angle = atan2(next_pt[1], next_pt[0])*(180/M_PI) - 90;
         std::cout << "Proximo ponto a seguir: " << next_pt << " Angulo: " << angle << " deg" << std::endl;
         //std::cout << "Proxima rua: " << avg_line << std::endl;
@@ -173,8 +182,8 @@ int main()
         else
             right_reference_tape.color = streets::Color::none;
         std::cout << "Escolheu para calcular o quanto andou as fitas:" << std::endl;
-        left_reference_tape.print();
-        right_reference_tape.print();
+        std::cout << "\t" << left_reference_tape.as_str() << std::endl;
+        std::cout << "\t" << right_reference_tape.as_str() << std::endl;
         
         /* Go to the chosen point, adjusting the angle to be parallel with the street in the end */
         float dist_to_move_mm;
@@ -261,7 +270,7 @@ int main()
                 if (((expected_pos-0.05) <= tape.seg[1])
                     && (tape.seg[1] <= (expected_pos+0.05)))
                 {
-                    std::cout << "Achou a fita da esquerda em: " << tape.seg;
+                    std::cout << "Achou a fita da esquerda em: " << tape.seg << std::endl;
                     num_tapes_found++;
                     ran_dist_step_mm += (left_reference_tape.seg[1] - tape.seg[1]);
                     break;  // Stop as there should only be one tape that fits
@@ -276,7 +285,7 @@ int main()
                 if (((expected_pos-0.05) <= tape.seg[1])
                     && (tape.seg[1] <= (expected_pos+0.05)))
                 {
-                    std::cout << "Achou a fita da direita em: " << tape.seg;
+                    std::cout << "Achou a fita da direita em: " << tape.seg << std::endl;
                     num_tapes_found++;
                     ran_dist_step_mm += (right_reference_tape.seg[1] - tape.seg[1]) * 1000;
                     break;

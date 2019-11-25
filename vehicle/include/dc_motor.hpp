@@ -12,6 +12,8 @@ class DCMotor
     public:
         DCMotor(const consts::WheelType wheel_type);
         void spin(int const direction, double const duty_cycle);
+        void lock();
+        void release();
 };
 
 #endif //dc_motor_h

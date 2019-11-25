@@ -24,6 +24,7 @@ namespace streets
                 color(color_), line(line_), seg(seg_), connects_end_pt1(), connects_end_pt2() {}
             void print() const;
             std::string as_str() const;
+            bool operator==(const StreetSection& other) const;
     };
     
     // Big functions
