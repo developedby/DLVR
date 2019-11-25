@@ -47,14 +47,14 @@ int main()
     }
     Movement movement = Movement();
     movement.stop();
+    /*movement.goStraightMm(1, 100, 200);
+    gpioDelay(200000);
     movement.goStraightMm(1, 100, 200);
     gpioDelay(200000);
-    //movement.goStraightMm(1, 100, 200);
-    //gpioDelay(200000);
-    //movement.goStraightMm(1, 100, 200);
+    movement.goStraightMm(1, 100, 200);
     movement.stop();
     gpioTerminate();
-    return 0;
+    return 0;*/
     Vision vision = Vision();
     vision.getDownwardCamImg();
     auto [found_tapes, found_streets] = vision.findStreets();
@@ -81,7 +81,7 @@ int main()
     streets::orderCollinearSections(right_tapes, 1);
     
     float total_ran_dist_mm = 0;
-    const float required_distance = 1000;
+    const float required_distance = 780;
     bool stop = false;
     int turn_direction = 1;
     std::cout << std::endl;
@@ -190,7 +190,32 @@ int main()
         if(num_pts)
         {
             // Turn towards the chosen point
-            dist_to_move_mm = consts::step_size_mm;
+            std::cout << required_distance - total_ran_dist_mm << "eh maior que " << consts::dist_to_look_perpendicular_street << std::endl;
+            if((required_distance - total_ran_dist_mm) > consts::dist_to_look_perpendicular_street)
+            {
+                dist_to_move_mm = consts::step_size_mm;
+            }
+            else
+            {
+                float remaining_distace = required_distance - total_ran_dist_mm;
+                float difference_point_to_stop = 100;
+                for (const auto& street: perpendicular_streets)
+                {
+                    float diff = std::abs((std::max(street.seg[1], street.seg[3])  * 1000) - remaining_distace);
+                    if(diff < difference_point_to_stop)
+                    {                        
+                        dist_to_move_mm = (std::min(street.seg[1], street.seg[3])  * 1000);
+                        difference_point_to_stop = diff;
+                    }
+                }
+                std::cout << "rua perpendicular, vou andar " << dist_to_move_mm << std::endl;
+                stop = true;
+            }
+            if((vision.distanceFromObstacle() - consts::dist_to_avoid_distance_cm) < dist_to_move_mm/10)
+            {
+                std::cout << "tem um obstáculo próximo: " << vision.distanceFromObstacle() << std::endl;
+                dist_to_move_mm = (vision.distanceFromObstacle() - consts::dist_to_avoid_distance_cm) * 10;
+            }
             std::cout << "Angulo ate o ponto: " << angle/2 << " deg" << std::endl;
             if (std::abs(angle/2) > consts::turn_angle_threshold)
             {
@@ -204,9 +229,15 @@ int main()
             gpioDelay(200000);
             // Correct the error on move forward
             if (move_diff > 0)
+            {
                 movement.turnOneWheel(consts::WheelType::right, 1, std::abs(move_diff));
+                turn_direction = 1;
+            }
             else if(move_diff < 0)
+            {
                 movement.turnOneWheel(consts::WheelType::left, 1, std::abs(move_diff));
+                turn_direction = -1;
+            }
             gpioDelay(100000);
             // Move torwards the direction of the street
             float const correction_angle = -(angle/2 - avg_line[1])/2;
@@ -264,31 +295,35 @@ int main()
         float ran_dist_step_mm = 0;
         if (left_reference_tape.color != streets::Color::none)
         {
+            const float left_reference_tape_dist = std::max(left_reference_tape.seg[1], left_reference_tape.seg[3]);
+            const float expected_pos = left_reference_tape_dist - dist_to_move_mm/1000;
             for(const auto& tape: left_tapes)
             {
-                const float expected_pos = left_reference_tape.seg[1] - consts::step_size_mm/1000;
-                if (((expected_pos-0.05) <= tape.seg[1])
-                    && (tape.seg[1] <= (expected_pos+0.05)))
+                float left_tape_dist = std::max(tape.seg[1], tape.seg[3]);
+                if (((expected_pos-0.05) <= left_tape_dist)
+                    && (left_tape_dist <= (expected_pos+0.05)))
                 {
                     std::cout << "Achou a fita da esquerda em: " << tape.seg << std::endl;
                     num_tapes_found++;
-                    ran_dist_step_mm += (left_reference_tape.seg[1] - tape.seg[1]);
+                    ran_dist_step_mm += (left_reference_tape_dist - left_tape_dist) * 1000;
                     break;  // Stop as there should only be one tape that fits
                 }
             }
         }
         if (right_reference_tape.color != streets::Color::none)
         {
+            const float right_reference_tape_dist = std::max(right_reference_tape.seg[1], right_reference_tape.seg[3]);
+            const float expected_pos = right_reference_tape_dist - dist_to_move_mm/1000;
             for(const auto& tape: right_tapes)
             {
-                const float expected_pos = right_reference_tape.seg[1] - dist_to_move_mm/1000;
-                if (((expected_pos-0.05) <= tape.seg[1])
-                    && (tape.seg[1] <= (expected_pos+0.05)))
+                float right_tape_dist = std::max(tape.seg[1], tape.seg[3]);
+                if (((expected_pos-0.05) <= right_tape_dist)
+                    && (right_tape_dist <= (expected_pos+0.05)))
                 {
                     std::cout << "Achou a fita da direita em: " << tape.seg << std::endl;
                     num_tapes_found++;
-                    ran_dist_step_mm += (right_reference_tape.seg[1] - tape.seg[1]) * 1000;
-                    break;
+                    ran_dist_step_mm += (right_reference_tape_dist - right_tape_dist) * 1000;
+                    break;  // Stop as there should only be one tape that fits
                 }
             }
         }

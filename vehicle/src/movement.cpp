@@ -120,7 +120,7 @@ void Movement::goStraight(const int direction, const float speed)
 float Movement::goStraightMm(const int direction, float mm, const float speed=300)
 {
     std::cout << "Andando pra frente " << mm << " mm" << std::endl;
-    mm = std::clamp(mm - 20, 0.0f, mm);
+    mm = std::clamp(mm - 30, 0.0f, mm);
     float moved_left = 0;
     float moved_right = 0;
     this->left_wheel.mmMovedSinceLastCall();

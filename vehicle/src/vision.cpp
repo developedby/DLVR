@@ -130,3 +130,9 @@ pair<vector<int>, vector<vector<cv::Point2f>>> Vision::findARMarkers()
     cv::aruco::detectMarkers(this->forward_img, this->aruco_dict, corners, ids);
     return pair(ids, corners);
 }
+
+float Vision::distanceFromObstacle()
+{
+    return ultrasound.getDistance();
+}
+    

@@ -6,8 +6,8 @@
 
 Ultrasound::Ultrasound()
 {
-    pin_trigger = constants::ultrasound_trigger_pin;
-    pin_echo = constants::ultrasound_echo_pin;
+    pin_trigger = consts::ultrasound_trigger_pin;
+    pin_echo = consts::ultrasound_echo_pin;
     gpioSetMode(pin_trigger, PI_OUTPUT);
     gpioSetMode(pin_echo, PI_INPUT);
     gpioWrite(pin_trigger, 0);
