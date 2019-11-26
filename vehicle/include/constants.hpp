@@ -81,7 +81,7 @@ namespace consts
 	float constexpr turn_angle_threshold = 5.0;
 	float constexpr step_size_mm = 100;
 	float constexpr dist_to_look_perpendicular_street = 200;
-	float constexpr dist_to_avoid_distance_cm = 8;
+	float constexpr dist_to_avoid_distance_cm = 6;
 }
 
 #endif

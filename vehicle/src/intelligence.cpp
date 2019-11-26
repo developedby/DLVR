@@ -456,7 +456,7 @@ void Intelligence::followTheRoad(float distance_to_go)
 
 void Intelligence::processForwardImg()
 {
-    vehicle->vision.getDownwardCamImg();
+    vehicle->vision.getForwardCamImg();
     auto [ids, positions] = vehicle->vision.findARMarkers();
     for(auto id:ids)
         qr_codes_read.push_back(id);
@@ -468,7 +468,7 @@ void Intelligence::goToCityQrCode()
     bool found = false;
     while(!found)
     {
-        vehicle->vision.getDownwardCamImg();
+        vehicle->vision.getForwardCamImg();
         auto [ids, corners] = vehicle->vision.findARMarkers();
         unsigned int i=0;
         for(i=0; i < ids.size(); i++)

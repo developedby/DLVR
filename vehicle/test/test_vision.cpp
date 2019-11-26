@@ -10,10 +10,15 @@
 
 int main()
 {
+	if (gpioInitialise() == PI_INIT_FAILED)
+    {
+        std::cout << "Erro ao inicializar a GPIO!" << std::endl;
+        exit(PI_INIT_FAILED);
+    }
 	Vision vision = Vision();
 	//cv::Mat img = cv::imread("./img/linha_verde.jpg", cv::IMREAD_COLOR);
 	//cv::cvtColor(img, vision.downward_img, cv::COLOR_BGR2HLS);
-	for(int i = 0; i< 2; i++)
+	/*for(int i = 0; i< 2; i++)
 	{
 		vision.getDownwardCamImg();
 		cv::Mat img;
@@ -58,15 +63,14 @@ int main()
 		
 		cv::imwrite("teste_linhas_secoes.jpg", out_img);
 		
-		
-		/*vision.getForwardCamImg();
-		//cv::imwrite("teste_top_img.jpg", vision.top_img);
-		auto [ids, corners] = vision.findARMarkers();
-		for(unsigned int i=0; i < ids.size(); i++)
-		{
-			std::cout << "encontrou " << ids[i] << " " << corners[i] << std::endl;
-			cv::rectangle(vision.forward_img, corners[i][0], corners[i][2], cv::Scalar(0,255,0),  3, cv::LINE_8, 0); 
-		}
-		//cv::imwrite("results.jpg", vision.top_img);*/
+	}*/
+	vision.getForwardCamImg();
+	cv::imwrite("teste_top_img.jpg", vision.forward_img);
+	auto [ids, corners] = vision.findARMarkers();
+	for(unsigned int i=0; i < ids.size(); i++)
+	{
+		std::cout << "encontrou " << ids[i] << " " << corners[i] << std::endl;
+		cv::rectangle(vision.forward_img, corners[i][0], corners[i][2], cv::Scalar(0,255,0),  3, cv::LINE_8, 0); 
 	}
+	cv::imwrite("results.jpg", vision.forward_img);
 }

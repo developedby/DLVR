@@ -57,9 +57,14 @@ int main()
     return 0;*/
     Vision vision = Vision();
     bool found = false;
+    while(true)
+    {
+        std::cout << vision.distanceFromObstacle() <<std::endl;
+    }
     while(!found)
     {
-        vision.getDownwardCamImg();
+        vision.getForwardCamImg();
+        gpioDelay(200000);
         auto [ids, positions] = vision.findARMarkers();
         unsigned int i=0;
         for(i=0; i < ids.size(); i++)
@@ -72,13 +77,12 @@ int main()
             }
         }
         movement.turn(5);
-        gpioDelay(500000);
         if(found)
         {
             float distance_to_move = vision.distanceFromObstacle() - consts::dist_to_avoid_distance_cm;
             if(distance_to_move > 0)
             {
-                movement.goStraightMm(1, distance_to_move, 200);
+                movement.goStraightMm(1, distance_to_move*10, 200);
             }
         }
     }
