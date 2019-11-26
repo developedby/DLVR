@@ -18,6 +18,6 @@ class Ultrasound
 };
 
 void callRegisterEcho(int const gpio, int const level, uint32_t const tick, void *obj);
-void callPollDistance();
+void callPollDistance(void *obj);
 
 #endif //ultrasond_h_

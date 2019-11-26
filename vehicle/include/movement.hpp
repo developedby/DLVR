@@ -6,7 +6,6 @@
 
 class Movement {
     private:
-        float wheel_distance;
         PIDZ left_pid;
         PIDZ right_pid;
         Wheel left_wheel;
@@ -23,17 +22,19 @@ class Movement {
         float lm_speed;
         float rm_speed;
         float required_speed;
-        bool is_to_move;
+        bool moving_left;
+        bool moving_right;
     public:
         Movement();
         void tick(void);
-        void turn(float degrees);
-        void goStraight(int direction, float speed);
-        float goStraightMm(int direction, float mm, float speed);
-        void goCurve(int direction, float curvature);
+        void turn(const float degrees);
+        void turnOneWheel(const consts::WheelType wheel_type, const int direction, const float mm);
+        void goStraight(const int direction, const float speed);
+        float goStraightMm(const int direction, const float mm, const float speed);
+        void goCurve(const int direction, const float curvature);
         void stop();
         float getBalance(void);
-        float setBalance(float balance);
+        float setBalance(const float balance);
         bool isTurning(void);
         void calculateSpeed();
 };

@@ -71,23 +71,23 @@ pair<vector<StreetSection>, vector<StreetSection>> Vision::findStreets()
     
     // Reverts the projection distortion, converting to StreetSection
     const vector<StreetSection> tape_sections = streets::undoProjectionDistortion(lines, lines_colors);
-    /*cout << "Reverteu a distorcao de perspectiva" << endl;
-    std::for_each(tape_sections.begin(), tape_sections.end(), [](auto sec){sec.print();});*/
+    //cout << "Reverteu a distorcao de perspectiva" << endl;
+    //std::for_each(tape_sections.begin(), tape_sections.end(), [](const auto& sec){sec.print();});
 
     // Find all the possible street sections
     const vector<StreetSection> possible_sections = streets::findPossibleStreetSections(tape_sections);
     //cout << "Calculou todas as mini seções. Encontradas: " << possible_sections.size() << endl;
-    //std::for_each(possible_sections.begin(), possible_sections.end(), [](auto sec){sec.print();});
+    //std::for_each(possible_sections.begin(), possible_sections.end(), [](const auto& sec){sec.print();});
 
     // Transforms overlapping sections into a single long section
     const vector<StreetSection> long_sections = streets::groupIntoLongSections(possible_sections);
-    /*cout << "Calculou todas as seções longas. Encontradas: " << long_sections.size() << endl;
-    std::for_each(long_sections.begin(), long_sections.end(), [](auto sec){sec.print();});*/
+    //cout << "Calculou todas as seções longas. Encontradas: " << long_sections.size() << endl;
+    //std::for_each(long_sections.begin(), long_sections.end(), [](const auto& sec){sec.print();});
 
     // Break the sections where they intersect
     vector<StreetSection> final_sections = streets::breakIntersectingSections(long_sections);
-    /*cout << "Calculou as seções finais. Encontradas: " << final_sections.size() << endl;
-    std::for_each(final_sections.begin(), final_sections.end(), [](auto sec){sec.print();});*/
+    //cout << "Calculou as seções finais. Encontradas: " << final_sections.size() << endl;
+    //std::for_each(final_sections.begin(), final_sections.end(), [](const auto& sec){sec.print();});
     
     // Link the sections
     buildSectionGraph(final_sections);
@@ -130,3 +130,9 @@ pair<vector<int>, vector<vector<cv::Point2f>>> Vision::findARMarkers()
     cv::aruco::detectMarkers(this->forward_img, this->aruco_dict, corners, ids);
     return pair(ids, corners);
 }
+
+float Vision::distanceFromObstacle()
+{
+    return ultrasound.getDistance();
+}
+    

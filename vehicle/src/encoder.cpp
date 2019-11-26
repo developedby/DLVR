@@ -7,9 +7,9 @@
 
 int Encoder::instances = 0;
 
-Encoder::Encoder(int encoder_num) : ticks(0), last_measure(gpioTick()), sigma_space(2.0), sigma_time(2.0)
+Encoder::Encoder(const consts::WheelType wheel_type) : ticks(0), last_measure(gpioTick()), sigma_space(2.0), sigma_time(2.0)
 {
-    if(encoder_num == 0)
+    if(wheel_type == consts::WheelType::left)
     {
         pin_read = consts::left_encoder_pin;
     }

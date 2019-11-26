@@ -161,8 +161,13 @@ namespace geometry
 
     bool linesAreCollinear(const cv::Vec2f& line1, const cv::Vec2f& line2, const float max_theta_diff, const float max_rho_diff)
     {
-        bool lines_are_parallel = linesAreParallel(line1, line2, max_theta_diff);
-        bool lines_are_close = std::abs(line1[0] - line2[0]) <= max_rho_diff;
+        const bool lines_are_parallel = linesAreParallel(line1, line2, max_theta_diff);
+        const float theta_diff = std::abs(line1[1] - line2[1]);
+        bool lines_are_close;
+        if (M_PI/2 < theta_diff && theta_diff < 3*M_PI/2)
+            lines_are_close = std::abs(line1[0] + line2[0]) <= max_rho_diff;
+        else
+            lines_are_close = std::abs(line1[0] - line2[0]) <= max_rho_diff;
         //std:: cout << "linhas sao paralelas: " << lines_are_parallel << " linhas sao pertas: " << lines_are_close <<std::endl;
         return (lines_are_parallel && lines_are_close);
     }

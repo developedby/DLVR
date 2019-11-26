@@ -1,6 +1,7 @@
 #ifndef encoder_hpp_
 #define encoder_hpp_
 #include <cstdint>
+#include "constants.hpp"
 
 class Encoder
 {
@@ -8,7 +9,7 @@ class Encoder
         int static constexpr n_measures = 10;
         int ticks;
         float measures_us[n_measures];
-        Encoder(int encoder_num);
+        Encoder(const consts::WheelType wheel_type);
         float getAngularSpeed();
         void registerMeasurement(int const level, uint32_t const tick);
         void registerStopped();

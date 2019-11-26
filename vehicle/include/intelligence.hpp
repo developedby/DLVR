@@ -1,6 +1,7 @@
 #ifndef intelligence_hpp_
 #define intelligence_hpp_
 #include "message.hpp"
+#include <vector>
 
 class Vehicle;
 
@@ -16,15 +17,20 @@ class Intelligence
         std::vector<uint8_t> path_to_follow;
         uint16_t target_qr_code;
         bool has_feedback;
+        bool wait_traffic_light;
+
     public:
         Intelligence (Vehicle* _vehicle);
         void mainLoop();
         bool hasCommand();
-        void followTheRoad();
+        void followThePath();
+        void followTheRoad(float distance_to_go);
         void avoidObstacle();
         void decodeMessage();
         void sendFeedback();
-        void waitTrafficLight();
-        int getQrCode();
+        void getQrCodeFromCity();
+        void getQrCodeFromUser();
+        void processForwardImg();
+        void goToCityQrCode();
 };
 #endif
