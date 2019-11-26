@@ -56,6 +56,35 @@ int main()
     gpioTerminate();
     return 0;*/
     Vision vision = Vision();
+    bool found = false;
+    while(!found)
+    {
+        vision.getDownwardCamImg();
+        auto [ids, positions] = vision.findARMarkers();
+        unsigned int i=0;
+        for(i=0; i < ids.size(); i++)
+        {
+            std::cout << "encontrou " << ids[i] << " " << positions[i] << std::endl;
+            if(ids[i] == 4)
+            {
+                found = true;
+                break;
+            }
+        }
+        movement.turn(5);
+        gpioDelay(500000);
+        if(found)
+        {
+            float distance_to_move = vision.distanceFromObstacle() - consts::dist_to_avoid_distance_cm;
+            if(distance_to_move > 0)
+            {
+                movement.goStraightMm(1, distance_to_move, 200);
+            }
+        }
+    }
+    movement.stop();
+    gpioTerminate();
+    return 0;
     vision.getDownwardCamImg();
     auto [found_tapes, found_streets] = vision.findStreets();
     

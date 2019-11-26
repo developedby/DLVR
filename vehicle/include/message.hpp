@@ -35,12 +35,19 @@ namespace status {
         NO_STATUS = 0,
         STOPPED, 
         MOVING_FORWARD, 
-        MOVING_BACKWAY, 
+        MOVING_BACKWARD, 
         AVOIDING_OBSTACLE, 
         WAITING_SEMAPHORE, 
         WAITING_ROUTE
     };
 }
+
+enum Directions{
+    FORWARD = 8,
+    BACKWARD = 2,
+    TO_THE_LEFT = 4,
+    TO_THE_RIGHT = 6
+};
 
 class ReceivedMessage{
     public:
