@@ -1,11 +1,27 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=4 format=2]
 
-[ext_resource path="res://scripts/artags.gd" type="Script" id=1]
-[ext_resource path="res://sprites/artags/artag1.png" type="Texture" id=2]
+[ext_resource path="res://resources/theme.tres" type="Theme" id=1]
+[ext_resource path="res://scripts/artags.gd" type="Script" id=2]
+[ext_resource path="res://sprites/artags/artag0.png" type="Texture" id=3]
 
-[node name="artags" type="Node2D"]
-script = ExtResource( 1 )
-id = 1
+[node name="artags" type="Control"]
+theme = ExtResource( 1 )
+script = ExtResource( 2 )
+
+[node name="background" type="ColorRect" parent="."]
+margin_right = 700.0
+margin_bottom = 450.0
+rect_min_size = Vector2( 700, 400 )
 
 [node name="tag" type="Sprite" parent="."]
-texture = ExtResource( 2 )
+position = Vector2( 350, 270 )
+scale = Vector2( 0.8, 0.8 )
+texture = ExtResource( 3 )
+
+[node name="label" type="Label" parent="."]
+margin_right = 700.0
+margin_bottom = 90.0
+text = "AR_KS"
+align = 1
+valign = 1
+autowrap = true
