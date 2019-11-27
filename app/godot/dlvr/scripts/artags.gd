@@ -1,6 +1,7 @@
 tool
-extends Node2D
+extends Control
 
+class_name ARTags
 
 export(int, 0, 1) var id:int = 0 setget set_id
 
