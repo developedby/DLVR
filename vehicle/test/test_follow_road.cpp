@@ -57,10 +57,6 @@ int main()
     return 0;*/
     Vision vision = Vision();
     bool found = false;
-    while(true)
-    {
-        std::cout << vision.distanceFromObstacle() <<std::endl;
-    }
     while(!found)
     {
         vision.getForwardCamImg();
@@ -70,21 +66,37 @@ int main()
         for(i=0; i < ids.size(); i++)
         {
             std::cout << "encontrou " << ids[i] << " " << positions[i] << std::endl;
-            if(ids[i] == 4)
+            if(ids[i] == 7)
             {
                 found = true;
                 break;
             }
         }
-        movement.turn(5);
         if(found)
         {
-            float distance_to_move = vision.distanceFromObstacle() - consts::dist_to_avoid_distance_cm;
+            auto mean_point = (positions[i][0] + positions[i][2]);
+            mean_point.x /= 2;
+            mean_point.y /= 2;
+            mean_point.x -= 640/2;
+            mean_point.y = 480/2 - mean_point.y;
+            float pixels_by_angle = 640 / 120;
+            float angle = -(mean_point.x) / pixels_by_angle;
+            float distance_to_move = (vision.distanceFromObstacle() - consts::dist_to_avoid_distance_cm) / 2;
+            std::cout << "ponto: " << mean_point.x << " angle: " << angle << " distance: " << distance_to_move <<std::endl;
+            movement.turn(angle/2);
+            gpioDelay(200000);
+            movement.goStraightMm(1, distance_to_move*10, 200);
+            gpioDelay(200000);
+            movement.turn(-angle);
+            gpioDelay(200000);
+            distance_to_move = (vision.distanceFromObstacle() - consts::dist_to_avoid_distance_cm);
             if(distance_to_move > 0)
             {
                 movement.goStraightMm(1, distance_to_move*10, 200);
             }
         }
+        else
+            movement.turn(5);
     }
     movement.stop();
     gpioTerminate();

@@ -29,7 +29,7 @@ Intelligence::Intelligence(Vehicle *_vehicle) : vehicle(_vehicle)
 
 void Intelligence::mainLoop()
 {
-    while(true)
+    while(vehicle->communication.isChipConnected())
     {
         if (hasCommand())
         {
@@ -37,6 +37,7 @@ void Intelligence::mainLoop()
             sendFeedback();
         }
     }
+    std::cout << "radio desconectado" << std::endl;
     
 }
 
@@ -57,6 +58,8 @@ void Intelligence::decodeMessage()
     MovementInfo movement;
     status::Status status;
     received_message = vehicle->communication.getData();
+    std::cout << "mensagem: " << std::endl;
+    std::cout << "comando: " << received_message.command << " sensor para leitura: " << received_message.sensor_to_read << " status: " << received_message.required_status <<std::endl;
     switch (received_message.command)
     {
         case FORCE_GO_AHEAD:
@@ -113,9 +116,21 @@ void Intelligence::decodeMessage()
     }
     path_to_follow = received_message.path;
     target_qr_code = received_message.qr_code;
+    std::cout << "caminho recebido: " <<std::endl;
+    for(auto step:path_to_follow)
+    {
+        std::cout << int(step) << " ";
+    }
+    std::cout << std::endl << "qr code: " << target_qr_code <<std::endl;
+        
     if(has_feedback)
     {
         sent_message = SentMessage(qr_codes_read, ultrassound_reading, other_sensors_reading, movement, status);
+    }
+    
+    if(!path_to_follow.empty())
+    {
+        this->followThePath();
     }
 }
 
@@ -128,6 +143,7 @@ void Intelligence::followThePath()
 {
     for(unsigned int i = 0; i < path_to_follow.size(); i += 2)
     {
+        std::cout << "andando " << path_to_follow[i+1]*10 << std::endl;
         switch(Directions(path_to_follow[i]))
         {
             case FORWARD:
@@ -136,15 +152,15 @@ void Intelligence::followThePath()
                 vehicle->movement.turn(180);
                 break;
             case TO_THE_LEFT:
-                vehicle->movement.turn(-90);
+                vehicle->movement.turn(90);
                 break;
             case TO_THE_RIGHT:
-                vehicle->movement.turn(90);
+                vehicle->movement.turn(-90);
                 break;
             default:
                 break;
         }
-        this->followTheRoad(path_to_follow[i+1]);
+        this->followTheRoad(path_to_follow[i+1]*10);
     }
     this->goToCityQrCode();
 }
@@ -153,15 +169,15 @@ void Intelligence::followTheRoad(float distance_to_go)
 {
     vehicle->vision.getDownwardCamImg();
     auto [found_tapes, found_streets] = vehicle->vision.findStreets();
-    std::cout << "Ruas encontradas: " << std::endl;
+    //std::cout << "Ruas encontradas: " << std::endl;
     std::for_each(found_streets.begin(), found_streets.end(), [](auto sec){sec.print();});
     std::vector<streets::StreetSection> left_tapes;
     std::vector<streets::StreetSection> right_tapes;
-    std::cout << "Fitas encontradas:" << std::endl;
+    //std::cout << "Fitas encontradas:" << std::endl;
     for (const auto& tape: found_tapes)
     {
         const float tape_angle = setAngleInRange(tape.line[1], (20*M_PI)/180);
-        std::cout << tape.line << ' ' << tape.seg << " Angulo " << tape_angle << " deg" << std::endl;
+        //std::cout << tape.line << ' ' << tape.seg << " Angulo " << tape_angle << " deg" << std::endl;
         if(std::abs(tape_angle) < 40)
         {
             if(tape.seg[0] < 0)  // Both seg[0] and seg[2] should give the same results
@@ -178,7 +194,7 @@ void Intelligence::followTheRoad(float distance_to_go)
     const float required_distance = distance_to_go;
     bool stop = false;
     int turn_direction = 1;
-    std::cout << std::endl;
+    //std::cout << std::endl;
     while(!stop)
     {
         this->processForwardImg();
@@ -257,7 +273,7 @@ void Intelligence::followTheRoad(float distance_to_go)
         const cv::Vec2f next_pt = cv::Vec2f(avg_seg[0] + (avg_seg[2]-avg_seg[0])/2,
                                             avg_seg[1] + (avg_seg[3]-avg_seg[1])/2);
         const float angle = atan2(next_pt[1], next_pt[0])*(180/M_PI) - 90;
-        std::cout << "Proximo ponto a seguir: " << next_pt << " Angulo: " << angle << " deg" << std::endl;
+        //std::cout << "Proximo ponto a seguir: " << next_pt << " Angulo: " << angle << " deg" << std::endl;
         //std::cout << "Proxima rua: " << avg_line << std::endl;
                
         /* Select the next tape to use to calculate the moved distance */
@@ -276,16 +292,16 @@ void Intelligence::followTheRoad(float distance_to_go)
             right_reference_tape = right_tapes[0];
         else
             right_reference_tape.color = streets::Color::none;
-        std::cout << "Escolheu para calcular o quanto andou as fitas:" << std::endl;
-        std::cout << "\t" << left_reference_tape.as_str() << std::endl;
-        std::cout << "\t" << right_reference_tape.as_str() << std::endl;
+        //std::cout << "Escolheu para calcular o quanto andou as fitas:" << std::endl;
+        //std::cout << "\t" << left_reference_tape.as_str() << std::endl;
+        //std::cout << "\t" << right_reference_tape.as_str() << std::endl;
         
         /* Go to the chosen point, adjusting the angle to be parallel with the street in the end */
         float dist_to_move_mm;
         if(num_pts)
         {
             // Turn towards the chosen point
-            std::cout << required_distance - total_ran_dist_mm << "eh maior que " << consts::dist_to_look_perpendicular_street << std::endl;
+            //std::cout << required_distance - total_ran_dist_mm << "eh maior que " << consts::dist_to_look_perpendicular_street << std::endl;
             if((required_distance - total_ran_dist_mm) > consts::dist_to_look_perpendicular_street)
             {
                 dist_to_move_mm = consts::step_size_mm;
@@ -303,7 +319,7 @@ void Intelligence::followTheRoad(float distance_to_go)
                         difference_point_to_stop = diff;
                     }
                 }
-                std::cout << "rua perpendicular, vou andar " << dist_to_move_mm << std::endl;
+                //std::cout << "rua perpendicular, vou andar " << dist_to_move_mm << std::endl;
                 stop = true;
             }
             
@@ -316,10 +332,11 @@ void Intelligence::followTheRoad(float distance_to_go)
             }
             if(vehicle->vision.isTrafficLightRed())
             {
+                cv::imwrite("semafaro.jpg", vehicle->vision.forward_img);
                 std::cout << "semafaro fechado" << std::endl;
                 dist_to_move_mm = 0;
             }
-            std::cout << "Angulo ate o ponto: " << angle/2 << " deg" << std::endl;
+            //std::cout << "Angulo ate o ponto: " << angle/2 << " deg" << std::endl;
             if (std::abs(angle/2) > consts::turn_angle_threshold)
             {
                 vehicle->movement.turn(angle/2);
@@ -328,7 +345,7 @@ void Intelligence::followTheRoad(float distance_to_go)
             }
             // Move forwards
             const float move_diff = vehicle->movement.goStraightMm(1, dist_to_move_mm, 200);
-            std::cout << "Diferença de movimento das rodas: " << move_diff << " mm" << std::endl;
+            //std::cout << "Diferença de movimento das rodas: " << move_diff << " mm" << std::endl;
             gpioDelay(200000);
             // Correct the error on move forward
             if (move_diff > 0)
@@ -344,7 +361,7 @@ void Intelligence::followTheRoad(float distance_to_go)
             gpioDelay(100000);
             // Move torwards the direction of the street
             float const correction_angle = -(angle/2 - avg_line[1])/2;
-            std::cout << "Angulo de correção: " << correction_angle << " deg" << std::endl;
+            //std::cout << "Angulo de correção: " << correction_angle << " deg" << std::endl;
             if(std::abs(correction_angle) > consts::turn_angle_threshold)
             {
                 vehicle->movement.turn(correction_angle);
@@ -356,7 +373,7 @@ void Intelligence::followTheRoad(float distance_to_go)
         {
             // TODO: Corrigir
             dist_to_move_mm = 0;
-            std::cout << "Girando pra ver se encontra uma linha" << std::endl;
+            //std::cout << "Girando pra ver se encontra uma linha" << std::endl;
             if(turn_direction > 0)
                 vehicle->movement.turn(-5);
             else
@@ -366,16 +383,16 @@ void Intelligence::followTheRoad(float distance_to_go)
         /* Take a new picture and find the tapes and streets in it */
         vehicle->vision.getDownwardCamImg();
         std::tie(found_tapes, found_streets) = vehicle->vision.findStreets();
-        std::cout << "Ruas encontradas:" << std::endl;
-        std::for_each(found_streets.begin(), found_streets.end(), [](auto sec){sec.print();});
+        //std::cout << "Ruas encontradas:" << std::endl;
+        //std::for_each(found_streets.begin(), found_streets.end(), [](auto sec){sec.print();});
         // Separate the tapes to the left from the tapes to the right of the vehicle
         left_tapes = std::vector<streets::StreetSection>();
         right_tapes = std::vector<streets::StreetSection>();
-        std::cout << "Fitas encontradas:" << std::endl;
+        //std::cout << "Fitas encontradas:" << std::endl;
         for (const auto& tape: found_tapes)
         {
             float tape_angle = setAngleInRange(tape.line[1], (20*M_PI)/180);
-            std::cout << tape.line << ' ' << tape.seg << " Angulo " << tape_angle << " deg" << std::endl;
+            //std::cout << tape.line << ' ' << tape.seg << " Angulo " << tape_angle << " deg" << std::endl;
             if(std::abs(tape_angle) < 30)
             {
                 if(tape.seg[0] < 0)  // Both seg[0] and seg[2] should give the same results
@@ -387,10 +404,10 @@ void Intelligence::followTheRoad(float distance_to_go)
         // Sort the tapes by their closest point
         streets::orderCollinearSections(left_tapes, 1);
         streets::orderCollinearSections(right_tapes, 1);
-        std::cout << "Fitas da esquerda: " << std::endl;
-        std::for_each(left_tapes.begin(), left_tapes.end(), [](auto sec){sec.print();});
-        std::cout << "Fitas da direita: " << std::endl;
-        std::for_each(right_tapes.begin(), right_tapes.end(), [](auto sec){sec.print();});
+        //std::cout << "Fitas da esquerda: " << std::endl;
+        //std::for_each(left_tapes.begin(), left_tapes.end(), [](auto sec){sec.print();});
+        //std::cout << "Fitas da direita: " << std::endl;
+        //std::for_each(right_tapes.begin(), right_tapes.end(), [](auto sec){sec.print();});
         /* Calculate how much was moved */
         // Search for where the tape is expected to be
         // If the tape is found use the calculated moved distance as the truth
@@ -406,7 +423,7 @@ void Intelligence::followTheRoad(float distance_to_go)
                 if (((expected_pos-0.05) <= left_tape_dist)
                     && (left_tape_dist <= (expected_pos+0.05)))
                 {
-                    std::cout << "Achou a fita da esquerda em: " << tape.seg << std::endl;
+                    //std::cout << "Achou a fita da esquerda em: " << tape.seg << std::endl;
                     num_tapes_found++;
                     ran_dist_step_mm += (left_reference_tape_dist - left_tape_dist) * 1000;
                     break;  // Stop as there should only be one tape that fits
@@ -423,7 +440,7 @@ void Intelligence::followTheRoad(float distance_to_go)
                 if (((expected_pos-0.05) <= right_tape_dist)
                     && (right_tape_dist <= (expected_pos+0.05)))
                 {
-                    std::cout << "Achou a fita da direita em: " << tape.seg << std::endl;
+                    //std::cout << "Achou a fita da direita em: " << tape.seg << std::endl;
                     num_tapes_found++;
                     ran_dist_step_mm += (right_reference_tape_dist - right_tape_dist) * 1000;
                     break;  // Stop as there should only be one tape that fits
@@ -437,12 +454,12 @@ void Intelligence::followTheRoad(float distance_to_go)
         }
         // If no tapes were found, assume the vehicle moved the correct amount
         // TODO: Algo melhor, verificar se o carro andou ou não, etc
-        else if (num_tapes_found == 0)
+        else if ((num_tapes_found == 0) || (ran_dist_step_mm > (dist_to_move_mm*1.3)) || ran_dist_step_mm < (dist_to_move_mm*0.7))
         {
             ran_dist_step_mm = dist_to_move_mm;
         }
         std::cout << "Acha que andou: " << ran_dist_step_mm << std::endl;
-        total_ran_dist_mm += ran_dist_step_mm;
+        total_ran_dist_mm += ran_dist_step_mm ;
 
         std::cout << "No total andou: " << total_ran_dist_mm << std::endl << std::endl;
         
@@ -469,25 +486,43 @@ void Intelligence::goToCityQrCode()
     while(!found)
     {
         vehicle->vision.getForwardCamImg();
-        auto [ids, corners] = vehicle->vision.findARMarkers();
+        gpioDelay(200000);
+        auto [ids, positions] = vehicle->vision.findARMarkers();
         unsigned int i=0;
         for(i=0; i < ids.size(); i++)
         {
+            std::cout << "encontrou " << ids[i] << " " << positions[i] << std::endl;
             if(ids[i] == target_qr_code)
             {
                 found = true;
                 break;
             }
         }
-        vehicle->movement.turn(5);
-        gpioDelay(500000);
         if(found)
         {
-            float distance_to_move = vehicle->vision.distanceFromObstacle() - consts::dist_to_avoid_distance_cm;
+            auto mean_point = (positions[i][0] + positions[i][2]);
+            mean_point.x /= 2;
+            mean_point.y /= 2;
+            mean_point.x -= 640/2;
+            mean_point.y = 480/2 - mean_point.y;
+            float pixels_by_angle = 640 / 120;
+            float angle = -(mean_point.x) / pixels_by_angle;
+            float distance_to_move = (vehicle->vision.distanceFromObstacle() - consts::dist_to_avoid_distance_cm) / 2;
+            //std::cout << "ponto: " << mean_point.x << " angle: " << angle << " distance: " << distance_to_move <<std::endl;
+            vehicle->movement.turn(angle/2);
+            gpioDelay(200000);
+            vehicle->movement.goStraightMm(1, distance_to_move*10, 200);
+            gpioDelay(200000);
+            vehicle->movement.turn(-angle);
+            gpioDelay(200000);
+            distance_to_move = (vehicle->vision.distanceFromObstacle() - consts::dist_to_avoid_distance_cm);
             if(distance_to_move > 0)
             {
-                vehicle->movement.goStraightMm(1, distance_to_move, 200);
+                vehicle->movement.goStraightMm(1, distance_to_move*10, 200);
             }
         }
+        else
+            vehicle->movement.turn(5);
     }
+    vehicle->movement.stop();
 }

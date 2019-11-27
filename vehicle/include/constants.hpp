@@ -35,7 +35,7 @@ namespace consts
 	uint8_t constexpr radio_start_byte = 0xaa;
 	uint8_t constexpr radio_address[] = "DLVR1";
 	uint8_t constexpr coord_address[] = "DLVRC";
-	int constexpr time_out_radio_ack = 500000;
+	int constexpr time_out_radio_ack = 1000000;
 
 	// Pins
 	int constexpr item_detector_pin1 = 2;
