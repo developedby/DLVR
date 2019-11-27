@@ -53,7 +53,7 @@ namespace consts
 	int constexpr ultrasound_echo_pin = 22;
 	
 	// Movement
-	float constexpr turn_speed = 0.8;
+	float constexpr turn_speed = 0.9;
 	
 	enum class WheelType {left, right};
 	
