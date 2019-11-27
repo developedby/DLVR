@@ -2,9 +2,12 @@
 #include <cmath>
 #include <iostream>
 #include <pigpio.h>
+#include "constants.hpp"
 
 
-Wheel::Wheel(int wheel_num) : dc_motor(wheel_num), last_encoder_ticks(0), encoder(wheel_num) {}
+Wheel::Wheel(const consts::WheelType wheel_type) :
+    dc_motor(wheel_type), last_encoder_ticks(0), encoder(wheel_type)
+{}
 
 void Wheel::spin(int const direction, float const duty_cycle)
 {
@@ -14,12 +17,13 @@ void Wheel::spin(int const direction, float const duty_cycle)
 
 float Wheel::getSpeed()
 {
-    return this->encoder.getAngularSpeed() * radius_mm;
+    return this->encoder.getAngularSpeed() * consts::wheel_radius_mm;
 }
 
 void Wheel::stop()
 {
-    this->dc_motor.spin(0, 0);
+    //this->dc_motor.lock();
+    this->dc_motor.release();
     this->encoder.resetReadings();
 }
 
@@ -29,5 +33,5 @@ float Wheel::mmMovedSinceLastCall()
 {
     const int num_ticks = this->encoder.ticks - this->last_encoder_ticks;
     this->last_encoder_ticks = this->encoder.ticks;
-    return num_ticks * ((2*M_PI)/this->encoder.num_holes) * radius_mm; 
+    return num_ticks * consts::mm_moved_per_hole;
 }

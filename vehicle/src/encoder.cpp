@@ -7,9 +7,9 @@
 
 int Encoder::instances = 0;
 
-Encoder::Encoder(int encoder_num) : ticks(0), last_measure(gpioTick()), sigma_space(2.0), sigma_time(2.0)
+Encoder::Encoder(const consts::WheelType wheel_type) : ticks(0), last_measure(gpioTick()), sigma_space(2.0), sigma_time(2.0)
 {
-    if(encoder_num == 0)
+    if(wheel_type == consts::WheelType::left)
     {
         pin_read = consts::left_encoder_pin;
     }
@@ -80,7 +80,7 @@ float Encoder::getAngularSpeed()
     }
     avg_time /= 1000000.0;
     //std::cout << "avg_time " << avg_time << std::endl;
-    return (2*M_PI/this->num_holes) / (avg_time);
+    return (2*M_PI/consts::num_holes_encoder) / (avg_time);
 }
 
 // Registers that the encoder spun one hole

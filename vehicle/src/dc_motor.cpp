@@ -5,9 +5,9 @@
 #include <softPwm.h>
 #include "constants.hpp"
 
-DCMotor::DCMotor(int motor_num)
+DCMotor::DCMotor(const consts::WheelType wheel_type)
 {
-	if(motor_num == 0)
+	if(wheel_type == consts::WheelType::left)
 	{
 		pin_fwd = consts::left_motor_pin_fwd;
 		pin_bkwd = consts::left_motor_pin_bkwd;
@@ -38,10 +38,7 @@ void DCMotor::spin(int const direction, double const duty_cycle)
 {
 	if (direction == 0)
 	{
-		//std::cout << "Parado\n";
-		gpioPWM(pin_pwm, 1000);
-		gpioWrite(pin_fwd, 0);
-		gpioWrite(pin_bkwd, 0);
+		this->release();
 	}
 	else
 	{
@@ -59,4 +56,19 @@ void DCMotor::spin(int const direction, double const duty_cycle)
 		}
 		gpioPWM(pin_pwm, (int)((1-duty_cycle)*1000));
 	}
+}
+
+void DCMotor::lock()
+{
+	gpioWrite(pin_fwd, 1);
+	gpioWrite(pin_bkwd, 1);
+	gpioPWM(pin_pwm, 0);
+	gpioDelay(1000000);
+}
+
+void DCMotor::release()
+{
+	gpioPWM(pin_pwm, 1000);
+	gpioWrite(pin_fwd, 0);
+	gpioWrite(pin_bkwd, 0);
 }

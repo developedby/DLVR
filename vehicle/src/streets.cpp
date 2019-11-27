@@ -1,13 +1,18 @@
 #include "streets.hpp"
+
 #include <cmath>
 #include <iostream>
 #include <limits>
 #include <vector>
 #include <array>
 #include <algorithm>
+#include <sstream>
+#include <string>
+
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
+
 #include "geometry.hpp"
 #include "constants.hpp"
 
@@ -24,11 +29,23 @@ using cv::Point2f;
 
 namespace streets
 {
-    void StreetSection::print()
+    void StreetSection::print() const
     {
-        std::cout << this->line << ' ' << this->seg << ' ' << int(this->color) << std::endl;
+        std::cout << this->as_str() << std::endl;
     }
-    
+ 
+    std::string StreetSection::as_str() const
+    {
+        std::stringstream ss = std::stringstream();
+        ss << this->line << ' ' << this->seg << ' ' << int(this->color);
+        return ss.str();
+    }
+
+    bool StreetSection::operator==(const StreetSection& other) const
+    {
+        return (this->color == other.color) && (this->seg == other.seg) && (this->line == other.line);
+    }
+
     // Finds the lines that go through the tapes in the image
     tuple<vector<Vec4i>, vector<Color>> findTapeLines(const Mat& img)
     {
@@ -51,15 +68,15 @@ namespace streets
         line_colors.insert(line_colors.end(), lines_aux.size(), Color::yellow);
         //std::cout << "Achou linhas amarelas." << std::endl;
         
-        lines_aux = getStreetLines(blue_mask);
-        lines.insert(lines.end(), lines_aux.begin(), lines_aux.end());
-        line_colors.insert(line_colors.end(), lines_aux.size(), Color::blue);
-        //std::cout << "Achou linhas azuis." << std::endl;
-        
         lines_aux = getStreetLines(green_mask);
         lines.insert(lines.end(), lines_aux.begin(), lines_aux.end());
         line_colors.insert(line_colors.end(), lines_aux.size(), Color::green);
         //std::cout << "Achou linhas verdes." << std::endl;
+
+        lines_aux = getStreetLines(blue_mask);
+        lines.insert(lines.end(), lines_aux.begin(), lines_aux.end());
+        line_colors.insert(line_colors.end(), lines_aux.size(), Color::blue);
+        //std::cout << "Achou linhas azuis." << std::endl;
 
         if (consts::save_img)
         {
@@ -88,57 +105,65 @@ namespace streets
         for (unsigned int i = 0; i < tape_secs.size(); i++)
         {
             vector<StreetSection> connected_secs;
-            vector<StreetSection> opposite_secs;
             vector<StreetSection> imaginable_secs;
             // Separate the relevant segments
+            int num_opposite_secs = 0;
             for (unsigned int j = 0; j < tape_secs.size(); j++)
             {
                 if (i == j)
-                    continue;
+                    continue;                
+                // If the segments are parallel, a lane's distance apart, but not collinear, they are opposite
                 const float dist = geometry::distSegments(tape_secs[i].seg, tape_secs[j].seg);
-                // If the segments are right next to each other
-                if (dist < consts::lane_width/4)
+                const bool are_parallel = geometry::linesAreParallel(tape_secs[i].line, tape_secs[j].line, consts::max_theta_diff);
+                const bool are_a_lane_width_apart = (consts::lane_width*0.7 < dist && dist < consts::lane_width*1.3);
+                const bool are_collinear = geometry::linesAreCollinear(tape_secs[i].line, tape_secs[j].line, consts::max_theta_diff, consts::lane_width/4);
+                /*std::cout << "\tDistancia entre segmentos: " << dist << std::endl;
+                std::cout << "\tSao paralelos: " << are_parallel << std::endl;
+                std::cout << "\tTem a distancia certa: " << are_a_lane_width_apart << std::endl;
+                std::cout << "\tSao colineares: " << are_collinear << std::endl << std::endl;*/
+                if (are_parallel && are_a_lane_width_apart && (!are_collinear))
                 {
-                    connected_secs.emplace_back(tape_secs[j].color, tape_secs[i].line, tape_secs[j].seg);
-                }
-                // If the segments are parallel, a lane's distance apart, but not collinear
-                else if (j > i
-                         && geometry::linesAreParallel(tape_secs[i].line, tape_secs[j].line, consts::max_theta_diff)
-                         && (consts::lane_width*0.7 < dist && dist < consts::lane_width*1.3)
-                         && (std::abs(tape_secs[i].line[0] - tape_secs[j].line[0]) > consts::lane_width/4))
-                {
-                    opposite_secs.emplace_back(tape_secs[j].color, tape_secs[i].line, tape_secs[j].seg);
+                    num_opposite_secs++;
+                    if (j > i)
+                        insertMiddleSection(tape_secs[i], tape_secs[j], Color::blue, imaginable_secs);
                 }
             }
-            
             // If there are no segments opposite to the 'i' segment, try to insert a section parallel to it, closer to the vehicle
-            if (opposite_secs.empty())
+            if (num_opposite_secs == 0)
             {
                 insertParallelSection(tape_secs[i], Color::blue, imaginable_secs);
-                //std::cout << "segmentos azuis: " << transl_half1 << " " << transl_half2 <<std::endl;
             }
-            // If there are opposite segments, try to create sections between them
-            else
+            
+            // If the 'i' segment is green, add a perpendicular section
+            if (tape_secs[i].color == Color::green)
             {
-                for (const auto& sec: opposite_secs)
-                {
-                    insertMiddleSection(tape_secs[i], sec, Color::blue, imaginable_secs);
-                }
+                insertPerpendicularSection(tape_secs[i], Color::green, imaginable_secs);
+                //std::cout << "segmentos verdes " << new_seg1 << ' ' << new_seg2 << std::endl;
             }
+            
+            // If the segment is yellow and it is perpendicular to the vehicle, add a section crossing it
+            else if (tape_secs[i].color == Color::yellow
+                     && geometry::linesAreParallel(tape_secs[i].line, Vec2f(0, M_PI/2), consts::max_theta_diff))
+            {
+                insertPerpendicularSection(tape_secs[i], Color::yellow, imaginable_secs);
+            }
+            
             // Check if the proposed sections are not crossing blue or yellow
+            //std::cout << "Verificando interseccao das secoes propostas" << std::endl;
             for (const auto& sec: imaginable_secs)
             {
                 bool sec_possible = true;
-                for (const auto& connected_sec: connected_secs)
+                for (const auto& other_sec: tape_secs)
                 {
-                    if (connected_sec.color != Color::green)
+                    if (sec == other_sec)
+                        continue;
+                    if (other_sec.color != Color::green)
                     {
-                        const float dist = geometry::distSegments(sec.seg, connected_sec.seg);
-                        /*cout << "Encontrou um segmento que pode dar problema:" << endl;
-                        cout << "\tsecao: " << section.seg << ' ' << int(section.color) << endl;
-                        cout << "\tseg: " << seg.seg << ' ' << int(seg.color) << endl;
-                        cout << "\tdist: " << dist << endl << endl;*/
-                        if (dist < consts::lane_width/3)
+                        const float dist = geometry::distSegments(sec.seg, other_sec.seg);
+                        /*std::cout << "\tsecao proposta: " << sec.as_str() << std::endl;
+                        std::cout << "\tsecao que pode intersectar: " << other_sec.as_str() << std::endl;
+                        std::cout << "\tdist: " << dist << std::endl << std::endl;*/
+                        if (dist < (consts::lane_width/4))
                         {
                             sec_possible = false;
                             break;
@@ -148,19 +173,6 @@ namespace streets
                 if (sec_possible)
                     short_secs.push_back(sec);
             }  
-
-            // If the 'i' segment is green, add a perpendicular section
-            if (tape_secs[i].color == Color::green)
-            {
-                insertPerpendicularSection(tape_secs[i], Color::green, short_secs);
-                //std::cout << "segmentos verdes " << new_seg1 << ' ' << new_seg2 << std::endl;
-            }
-            // If the segment is yellow and it is perpendicular to the vehicle, add a section crossing it
-            else if (tape_secs[i].color == Color::yellow
-                     && geometry::linesAreParallel(tape_secs[i].line, Vec2f(0, M_PI/2), consts::max_theta_diff))
-            {
-                insertPerpendicularSection(tape_secs[i], Color::yellow, short_secs);
-            }
         }
         
         // Remove sections that are too short
@@ -168,7 +180,7 @@ namespace streets
         vector<StreetSection> not_so_short_secs;
         for (const auto& sec: short_secs)
         {
-            if (geometry::segmentLength(sec.seg) > 0.05)
+            if (geometry::segmentLength(sec.seg) > 0.04)
                 not_so_short_secs.push_back(sec);
         }
         
@@ -383,7 +395,11 @@ namespace streets
     {
         vector<Vec4i> lines;
         Mat labelImage(lines_mask.size(), CV_32S);
-        cv::HoughLinesP(lines_mask, lines, 1, consts::hough_precision_rad, 100, 100, 8);
+        cv::HoughLinesP(
+            lines_mask, lines, consts::hough_precision_px,
+            consts::hough_precision_rad, consts::hough_thresh,
+            consts::hough_min_len, consts::hough_max_gap
+        );
         if(consts::save_img)
             cv::imwrite("teste_linha_ruffles.jpg", drawSegments(lines, Mat::zeros(consts::img_height, consts::img_width, CV_8UC3)));
         //std::cout << "Linhas: " << lines.size() << std::endl;
@@ -636,7 +652,7 @@ namespace streets
     Mat getBlueTapeMask(const Mat& img)
     {
         //std::cout << "Pegando mascara azul" << std::endl;
-        return getTapeMask(img, cv::Scalar(85, 180, 40), cv::Scalar(105, 250, 255));
+        return getTapeMask(img, cv::Scalar(85, 100, 40), cv::Scalar(105, 250, 255));
     }
 
     Mat getGreenTapeMask(const Mat& img)
@@ -648,7 +664,7 @@ namespace streets
     Mat getYellowTapeMask(const Mat& img)
     {
         //std::cout << "Pegando mascara amarela" << std::endl;
-        return getTapeMask(img, cv::Scalar(20, 130, 30), cv::Scalar(40, 190, 170));
+        return getTapeMask(img, cv::Scalar(20, 170, 115), cv::Scalar(45, 240, 255));
     }
 
     Mat getWhiteTapeMask(const Mat& img)
@@ -713,6 +729,10 @@ namespace streets
         const Vec2f mid_pt = geometry::segmentHalfPoint(Vec4f(pt1[0], pt1[1], pt2[0], pt2[1]));
         const Vec4f new_seg1(pt1[0], pt1[1], mid_pt[0], mid_pt[1]);
         const Vec4f new_seg2(mid_pt[0], mid_pt[1], pt2[0], pt2[1]);
+        /*std::cout << "Inserindo middle section das seguintes secoes" << std::endl;
+        std::cout << '\t' << sec1.as_str() << std::endl;
+        std::cout << '\t' << sec2.as_str() << std::endl;
+        std::cout << "Middle sections: " << new_seg1 << " " << new_seg2 << std::endl;*/
         sec_vec.emplace_back(color, geometry::segmentToLine(new_seg2), new_seg2);
         sec_vec.emplace_back(color, geometry::segmentToLine(new_seg1), new_seg1);
     }

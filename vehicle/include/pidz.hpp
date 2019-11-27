@@ -1,7 +1,7 @@
 #ifndef pidz_hpp_
 #define pidz_hpp_
 
-#include <limits>
+#include "constants.hpp"
 
 class PIDZ {
     private:
@@ -13,10 +13,10 @@ class PIDZ {
         float T;
         float omin, omax;
     public:
-        PIDZ(int pid_num);
-        void tune(float Kp, float Ki, float Kd);
-        float push_error(float e);
-        float push_error(float rf, float fb);
+        PIDZ(const consts::WheelType wheel_type);
+        void tune(const float Kp, const float Ki, const float Kd);
+        float push_error(const float e);
+        float push_error(const float rf, const float fb);
         float peek_output(void);
 };
 

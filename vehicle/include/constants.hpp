@@ -7,11 +7,10 @@
 namespace consts
 {
 	// Vision
+	// Street finder
 	int constexpr img_height = 960;
 	int constexpr img_width = 1280;
 	float constexpr cam_height_m = 0.128;
-	int constexpr img_y_horizon = -402;
-	float constexpr img_real_zero_rad = 4.647 * M_PI/180;
 	float constexpr img_theta_min_m = 0.062;
 	float constexpr img_theta_min = atan2(cam_height_m, img_theta_min_m);
 	float constexpr img_theta_max_m = 0.470;
@@ -19,8 +18,14 @@ namespace consts
 	float constexpr lane_width = 0.26;
 	float constexpr tape_width = 0.018;
 	float constexpr max_theta_diff = 20 * M_PI/180;
+	float constexpr hough_precision_px = 1;
 	float constexpr hough_precision_rad = 5 * M_PI/180;
+	int constexpr hough_thresh = 100;
+	int constexpr hough_min_len = 100;
+	int constexpr hough_max_gap = 8;
 	bool constexpr save_img = false;
+	// Traffic light finder
+	int constexpr max_traffic_light_area = 150;
 
 	// Radio
 	int constexpr radio_delay_transmitting = 0;
@@ -47,9 +52,21 @@ namespace consts
 	int constexpr ultrasound_trigger_pin = 27;
 	int constexpr ultrasound_echo_pin = 22;
 	
+	// Movement
+	float constexpr turn_speed = 0.8;
+	
+	enum class WheelType {left, right};
+	
 	//vehicle const
 	int constexpr vehicle_id = 1;
-	float constexpr vehicle_wheel_distance = 128.9;
+	int constexpr num_holes_encoder = 20;
+	float constexpr wheel_radius_mm = 33.2;
+	float constexpr wheel_circumference_mm = 2*M_PI*wheel_radius_mm;
+	float constexpr encoder_deg_per_hole = 360 / num_holes_encoder;
+	float constexpr mm_moved_per_hole = wheel_circumference_mm / num_holes_encoder;
+	float constexpr wheel_distance = 128.9;
+	float constexpr vehicle_deg_per_mm = 360 / (2*M_PI*wheel_distance);
+	float constexpr vehicle_deg_per_hole = mm_moved_per_hole * vehicle_deg_per_mm;
 	
 	//pid
 	float constexpr pid_l_Kp = 0.00004;
@@ -63,6 +80,8 @@ namespace consts
 	// Intelligence
 	float constexpr turn_angle_threshold = 5.0;
 	float constexpr step_size_mm = 100;
+	float constexpr dist_to_look_perpendicular_street = 200;
+	float constexpr dist_to_avoid_distance_cm = 6;
 }
 
 #endif
