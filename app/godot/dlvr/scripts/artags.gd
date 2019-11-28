@@ -3,6 +3,8 @@ extends Control
 
 class_name ARTags
 
+signal debug_force_finish()
+
 export(int, 0, 1) var id:int = 0 setget set_id
 
 func _ready():
@@ -19,3 +21,6 @@ func set_id(val):
 	else:
 		id = val
 	update()
+
+func _on_debug_force_finish_pressed():
+	emit_signal("debug_force_finish")

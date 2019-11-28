@@ -435,3 +435,4 @@ script = ExtResource( 16 )
 [connection signal="pressed" from="confirm_window/yes" to="confirm_window" method="_on_yes_pressed"]
 [connection signal="pressed" from="confirm_window/no" to="confirm_window" method="_on_no_pressed"]
 [connection signal="pressed" from="refused_window/ok" to="refused_window" method="_on_ok_pressed"]
+[connection signal="debug_force_finish" from="artags" to="." method="_on_artags_debug_force_finish"]

@@ -25,3 +25,12 @@ text = "AR_KS"
 align = 1
 valign = 1
 autowrap = true
+
+[node name="debug_force_finish" type="Button" parent="."]
+margin_left = 538.661
+margin_top = 397.708
+margin_right = 689.661
+margin_bottom = 443.708
+text = "DEBUG_FINISH_KS"
+clip_text = true
+[connection signal="pressed" from="debug_force_finish" to="." method="_on_debug_force_finish_pressed"]
