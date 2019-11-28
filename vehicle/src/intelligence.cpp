@@ -168,6 +168,7 @@ void Intelligence::followThePath()
 void Intelligence::followTheRoad(float distance_to_go)
 {
     vehicle->vision.getDownwardCamImg();
+    gpioDelay(100000);
     auto [found_tapes, found_streets] = vehicle->vision.findStreets();
     //std::cout << "Ruas encontradas: " << std::endl;
     std::for_each(found_streets.begin(), found_streets.end(), [](auto sec){sec.print();});
@@ -319,23 +320,32 @@ void Intelligence::followTheRoad(float distance_to_go)
                         difference_point_to_stop = diff;
                     }
                 }
+                if(dist_to_move_mm > (required_distance - total_ran_dist_mm)*1.1)
+                {
+                    dist_to_move_mm = (required_distance - total_ran_dist_mm);
+                }
                 //std::cout << "rua perpendicular, vou andar " << dist_to_move_mm << std::endl;
                 stop = true;
             }
             
             //check for obstacle or red traffic light
             
-            if((vehicle->vision.distanceFromObstacle() - consts::dist_to_avoid_distance_cm) < dist_to_move_mm/10)
+            /*if((vehicle->vision.distanceFromObstacle() - consts::dist_to_avoid_distance_cm) < dist_to_move_mm/10)
             {
                 std::cout << "tem um obstáculo próximo: " << vehicle->vision.distanceFromObstacle() << std::endl;
                 dist_to_move_mm = (vehicle->vision.distanceFromObstacle() - consts::dist_to_avoid_distance_cm) * 10;
+            }*/
+            if(vehicle->vision.distanceFromObstacle() < (consts::dist_to_avoid_distance_cm * 1.2))
+            {
+                std::cout << "tem um obstáculo próximo: " << vehicle->vision.distanceFromObstacle() << std::endl;
+                dist_to_move_mm = 0;
             }
-            if(vehicle->vision.isTrafficLightRed())
+            /*if(vehicle->vision.isTrafficLightRed())
             {
                 cv::imwrite("semafaro.jpg", vehicle->vision.forward_img);
                 std::cout << "semafaro fechado" << std::endl;
                 dist_to_move_mm = 0;
-            }
+            }*/
             //std::cout << "Angulo ate o ponto: " << angle/2 << " deg" << std::endl;
             if (std::abs(angle/2) > consts::turn_angle_threshold)
             {
@@ -382,6 +392,7 @@ void Intelligence::followTheRoad(float distance_to_go)
         
         /* Take a new picture and find the tapes and streets in it */
         vehicle->vision.getDownwardCamImg();
+        gpioDelay(100000);
         std::tie(found_tapes, found_streets) = vehicle->vision.findStreets();
         //std::cout << "Ruas encontradas:" << std::endl;
         //std::for_each(found_streets.begin(), found_streets.end(), [](auto sec){sec.print();});
@@ -454,7 +465,7 @@ void Intelligence::followTheRoad(float distance_to_go)
         }
         // If no tapes were found, assume the vehicle moved the correct amount
         // TODO: Algo melhor, verificar se o carro andou ou não, etc
-        else if ((num_tapes_found == 0) || (ran_dist_step_mm > (dist_to_move_mm*1.3)) || ran_dist_step_mm < (dist_to_move_mm*0.7))
+        else if ((num_tapes_found == 0) || ran_dist_step_mm < (dist_to_move_mm*0.7))
         {
             ran_dist_step_mm = dist_to_move_mm;
         }
@@ -508,7 +519,7 @@ void Intelligence::goToCityQrCode()
             float pixels_by_angle = 640 / 120;
             float angle = -(mean_point.x) / pixels_by_angle;
             float distance_to_move = (vehicle->vision.distanceFromObstacle() - consts::dist_to_avoid_distance_cm) / 2;
-            //std::cout << "ponto: " << mean_point.x << " angle: " << angle << " distance: " << distance_to_move <<std::endl;
+            std::cout << "ponto: " << mean_point.x << " angle: " << angle << " distance: " << distance_to_move <<std::endl;
             vehicle->movement.turn(angle/2);
             gpioDelay(200000);
             vehicle->movement.goStraightMm(1, distance_to_move*10, 200);

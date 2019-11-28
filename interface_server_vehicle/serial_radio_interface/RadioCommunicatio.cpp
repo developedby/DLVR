@@ -40,21 +40,23 @@ bool RadioCommunication::sendToRadio(const void *data, uint8_t len)
     unsigned long time_start = millis();
     radio->stopListening();
     radio->write(data, len);
-    radio->startListening();
-    while(!radio->isAckPayloadAvailable())
-    {
-        if(millis()-time_start >= TIME_OUT_RADIO_ACK)
-        {
-            return false;
-        }
-    }
-    radio->writeAckPayload(1, &ack, 1);
+    //radio->startListening();
+//    while(!radio->available())
+//    {
+//        if(millis()-time_start >= TIME_OUT_RADIO_ACK)
+//        {
+//            return false;
+//        }
+//    }
+//    uint8_t value = 0;
+//    radio->read(&value, 1);
     siz = 0;
     return true;
 }
 
 bool RadioCommunication::receiveFromRadio()
 {
+    radio->startListening();
     if(radio->available())
     {
         siz = radio->getDynamicPayloadSize();
@@ -64,6 +66,7 @@ bool RadioCommunication::receiveFromRadio()
         }
         ack++;
         radio->read(received_data, siz);
+        radio->writeAckPayload(1, &ack, 1);
         if((received_data[0] == START_BYTE) && (received_data[siz - 1] == START_BYTE))
         {
             return true;

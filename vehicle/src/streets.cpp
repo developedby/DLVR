@@ -143,9 +143,11 @@ namespace streets
             
             // If the segment is yellow and it is perpendicular to the vehicle, add a section crossing it
             else if (tape_secs[i].color == Color::yellow
-                     && geometry::linesAreParallel(tape_secs[i].line, Vec2f(0, M_PI/2), consts::max_theta_diff))
+                     && geometry::linesAreParallel(tape_secs[i].line, Vec2f(0, M_PI/2), consts::max_theta_diff)
+                     && geometry::segmentLength(tape_secs[i].seg) > 0.13)
             {
                 insertPerpendicularSection(tape_secs[i], Color::yellow, imaginable_secs);
+                //std::cout << "colocando cara amarelo em imaginable_secs" << std::endl;
             }
             
             // Check if the proposed sections are not crossing blue or yellow
@@ -157,7 +159,7 @@ namespace streets
                 {
                     if (sec == other_sec)
                         continue;
-                    if (other_sec.color != Color::green)
+                    if (other_sec.color == Color::blue)
                     {
                         const float dist = geometry::distSegments(sec.seg, other_sec.seg);
                         /*std::cout << "\tsecao proposta: " << sec.as_str() << std::endl;
@@ -165,6 +167,7 @@ namespace streets
                         std::cout << "\tdist: " << dist << std::endl << std::endl;*/
                         if (dist < (consts::lane_width/4))
                         {
+                            //std::cout << "distancia pequena, negado" <<std::endl;
                             sec_possible = false;
                             break;
                         }
