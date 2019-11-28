@@ -6,16 +6,16 @@
 [ext_resource path="res://scripts/views/map_elements/tracking_label.gd" type="Script" id=4]
 [ext_resource path="res://sprites/side_button.png" type="Texture" id=5]
 [ext_resource path="res://sprites/map.jpg" type="Texture" id=6]
-[ext_resource path="res://scripts/views/map_elements/leftBar.gd" type="Script" id=7]
-[ext_resource path="res://resources/name_font.tres" type="DynamicFont" id=8]
-[ext_resource path="res://scenes/mapnode.tscn" type="PackedScene" id=9]
-[ext_resource path="res://scenes/pointer.tscn" type="PackedScene" id=10]
-[ext_resource path="res://scripts/views/map_elements/deliverymenu.gd" type="Script" id=11]
-[ext_resource path="res://scripts/EmailField.gd" type="Script" id=12]
-[ext_resource path="res://scripts/views/map_elements/confirm.gd" type="Script" id=13]
-[ext_resource path="res://scripts/views/map_elements/refused.gd" type="Script" id=14]
-[ext_resource path="res://scenes/artags.tscn" type="PackedScene" id=15]
-[ext_resource path="res://scripts/views/map_elements/artags_element.gd" type="Script" id=16]
+[ext_resource path="res://scenes/mapnode.tscn" type="PackedScene" id=7]
+[ext_resource path="res://scenes/pointer.tscn" type="PackedScene" id=8]
+[ext_resource path="res://scripts/views/map_elements/deliverymenu.gd" type="Script" id=9]
+[ext_resource path="res://scripts/EmailField.gd" type="Script" id=10]
+[ext_resource path="res://scripts/views/map_elements/confirm.gd" type="Script" id=11]
+[ext_resource path="res://scripts/views/map_elements/refused.gd" type="Script" id=12]
+[ext_resource path="res://scenes/artags.tscn" type="PackedScene" id=13]
+[ext_resource path="res://scripts/views/map_elements/artags_element.gd" type="Script" id=14]
+[ext_resource path="res://scripts/views/map_elements/leftBar.gd" type="Script" id=15]
+[ext_resource path="res://resources/name_font.tres" type="DynamicFont" id=16]
 
 [sub_resource type="Animation" id=1]
 resource_name = "hide"
@@ -109,83 +109,6 @@ rect_min_size = Vector2( 700, 700 )
 texture = ExtResource( 6 )
 expand = true
 
-[node name="leftBar" type="Control" parent="."]
-editor/display_folded = true
-margin_left = -721.0
-margin_right = -1.0
-margin_bottom = 1280.0
-script = ExtResource( 7 )
-
-[node name="background" type="ColorRect" parent="leftBar"]
-margin_left = -2.27203
-margin_right = 597.728
-margin_bottom = 1280.0
-rect_min_size = Vector2( 600, 1280 )
-color = Color( 0.117647, 0.176471, 0.243137, 1 )
-
-[node name="anim" type="AnimationPlayer" parent="leftBar"]
-anims/hide = SubResource( 1 )
-anims/show = SubResource( 2 )
-
-[node name="back" type="TextureButton" parent="leftBar"]
-margin_left = 600.0
-margin_top = 0.204287
-margin_right = 720.0
-margin_bottom = 1280.2
-rect_min_size = Vector2( 100, 0 )
-shortcut_in_tooltip = false
-
-[node name="header" type="ColorRect" parent="leftBar"]
-editor/display_folded = true
-margin_right = 600.0
-margin_bottom = 213.0
-color = Color( 0.14902, 0.203922, 0.270588, 1 )
-
-[node name="dlvrLabel" type="Label" parent="leftBar/header"]
-margin_left = 100.0
-margin_top = 50.0
-margin_right = 201.2
-margin_bottom = 103.2
-custom_colors/font_color = Color( 1, 1, 1, 1 )
-text = "DLVR"
-
-[node name="nameLabel" type="Label" parent="leftBar/header"]
-margin_left = 100.0
-margin_top = 110.0
-margin_right = 331.2
-margin_bottom = 163.0
-custom_fonts/font = ExtResource( 8 )
-custom_colors/font_color = Color( 1, 1, 1, 1 )
-text = "Nome Sobrenome"
-
-[node name="menu" type="VBoxContainer" parent="leftBar"]
-editor/display_folded = true
-margin_top = 410.0
-margin_right = 600.0
-margin_bottom = 660.0
-
-[node name="exit" type="ToolButton" parent="leftBar/menu"]
-margin_right = 600.0
-margin_bottom = 53.2
-rect_min_size = Vector2( 150, 0 )
-shortcut_in_tooltip = false
-text = "EXIT_KS"
-
-[node name="debug_open" type="ToolButton" parent="leftBar"]
-margin_left = 100.0
-margin_top = 850.0
-margin_right = 500.0
-margin_bottom = 910.0
-rect_min_size = Vector2( 400, 60 )
-text = "DEBUG_OPEN_KS"
-
-[node name="debug_close" type="ToolButton" parent="leftBar"]
-margin_left = 100.0
-margin_top = 990.0
-margin_right = 500.0
-margin_bottom = 1050.0
-text = "DEBUG_CLOSE_KS"
-
 [node name="city" type="Node2D" parent="."]
 editor/display_folded = true
 
@@ -207,14 +130,14 @@ position = Vector2( 415, 385 )
 [node name="node6" type="Position2D" parent="city"]
 position = Vector2( 570, 385 )
 
-[node name="node7" parent="city" instance=ExtResource( 9 )]
+[node name="node7" parent="city" instance=ExtResource( 7 )]
 position = Vector2( 659, 385 )
 id = 7
 
 [node name="node8" type="Position2D" parent="city"]
 position = Vector2( 570, 479 )
 
-[node name="node9" parent="city" instance=ExtResource( 9 )]
+[node name="node9" parent="city" instance=ExtResource( 7 )]
 position = Vector2( 659, 479 )
 id = 9
 
@@ -227,14 +150,14 @@ position = Vector2( 415, 573 )
 [node name="node12" type="Position2D" parent="city"]
 position = Vector2( 570, 573 )
 
-[node name="node13" parent="city" instance=ExtResource( 9 )]
+[node name="node13" parent="city" instance=ExtResource( 7 )]
 position = Vector2( 659, 573 )
 id = 13
 
 [node name="node14" type="Position2D" parent="city"]
 position = Vector2( 570, 667 )
 
-[node name="node15" parent="city" instance=ExtResource( 9 )]
+[node name="node15" parent="city" instance=ExtResource( 7 )]
 position = Vector2( 659, 667 )
 id = 15
 
@@ -247,7 +170,7 @@ position = Vector2( 415, 761 )
 [node name="node18" type="Position2D" parent="city"]
 position = Vector2( 570, 761 )
 
-[node name="node19" parent="city" instance=ExtResource( 9 )]
+[node name="node19" parent="city" instance=ExtResource( 7 )]
 position = Vector2( 659, 761 )
 id = 19
 
@@ -284,20 +207,20 @@ position = Vector2( 209, 762 )
 [node name="node30" type="Position2D" parent="city"]
 position = Vector2( 60, 667 )
 
-[node name="node31" parent="city" instance=ExtResource( 9 )]
+[node name="node31" parent="city" instance=ExtResource( 7 )]
 position = Vector2( 155, 667 )
 id = 31
 
-[node name="pointer_origin" parent="." instance=ExtResource( 10 )]
+[node name="pointer_origin" parent="." instance=ExtResource( 8 )]
 position = Vector2( 1172.17, 284.336 )
 scale = Vector2( 0.2, 0.2 )
 
-[node name="pointer_destination" parent="." instance=ExtResource( 10 )]
+[node name="pointer_destination" parent="." instance=ExtResource( 8 )]
 position = Vector2( 1169.08, 469.789 )
 scale = Vector2( 0.2, 0.2 )
 pointer_type = 1
 
-[node name="pointer_tracking" parent="." instance=ExtResource( 10 )]
+[node name="pointer_tracking" parent="." instance=ExtResource( 8 )]
 position = Vector2( 1170.75, 643.488 )
 scale = Vector2( 0.2, 0.2 )
 pointer_type = 2
@@ -308,7 +231,7 @@ position = Vector2( 1174.95, 806.28 )
 [node name="delivery_menu" type="Control" parent="."]
 margin_right = 40.0
 margin_bottom = 40.0
-script = ExtResource( 11 )
+script = ExtResource( 9 )
 
 [node name="email" type="LineEdit" parent="delivery_menu"]
 margin_left = 35.0
@@ -317,7 +240,7 @@ margin_right = 685.0
 margin_bottom = 1063.16
 clear_button_enabled = true
 placeholder_text = "RECEIVER_EMAIL_KS"
-script = ExtResource( 12 )
+script = ExtResource( 10 )
 
 [node name="cancel_button" type="Button" parent="delivery_menu"]
 margin_left = 380.0
@@ -354,7 +277,7 @@ margin_top = 480.0
 margin_right = 60.0
 margin_bottom = 520.0
 theme = ExtResource( 1 )
-script = ExtResource( 13 )
+script = ExtResource( 11 )
 
 [node name="background" type="ColorRect" parent="confirm_window"]
 margin_right = 680.0
@@ -394,7 +317,7 @@ margin_top = 480.0
 margin_right = 60.0
 margin_bottom = 520.0
 theme = ExtResource( 1 )
-script = ExtResource( 14 )
+script = ExtResource( 12 )
 
 [node name="background" type="ColorRect" parent="refused_window"]
 margin_right = 680.0
@@ -419,15 +342,88 @@ margin_bottom = 290.0
 rect_min_size = Vector2( 200, 50 )
 text = "OK"
 
-[node name="artags" parent="." instance=ExtResource( 15 )]
+[node name="artags" parent="." instance=ExtResource( 13 )]
 margin_top = 480.0
 margin_bottom = 480.0
-script = ExtResource( 16 )
+script = ExtResource( 14 )
+
+[node name="leftBar" type="Control" parent="."]
+editor/display_folded = true
+margin_left = -721.0
+margin_right = -1.0
+margin_bottom = 1280.0
+script = ExtResource( 15 )
+
+[node name="background" type="ColorRect" parent="leftBar"]
+margin_left = -2.27203
+margin_right = 597.728
+margin_bottom = 1280.0
+rect_min_size = Vector2( 600, 1280 )
+color = Color( 0.117647, 0.176471, 0.243137, 1 )
+
+[node name="anim" type="AnimationPlayer" parent="leftBar"]
+anims/hide = SubResource( 1 )
+anims/show = SubResource( 2 )
+
+[node name="back" type="TextureButton" parent="leftBar"]
+margin_left = 600.0
+margin_top = 0.204287
+margin_right = 720.0
+margin_bottom = 1280.2
+rect_min_size = Vector2( 100, 0 )
+shortcut_in_tooltip = false
+
+[node name="header" type="ColorRect" parent="leftBar"]
+editor/display_folded = true
+margin_right = 600.0
+margin_bottom = 213.0
+color = Color( 0.14902, 0.203922, 0.270588, 1 )
+
+[node name="dlvrLabel" type="Label" parent="leftBar/header"]
+margin_left = 100.0
+margin_top = 50.0
+margin_right = 201.2
+margin_bottom = 103.2
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "DLVR"
+
+[node name="nameLabel" type="Label" parent="leftBar/header"]
+margin_left = 100.0
+margin_top = 110.0
+margin_right = 331.2
+margin_bottom = 163.0
+custom_fonts/font = ExtResource( 16 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "Nome Sobrenome"
+
+[node name="menu" type="VBoxContainer" parent="leftBar"]
+editor/display_folded = true
+margin_top = 410.0
+margin_right = 600.0
+margin_bottom = 660.0
+
+[node name="exit" type="ToolButton" parent="leftBar/menu"]
+margin_right = 600.0
+margin_bottom = 53.2
+rect_min_size = Vector2( 150, 0 )
+shortcut_in_tooltip = false
+text = "EXIT_KS"
+
+[node name="debug_open" type="ToolButton" parent="leftBar"]
+margin_left = 100.0
+margin_top = 850.0
+margin_right = 500.0
+margin_bottom = 910.0
+rect_min_size = Vector2( 400, 60 )
+text = "DEBUG_OPEN_KS"
+
+[node name="debug_close" type="ToolButton" parent="leftBar"]
+margin_left = 100.0
+margin_top = 990.0
+margin_right = 500.0
+margin_bottom = 1050.0
+text = "DEBUG_CLOSE_KS"
 [connection signal="pressed" from="toolBar/sideMenuButton" to="." method="_on_sideMenuButton_pressed"]
-[connection signal="pressed" from="leftBar/back" to="leftBar" method="_on_back_pressed"]
-[connection signal="pressed" from="leftBar/menu/exit" to="." method="_on_exit_pressed"]
-[connection signal="pressed" from="leftBar/debug_open" to="." method="_on_debug_open_pressed"]
-[connection signal="pressed" from="leftBar/debug_close" to="." method="_on_debug_close_pressed"]
 [connection signal="pressed" from="delivery_menu/cancel_button" to="." method="_on_cancel_button_pressed"]
 [connection signal="pressed" from="delivery_menu/confirm_button" to="." method="_on_confirm_button_pressed"]
 [connection signal="pressed" from="delivery_menu/send_button" to="." method="_on_send_button_pressed"]
@@ -436,3 +432,7 @@ script = ExtResource( 16 )
 [connection signal="pressed" from="confirm_window/no" to="confirm_window" method="_on_no_pressed"]
 [connection signal="pressed" from="refused_window/ok" to="refused_window" method="_on_ok_pressed"]
 [connection signal="debug_force_finish" from="artags" to="." method="_on_artags_debug_force_finish"]
+[connection signal="pressed" from="leftBar/back" to="leftBar" method="_on_back_pressed"]
+[connection signal="pressed" from="leftBar/menu/exit" to="." method="_on_exit_pressed"]
+[connection signal="pressed" from="leftBar/debug_open" to="." method="_on_debug_open_pressed"]
+[connection signal="pressed" from="leftBar/debug_close" to="." method="_on_debug_close_pressed"]
