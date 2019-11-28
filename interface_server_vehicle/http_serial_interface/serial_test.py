@@ -12,8 +12,10 @@ time.sleep(2)
 
 #server
 #variables from server
-route = [8, 72, 8, 26, 8, 72]
-qr_code_destination = 0x0014
+#route = [8, 72, 8, 26, 8, 72]
+route = [8, 60, 6, 39, 6, 57]
+#qr_code_destination = 0x0014
+qr_code_destination = 0x0013
 required_status = "status_robot"
 device_id = 1
 sensor_to_read = "ultrasound"
@@ -77,6 +79,7 @@ print(type(packet_from_vehicle), len(packet_from_vehicle), packet_from_vehicle)
 
 if(packet_from_vehicle and packet_from_vehicle[-1] == START_BYTE 
                                         and packet_from_vehicle[0] == device_id):
+    print("pacote recebido: ")
     current_address = 1
     if sensor_to_read == "ultrasound":
         sensor_read = struct.unpack('f', packet_from_vehicle[current_address:(current_address+4)])
