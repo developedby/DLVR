@@ -93,24 +93,30 @@ void RadioCommunication::sendToRadio(SentMessage message)
         send_data[i] = data[i];
     }
     radio.write(send_data, len);
-    radio.startListening();
-    radio_ack_thread = gpioStartThread(waitAck, this);
+    //radio.startListening();
+    //radio_ack_thread = gpioStartThread(waitAck, this);
 }
 
 bool RadioCommunication::receiveFromRadio()
 {
+    radio.startListening();
     if(radio.available())
     {
-        //std::cout <<"ok";
+        std::cout <<"ok";
         if(radio.getDynamicPayloadSize() < 1)
         {
             return false;
         }
-        //std::cout <<"ok"<<std::endl;
+        std::cout <<"ok"<<std::endl;
         radio.read(received_data, sizeof(received_data));
+        ack++;
+        
+        //radio.writeAckPayload(1, &(ack), 1);
         siz = 2;
+        std::cout << "mandei ack, pacote recebido: " <<std::endl;
         for (int i=1; received_data[i] != consts::radio_start_byte and i < consts::radio_width_data; i++)
         {
+            std::cout << int(received_data[i]) << std::endl;
             siz++;
         }
         if((received_data[0] == consts::radio_start_byte) && (received_data[siz - 1] == consts::radio_start_byte))
@@ -125,9 +131,9 @@ ReceivedMessage RadioCommunication::getData()
 {
     std::vector<uint8_t> path;
     uint16_t qr_code = 0;
-    Commands command; 
-    PossibleSensors sensor_to_read;
-    PossibleStatus required_status;
+    Commands command = NO_COMMAND; 
+    PossibleSensors sensor_to_read = NO_SENSORS;
+    PossibleStatus required_status = NO_STATUS;
     int i = 3;
     if((received_data[2] & 0x8) == 0x8)
     {
@@ -190,7 +196,6 @@ void* waitAck(void *obj)
             return nullptr;
         }
     }
-    eventTrigger(2);
     return nullptr;
 }
 

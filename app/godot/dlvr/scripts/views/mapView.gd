@@ -9,6 +9,7 @@ enum STATE {
 	WAITING_SEND,
 	TRACKING,
 	ARRIVED,
+	OPENED,
 	DELIVERY_REQUESTED,
 	SETTING_CURRENT_LOCATION,
 }
@@ -34,6 +35,7 @@ func _ready():
 		if h is House:
 			h.connect('house_pressed', self, '_on_house_pressed')
 	DLVR.client.connect("packet_received", self, "_on_packet_received")
+	self.current_state = STATE.IDLE
 
 func _on_packet_received(data_r):
 	var json_parser = JSON.parse(data_r)
@@ -76,6 +78,7 @@ func _on_packet_received(data_r):
 							while r is GDScriptFunctionState:
 								r = yield(r, "completed")
 							json_parser = JSON.parse(r)
+							#FIXME: If not recive QR id the app will not work
 							if json_parser.error == OK:
 								resp = json_parser.result
 								if resp["status_code"] == 200:
@@ -89,6 +92,9 @@ func _on_packet_received(data_r):
 						if (pid == origin) and (current_client == CLIENT_TYPE.SENDER):
 							Utils.print_log("Robot arrive at origin")
 							self.current_state = STATE.WAITING_SEND
+					elif (current_state == STATE.ARRIVED) and \
+						 ("qr" in resp["message_body"]):
+						self.current_state = STATE.OPENED
 			elif resp["path"] == "/delivery/finish":
 				self.current_state = STATE.IDLE
 				self.current_clien = CLIENT_TYPE.NONE
@@ -185,11 +191,32 @@ func _on_confirm_button_pressed():
 				self.current_state = STATE.IDLE
 
 func _on_send_button_pressed():
-	pass
+	if (current_state == STATE.WAITING_SEND) and \
+	   (current_client == CLIENT_TYPE.SENDER):
+		var data = {"path": "/delivery/send", "cookie": DLVR.cookie, "id": last_request_id}
+		DLVR.client.send_data(JSON.print(data))
+		self.current_state = STATE.TRACKING
 
 func set_state(val):
 	current_state = val
-	#if val == STATE.IDLE:
-	#	$pointer_destination.unpop()
-	#	$pointer_origin.unpop()
 	emit_signal("state_changed", val)
+
+func _on_finish_button_pressed():
+	if current_state == STATE.OPENED:
+		var data = {"path": "/delivery/finish", "cookie": DLVR.cookie, "id": last_request_id}
+		DLVR.client.send_data(JSON.print(data))
+		#
+		self.current_client = CLIENT_TYPE.NONE
+		self.current_state = STATE.IDLE
+		self.origin = -1
+		self.destination = -1
+		self.last_request_id = -1
+		self.qr_id = -1
+		#
+		$pointer_origin.unpop()
+		$pointer_destination.unpop()
+		$pointer_tracking.unpop()
+		#
+		$pointer_origin.position = $rest_area.position
+		$pointer_destination.position =  $rest_area.position
+		$pointer_tracking.position =  $rest_area.position

@@ -16,9 +16,9 @@ int main()
         exit(PI_INIT_FAILED);
     }
 	Vision vision = Vision();
-	//cv::Mat img = cv::imread("./img/linha_verde.jpg", cv::IMREAD_COLOR);
+	//cv::Mat img = cv::imread("./teste_linhas.jpg", cv::IMREAD_COLOR);
 	//cv::cvtColor(img, vision.downward_img, cv::COLOR_BGR2HLS);
-	/*for(int i = 0; i< 2; i++)
+	for(int i = 0; i< 1; i++)
 	{
 		vision.getDownwardCamImg();
 		cv::Mat img;
@@ -63,7 +63,7 @@ int main()
 		
 		cv::imwrite("teste_linhas_secoes.jpg", out_img);
 		
-	}*/
+	}
 	vision.getForwardCamImg();
 	cv::imwrite("teste_top_img.jpg", vision.forward_img);
 	auto [ids, corners] = vision.findARMarkers();

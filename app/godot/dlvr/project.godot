@@ -9,6 +9,11 @@
 config_version=4
 
 _global_script_classes=[ {
+"base": "Control",
+"class": "ARTags",
+"language": "GDScript",
+"path": "res://scripts/artags.gd"
+}, {
 "base": "Node",
 "class": "Client",
 "language": "GDScript",
@@ -40,6 +45,7 @@ _global_script_classes=[ {
 "path": "res://scripts/View.gd"
 } ]
 _global_script_class_icons={
+"ARTags": "",
 "Client": "",
 "EmailField": "",
 "House": "",

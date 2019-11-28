@@ -46,7 +46,7 @@ void Movement::turn(const float degrees)
 	const int r_previous_read = this->right_wheel.encoder.ticks;
     const int l_previous_read = this->left_wheel.encoder.ticks;
     int holes_to_turn = std::rint((std::abs(degrees) / consts::vehicle_deg_per_hole) / 2.0f);
-    std::cout << "Fazendo curva de " << holes_to_turn << " furos" << std::endl;
+    //std::cout << "Fazendo curva de " << holes_to_turn << " furos" << std::endl;
     int r_dir = (degrees > 0) ? 1 : -1;
 
     bool internal_moving_left = true; //this function don't use calculate speed
@@ -59,13 +59,13 @@ void Movement::turn(const float degrees)
         {
             this->left_wheel.stop();
             internal_moving_left = false;
-            std::cout << "Curva: Parando roda da esquerda" << std::endl;
+            //std::cout << "Curva: Parando roda da esquerda" << std::endl;
         }
         if (internal_moving_right && (moved_right >= holes_to_turn))
         {
             this->right_wheel.stop();
             internal_moving_right = false;
-            std::cout << "Curva: Parando roda da direita" << std::endl;
+            //std::cout << "Curva: Parando roda da direita" << std::endl;
         }
         moved_right = this->right_wheel.encoder.ticks - r_previous_read;
         moved_left = this->left_wheel.encoder.ticks - l_previous_read;
@@ -119,15 +119,15 @@ void Movement::goStraight(const int direction, const float speed)
 // This function blocks execution
 float Movement::goStraightMm(const int direction, float mm, const float speed=300)
 {
-    std::cout << "Andando pra frente " << mm << " mm" << std::endl;
+    //std::cout << "Andando pra frente " << mm << " mm" << std::endl;
     mm = std::clamp(mm - 30, 0.0f, mm);
     float moved_left = 0;
     float moved_right = 0;
     this->left_wheel.mmMovedSinceLastCall();
     this->right_wheel.mmMovedSinceLastCall();
     this->goStraight(direction, speed);
-    std::cout << "antes l furo " << this->left_wheel.encoder.ticks << " l diferenca: " << moved_left << std::endl;
-    std::cout << "antes R furo " << this->right_wheel.encoder.ticks << " r diferenca: " << moved_right << std::endl;
+    //std::cout << "antes l furo " << this->left_wheel.encoder.ticks << " l diferenca: " << moved_left << std::endl;
+    //std::cout << "antes R furo " << this->right_wheel.encoder.ticks << " r diferenca: " << moved_right << std::endl;
     while((moved_left + moved_right) < 2*mm)
     {
         if (moving_left && moved_left > mm)
@@ -145,8 +145,8 @@ float Movement::goStraightMm(const int direction, float mm, const float speed=30
         moved_left += this->left_wheel.mmMovedSinceLastCall();
         moved_right += this->right_wheel.mmMovedSinceLastCall();        
     }
-    std::cout << "l furo" << this->left_wheel.encoder.ticks << " l diferenca: " << moved_left << std::endl;
-    std::cout << "R furo" << this->right_wheel.encoder.ticks << " r diferenca: " << moved_right << std::endl;
+    //std::cout << "l furo" << this->left_wheel.encoder.ticks << " l diferenca: " << moved_left << std::endl;
+    //std::cout << "R furo" << this->right_wheel.encoder.ticks << " r diferenca: " << moved_right << std::endl;
     this->stop();
     moved_left += this->left_wheel.mmMovedSinceLastCall();
     moved_right += this->right_wheel.mmMovedSinceLastCall();

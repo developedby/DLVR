@@ -18,5 +18,7 @@ REFUSED_KS,The Receiver refused delivery!,O Receptor recusou a entrega!
 DLVR_REQ_MEM_KS,wants to deliver something to you! Accept?,quer entregar algo a você! Aceitar? 
 TRACKING_KS,Tracking,Rastreando
 SEND_KS,Send,Enviar
+FINISH_KS,Finish,Finalizar
+AR_KS,Show this AR-Tag to the robot to open the box,Mostre este AR-Tag para o robô para abrir a caixa
 DEBUG_OPEN_KS,<DEBUG> OPEN BOX,<DEBUG> ABRIR CAIXA
 DEBUG_CLOSE_KS,<DEBUG> CLOSE BOX, <DEBUG> FECHAR CAIXA
