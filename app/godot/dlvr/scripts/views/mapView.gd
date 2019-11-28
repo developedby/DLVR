@@ -161,7 +161,9 @@ func _on_confirm_button_pressed():
 			var jsonparser = JSON.parse(r[1])
 			if jsonparser.error == OK:
 				var resp = jsonparser.result
-				if (resp["status_code"] == 200) and (resp["message_body"] == "true"):
+				if (resp["status_code"] == 200) and \
+				   (resp["message_body"] is String) and \
+				   (resp["message_body"] == "true"):
 					self.current_state = STATE.WAITING_RECEIVER
 				else:
 					self.current_state = STATE.IDLE
@@ -183,7 +185,9 @@ func _on_confirm_button_pressed():
 		var jsonparser = JSON.parse(r[1])
 		if jsonparser.error == OK:
 			var resp = jsonparser.result
-			if (resp["status_code"] == 200) and (resp["message_body"] == "true"):
+			if (resp["status_code"] == 200) and \
+			   (resp["message_body"] is String) and \
+			   (resp["message_body"] == "true"):
 				self.current_state = STATE.TRACKING
 				self.current_client = CLIENT_TYPE.RECEIVER
 			else:

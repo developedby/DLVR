@@ -110,7 +110,6 @@ texture = ExtResource( 6 )
 expand = true
 
 [node name="city" type="Node2D" parent="."]
-editor/display_folded = true
 
 [node name="node1" type="Position2D" parent="city"]
 position = Vector2( 60, 292 )
