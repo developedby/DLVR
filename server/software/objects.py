@@ -56,9 +56,13 @@ def send_email(email_address, first_name, last_name, number):
 
 class Direction(enum.Enum):
     FRONT = 0
+    NORTH = 0
     LEFT = 1
+    WEST = 1
     BACK = 2
+    SOUTH = 2
     RIGHT = 3
+    EAST = 3
 
     @classmethod
     def fromstr(cls, str):
@@ -103,37 +107,37 @@ class Direction(enum.Enum):
         return (-self) + other
 
 city = {
-    1: {2: (Direction.RIGHT, 0.72)},
-    2: {1: (Direction.LEFT, 0.72), 3: (Direction.RIGHT, 0.26), 10: (Direction.BACK, 0.77)},
-    3: {2: (Direction.LEFT, 0.26), 4: (Direction.RIGHT, 0.71)},
-    4: {3: (Direction.LEFT, 0.71)},
-    5: {3: (Direction.FRONT, 0.25), 6: (Direction.RIGHT, 0.46)},
-    6: {7: (Direction.RIGHT, 0.25), 8: (Direction.BACK, 0.26)},
-    7: {6: (Direction.LEFT, 0.25)},
-    8: {9: (Direction.RIGHT, 0.25), 12: (Direction.BACK, 0.26)},
-    9: {8: (Direction.LEFT, 0.25)},
-    10: {24: (Direction.LEFT, 0.31), 16: (Direction.BACK, 0.52)},
-    11: {10: (Direction.LEFT, 0.26), 5: (Direction.FRONT, 0.52)},
-    12: {11: (Direction.LEFT, 0.46), 13: (Direction.RIGHT, 0.25)},
-    13: {12: (Direction.LEFT, 0.25)},
-    14: {12: (Direction.FRONT, 0.26), 15: (Direction.RIGHT, 0.25)},
-    15: {14: (Direction.LEFT, 0.25)},
-    16: {21: (Direction.BACK, 0.39), 17: (Direction.RIGHT, 0.26)},
-    17: {11: (Direction.FRONT, 0.52), 18: (Direction.RIGHT, 0.46)},
-    18: {14: (Direction.FRONT, 0.26), 19: (Direction.RIGHT, 0.25)},
-    19: {18: (Direction.LEFT, 0.25)},
-    20: {21: (Direction.RIGHT, 0.72)},
-    21: {20: (Direction.LEFT, 0.72), 22: (Direction.RIGHT, 0.26)},
-    22: {17: (Direction.FRONT, 0.39), 21: (Direction.LEFT, 0.26), 23: (Direction.RIGHT, 0.72)},
-    23: {22: (Direction.LEFT, 0.72)},
-    24: {25: (Direction.LEFT, 0.34)},
-    25: {26: (Direction.LEFT, 0.21)},
-    26: {30: (Direction.BACK, 0.54)},
-    27: {28: (Direction.RIGHT, 0.20)},
-    28: {29: (Direction.RIGHT, 0.25)},
-    29: {16: (Direction.RIGHT, 0.31)},
-    30: {27: (Direction.BACK, 0.36), 31: (Direction.RIGHT, 0.24)},
-    31: {30: (Direction.LEFT, 0.24)},
+    1: {2: (Direction.EAST, 0.72)},
+    2: {1: (Direction.WEST, 0.72), 3: (Direction.EAST, 0.26), 10: (Direction.SOUTH, 0.77)},
+    3: {2: (Direction.WEST, 0.26), 4: (Direction.EAST, 0.71)},
+    4: {3: (Direction.WEST, 0.71)},
+    5: {3: (Direction.NORTH, 0.25), 6: (Direction.EAST, 0.46)},
+    6: {7: (Direction.EAST, 0.25), 8: (Direction.SOUTH, 0.26)},
+    7: {6: (Direction.WEST, 0.25)},
+    8: {9: (Direction.EAST, 0.25), 12: (Direction.SOUTH, 0.26)},
+    9: {8: (Direction.WEST, 0.25)},
+    10: {24: (Direction.WEST, 0.31), 16: (Direction.SOUTH, 0.52)},
+    11: {10: (Direction.WEST, 0.26), 5: (Direction.NORTH, 0.52)},
+    12: {11: (Direction.WEST, 0.46), 13: (Direction.EAST, 0.25)},
+    13: {12: (Direction.WEST, 0.25)},
+    14: {12: (Direction.NORTH, 0.26), 15: (Direction.EAST, 0.25)},
+    15: {14: (Direction.WEST, 0.25)},
+    16: {21: (Direction.SOUTH, 0.39), 17: (Direction.EAST, 0.26)},
+    17: {11: (Direction.NORTH, 0.52), 18: (Direction.EAST, 0.46)},
+    18: {14: (Direction.NORTH, 0.26), 19: (Direction.EAST, 0.25)},
+    19: {18: (Direction.WEST, 0.25)},
+    20: {21: (Direction.EAST, 0.72)},
+    21: {20: (Direction.WEST, 0.72), 22: (Direction.EAST, 0.26)},
+    22: {17: (Direction.NORTH, 0.39), 21: (Direction.WEST, 0.26), 23: (Direction.EAST, 0.72)},
+    23: {22: (Direction.WEST, 0.72)},
+    24: {25: (Direction.WEST, 0.34)},
+    25: {26: (Direction.WEST, 0.21)},
+    26: {30: (Direction.SOUTH, 0.54)},
+    27: {28: (Direction.EAST, 0.20)},
+    28: {29: (Direction.EAST, 0.25)},
+    29: {16: (Direction.EAST, 0.31)},
+    30: {27: (Direction.SOUTH, 0.36), 31: (Direction.EAST, 0.24)},
+    31: {30: (Direction.WEST, 0.24)},
 }
 
 garages = [1, 4, 20, 23]
@@ -148,12 +152,12 @@ def shortest_path(graph, start, goal):
             else:
                 queue.append((next, path + [next]))
 
-def path_to_directions(graph, path, orientation):
+def path_to_directions(graph, path, orientation, turn_discount):
     ret = []
     for origin, destination in zip(path[:-1], path[1:]):
         direction = graph[origin][destination][0] - orientation
         orientation = graph[origin][destination][0]
-        ret.append((str(direction), graph[origin][destination][1], destination))
+        ret.append((str(direction), graph[origin][destination][1] - (0 if direction == Direction.FRONT else (turn_discount + (turn_discount if direction == Direction.BACK else 0))), destination))
     return ret
 
 class ScriptCache:
@@ -504,6 +508,8 @@ class User:
         return False
 
 class Robot:
+    TURN_DISCOUNT = 0.14
+
     @classmethod
     def verify(cls, public_key, data):
         data_no_sign = data.copy()

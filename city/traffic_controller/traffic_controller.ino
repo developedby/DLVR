@@ -5,9 +5,9 @@
  *  @author Matheus Dias (@BulbThinker)
  */
 
-const int light0 = 1;
-const int light1 = 2;
-const int base_time = 30000;
+const int light0 = 6;
+const int light1 = 5;
+const int base_time = 15000;
 
 void setup() {
     // Lights 0

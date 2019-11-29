@@ -96,8 +96,7 @@ func _on_packet_received(data_r):
 						 ("qr" in resp["message_body"]):
 						self.current_state = STATE.OPENED
 			elif resp["path"] == "/delivery/finish":
-				self.current_state = STATE.IDLE
-				self.current_clien = CLIENT_TYPE.NONE
+				__finish()
 
 func _on_house_pressed(id):
 	if current_state in [STATE.IDLE, STATE.ORIGIN_SET]:
@@ -162,7 +161,9 @@ func _on_confirm_button_pressed():
 			var jsonparser = JSON.parse(r[1])
 			if jsonparser.error == OK:
 				var resp = jsonparser.result
-				if (resp["status_code"] == 200) and (resp["message_body"] == "true"):
+				if (resp["status_code"] == 200) and \
+				   (resp["message_body"] is String) and \
+				   (resp["message_body"] == "true"):
 					self.current_state = STATE.WAITING_RECEIVER
 				else:
 					self.current_state = STATE.IDLE
@@ -184,7 +185,9 @@ func _on_confirm_button_pressed():
 		var jsonparser = JSON.parse(r[1])
 		if jsonparser.error == OK:
 			var resp = jsonparser.result
-			if (resp["status_code"] == 200) and (resp["message_body"] == "true"):
+			if (resp["status_code"] == 200) and \
+			   (resp["message_body"] is String) and \
+			   (resp["message_body"] == "true"):
 				self.current_state = STATE.TRACKING
 				self.current_client = CLIENT_TYPE.RECEIVER
 			else:
@@ -206,17 +209,26 @@ func _on_finish_button_pressed():
 		var data = {"path": "/delivery/finish", "cookie": DLVR.cookie, "id": last_request_id}
 		DLVR.client.send_data(JSON.print(data))
 		#
-		self.current_client = CLIENT_TYPE.NONE
-		self.current_state = STATE.IDLE
-		self.origin = -1
-		self.destination = -1
-		self.last_request_id = -1
-		self.qr_id = -1
-		#
-		$pointer_origin.unpop()
-		$pointer_destination.unpop()
-		$pointer_tracking.unpop()
-		#
-		$pointer_origin.position = $rest_area.position
-		$pointer_destination.position =  $rest_area.position
-		$pointer_tracking.position =  $rest_area.position
+		__finish()
+
+
+func _on_artags_debug_force_finish():
+	var data = {"path": "/delivery/finish", "cookie": DLVR.cookie, "id": last_request_id}
+	DLVR.client.send_data(JSON.print(data))
+	__finish()
+
+func __finish():
+	self.current_client = CLIENT_TYPE.NONE
+	self.current_state = STATE.IDLE
+	self.origin = -1
+	self.destination = -1
+	self.last_request_id = -1
+	self.qr_id = -1
+	#
+	$pointer_origin.unpop()
+	$pointer_destination.unpop()
+	$pointer_tracking.unpop()
+	#
+	$pointer_origin.position = $rest_area.position
+	$pointer_destination.position =  $rest_area.position
+	$pointer_tracking.position =  $rest_area.position

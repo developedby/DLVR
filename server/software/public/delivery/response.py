@@ -26,7 +26,7 @@ async def main(websocket, path, open_sockets, script_cache, data = None):
                                 robot = nearest[0]
                                 robot_path = nearest[1]
                                 robot.route = robot_path
-                                robot_path = objects.path_to_directions(objects.city, robot_path, robot.orientation)
+                                robot_path = objects.path_to_directions(objects.city, robot_path, robot.orientation, robot.TURN_DISCOUNT)
                                 if delivery.response(robot.position, data["destination"], robot.id):
                                     for login in logins:
                                         data2 = {"status_code": 200, "reason_message": "OK", "path": "/delivery/response", "message_body": {"id": delivery.id, "accept": True, "destination": data["destination"], "path": robot_path}}
