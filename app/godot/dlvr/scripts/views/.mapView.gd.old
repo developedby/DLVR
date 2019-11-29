@@ -152,7 +152,6 @@ func _on_confirm_button_pressed():
 				"receiver": $delivery_menu/email.text.strip_edges(),
 			}
 			DLVR.client.send_data(JSON.print(data))
-			self.current_state = STATE.WAITING_RECEIVER
 			DLVR.client.start_receive_timer()
 			var r = yield(DLVR.client, "packet_received_or_timeout")
 			while r is GDScriptFunctionState:
@@ -186,7 +185,9 @@ func _on_confirm_button_pressed():
 		var jsonparser = JSON.parse(r[1])
 		if jsonparser.error == OK:
 			var resp = jsonparser.result
-			if (resp["status_code"] == 200):
+			if (resp["status_code"] == 200) and \
+			   (resp["message_body"] is String) and \
+			   (resp["message_body"] == "true"):
 				self.current_state = STATE.TRACKING
 				self.current_client = CLIENT_TYPE.RECEIVER
 			else:

@@ -21,8 +21,8 @@ var _write_mode = WebSocketPeer.WRITE_MODE_TEXT
 var last_connected_client = 0
 
 
-export(float) var connection_timeout:float = 1.0 setget set_connection_timeout
-export(float) var received_timeout:float = 1.0 setget set_received_timeout
+export(float) var connection_timeout:float = 5.0 setget set_connection_timeout
+export(float) var received_timeout:float = 5.0 setget set_received_timeout
 
 
 func _init():

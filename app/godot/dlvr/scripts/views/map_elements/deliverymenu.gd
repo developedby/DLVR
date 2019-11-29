@@ -9,7 +9,9 @@ func _ready():
 func _on_state_changed(val):
 	if val != parent.STATE.ORIGIN_SET:
 		$email.text = ""
-	if val == parent.STATE.IDLE:
+	if (val == parent.STATE.IDLE) or \
+	   (val == parent.STATE.TRACKING) or \
+	   (val == parent.STATE.TRACKING_ORIGIN):
 		$email.visible = false
 		$cancel_button.visible = false
 		$confirm_button.visible = false
