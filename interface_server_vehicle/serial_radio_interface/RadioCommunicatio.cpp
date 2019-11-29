@@ -12,7 +12,7 @@ RadioCommunication::RadioCommunication()
     ack = 0;
     uint8_t address[] = {COORD_ADDRESS};
     radio->openReadingPipe(1, address);
-    radio->enableAckPayload();               // Allow optional ack payloads
+    //radio->enableAckPayload();               // Allow optional ack payloads
     radio->enableDynamicPayloads();
     radio->startListening();
 }
