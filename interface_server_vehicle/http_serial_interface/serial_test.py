@@ -7,7 +7,7 @@ START_BYTE = 0Xaa
 url_request = ""
 url_post = ""
 
-s = serial.Serial('/dev/ttyUSB0', 115200, timeout=5)
+s = serial.Serial('/dev/ttyUSB0', 115200, timeout=10)
 time.sleep(2)
 
 #server
