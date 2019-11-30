@@ -26,6 +26,7 @@ namespace consts
 	bool constexpr save_img = false;
 	// Traffic light finder
 	int constexpr max_traffic_light_area = 150;
+	int constexpr min_traffic_light_area = 50;
 
 	// Radio
 	int constexpr radio_delay_transmitting = 0;

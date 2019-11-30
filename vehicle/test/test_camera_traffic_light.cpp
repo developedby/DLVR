@@ -9,7 +9,7 @@
 int main()
 {
     const std::string path =  "./img/webcam/";
-    const std::string img_in = "semaforos";
+    const std::string img_in = "semaforos_longe";
     const std::string extension = ".jpg";
 
     auto img = cv::imread(path + img_in + extension);
@@ -22,11 +22,11 @@ int main()
     img.copyTo(trafic_draw);
     cv::cvtColor(img, img, cv::COLOR_BGR2HLS);
 
-    auto h_min = 1;
-    auto h_max = 60;
+    auto h_min = 0;
+    auto h_max = 30;
     auto l_min = 100;
-    auto l_max = 240;
-    auto s_min = 150;
+    auto l_max = 230;
+    auto s_min = 130;
     auto s_max = 255;
     
     cv::Mat red_mask;
@@ -41,7 +41,7 @@ int main()
         {
             double area = cv::contourArea(contours[j]);
             std::cout << area << std::endl;
-            if(area < 50 && area > 20)
+            if(area < 150 && area > 30)
             {
                 std::cout<<"achou semafaro vermelho"<<std::endl;
                 cv::drawContours(trafic_draw, contours, j, cv::Scalar(0, 255, 0), 1, cv::LINE_8);
