@@ -65,11 +65,13 @@ scale = Vector2( 0.2, 0.2 )
 texture = ExtResource( 3 )
 
 [node name="tracking_label" type="Label" parent="."]
-margin_top = 147.292
-margin_right = 720.0
-margin_bottom = 202.292
+margin_left = 17.0
+margin_top = 124.0
+margin_right = 565.0
+margin_bottom = 229.0
 text = "TRACKING_KS"
 align = 1
+valign = 1
 script = ExtResource( 4 )
 
 [node name="toolBar" type="Control" parent="."]
@@ -310,7 +312,6 @@ rect_min_size = Vector2( 200, 50 )
 text = "NO_KS"
 
 [node name="refused_window" type="Control" parent="."]
-editor/display_folded = true
 margin_left = 20.0
 margin_top = 480.0
 margin_right = 60.0

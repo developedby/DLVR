@@ -51,7 +51,7 @@ func _on_packet_received(data_r):
 					self.current_state = STATE.DELIVERY_REQUESTED
 				else:
 					Utils.print_log("Delivery Request not accept because isnt idle")
-					data = {"path": "/delivery/response", "cookie": DLVR.cookie, "accept": false}
+					data = {"path": "/delivery/response", "cookie": DLVR.cookie, "id": last_request_id, "accept": false}
 					DLVR.client.send_data(JSON.print(data))
 			elif resp["path"] == "/delivery/response":
 				if current_state == STATE.WAITING_RECEIVER:
@@ -60,7 +60,7 @@ func _on_packet_received(data_r):
 						self.current_state = STATE.TRACKING_ORIGIN
 						self.current_client = CLIENT_TYPE.SENDER
 					else:
-						self.current_state = STATE.REFUSED
+						self.current_state = STATE.RECEIVER_REFUSED
 			elif resp["path"] == "/robot/update":
 				if ("message_body" in resp) and ("position" in resp["message_body"]):			
 					var pid = resp["message_body"]["position"]
@@ -218,6 +218,14 @@ func _on_send_button_pressed():
 func set_state(val):
 	current_state = val
 	Utils.print_log("STATE {%s}" % str(val))
+	if val == STATE.IDLE:
+		$pointer_origin.unpop()
+		$pointer_destination.unpop()
+		$pointer_tracking.unpop()
+		#
+		$pointer_origin.position = $rest_area.position
+		$pointer_destination.position =  $rest_area.position
+		$pointer_tracking.position =  $rest_area.position
 	emit_signal("state_changed", val)
 
 func _on_finish_button_pressed():

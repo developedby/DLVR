@@ -22,3 +22,5 @@ func _on_yes_pressed():
 
 func _on_no_pressed():
 	parent.current_state = parent.STATE.IDLE
+	var data = {"path": "/delivery/response", "cookie": DLVR.cookie, "id": parent.last_request_id, "accept": false}
+	DLVR.client.send_data(JSON.print(data))
