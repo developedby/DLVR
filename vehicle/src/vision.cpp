@@ -126,12 +126,18 @@ bool Vision::isTrafficLightRed()
 
 pair<vector<int>, vector<vector<cv::Point2f>>> Vision::findCityARMarkers()
 {
-    return this->findARMarkers(this->city_aruco_dict);
+    vector<int> ids;
+    vector<vector<cv::Point2f>> corners;
+    cv::aruco::detectMarkers(this->forward_img, this->city_aruco_dict, corners, ids);
+    return pair(ids, corners);
 }
 
 pair<vector<int>, vector<vector<cv::Point2f>>> Vision::findAppARMarkers()
 {
-    return this->findARMarkers(this->app_aruco_dict);
+    vector<int> ids;
+    vector<vector<cv::Point2f>> corners;
+    cv::aruco::detectMarkers(this->forward_img, this->app_aruco_dict, corners, ids);
+    return pair(ids, corners);
 }
 
 pair<vector<int>, vector<vector<cv::Point2f>>> Vision::findARMarkers(cv::Ptr<cv::aruco::Dictionary> dict)
