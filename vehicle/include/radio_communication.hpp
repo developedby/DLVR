@@ -8,19 +8,20 @@
 #include "message.hpp"
 #include "constants.hpp"
 
-class RadioCommunication{
+class RadioCommunication
+{
     unsigned char received_data[consts::radio_width_data];
     uint8_t last_address[consts::radio_width_address];
-
 public:
     SentMessage last_sended_message;
-    pthread_t *radio_ack_thread;
-    int siz;
-    int ack;
-    int attemps;
+    pthread_t *message_pooler;
+    int size_;
+    int attempts;
     Radio radio;
+    bool has_new_msg;
     RadioCommunication();
     ~RadioCommunication() {}
+    void newMessagePooling();
     void setAddress(uint8_t const *addres);
     void sendToRadio(SentMessage message);
     bool receiveFromRadio();
@@ -30,8 +31,6 @@ public:
     bool isChipConnected();
 };
 
-void* waitAck(void *);
-void sendOk(int event, uint32_t tick, void *obj);
-void sendFailure(int event, uint32_t tick, void *obj);
+void* newMessagePoolingThread(void* arg);
 
 #endif

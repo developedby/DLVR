@@ -2,37 +2,36 @@
 #include "constants.hpp"
 #include "radio_communication.hpp"
 
-RadioCommunication::RadioCommunication()
+RadioCommunication::RadioCommunication():
+    received_data{0}, size_(0), attempts(0), has_new_msg(false)
 {
-    int i = 0;
-    //radio = new Radio();
-    for(i=0; i<consts::radio_width_data; i++)
+    this->radio.openReadingPipe(1, consts::radio_address);
+    this->radio.enableDynamicPayloads();
+    this->setAddress(consts::coord_address);
+    this->radio.startListening();
+    this->message_pooler = gpioStartThread(newMessagePoolingThread, this);
+}
+
+// Pools the radio object to check if there are new messages regularly
+void RadioCommunication::newMessagePooling()
+{
+    while (true)
     {
-        received_data[i] = 0;
+        this->has_new_msg = this->has_new_msg or this->receiveFromRadio();
+        gpioSleep(PI_TIME_RELATIVE, 0, consts::radio_pooling_period);
     }
-    siz = 0;
-    ack = 0;
-    radio.openReadingPipe(1, consts::radio_address);
-    radio.enableAckPayload();               // Allow optional ack payloads
-    radio.enableDynamicPayloads();
-    radio.startListening();
-    eventSetFuncEx(1, sendFailure, this);
-    eventSetFuncEx(2, sendOk, this);
-    attemps = 0;
 }
 
 void RadioCommunication::setAddress(uint8_t const *address)
 {
-    int i = 0, j=0;
-    for(i=0; i<consts::radio_width_address; i++)
+    for(int i=0; i<consts::radio_width_address; i++)
     {
-        if(address[i] != last_address[i])
+        if(address[i] != this->last_address[i])
         {
-            radio.openWritingPipe(address);
-            ack = 0;
-            for(j=0; j<consts::radio_width_address; j++)
+            this->radio.openWritingPipe(address);
+            for(int j=0; j<consts::radio_width_address; j++)
             {
-                last_address[j] = address[j];
+                this->last_address[j] = address[j];
             }
             break;
         }
@@ -41,14 +40,15 @@ void RadioCommunication::setAddress(uint8_t const *address)
 
 void RadioCommunication::sendToRadio(SentMessage message)
 {
-    last_sended_message = message;
+    std::cout << "sendToRadio" << std::endl;
+    this->last_sended_message = message;
     std::vector<uint8_t> data;
     data.push_back(consts::radio_start_byte);
     data.push_back(1);//id do robo
     if(message.ultrassound_reading > 0)
     {
         //float* p = new float(message.ultrassound_reading);
-        int len = sizeof((message.ultrassound_reading));
+        const int len = sizeof((message.ultrassound_reading));
         uint8_t ch[len];
         memcpy(ch, &(message.ultrassound_reading),len);
         for(int i =0; i<len; i++)
@@ -62,7 +62,7 @@ void RadioCommunication::sendToRadio(SentMessage message)
     }
     if(message.movement.read)
     {
-        int len = sizeof((message.movement.amplitude));
+        const int len = sizeof((message.movement.amplitude));
         uint8_t ch[len];
         memcpy(ch, &(message.movement.amplitude),len);
         for(int i =0; i<len; i++)
@@ -85,41 +85,38 @@ void RadioCommunication::sendToRadio(SentMessage message)
         data.push_back(int(i) & 0xff);
     }
     data.push_back(consts::radio_start_byte);
-    radio.stopListening();
-    int len = static_cast<uint8_t>(data.size());
+    const int len = static_cast<uint8_t>(data.size());
     uint8_t send_data[len];
+    std::cout << "pacote" << std::endl;
     for(int i = 0; i<int(data.size()); i++)
     {
+        std::cout << int(data[i]) << std::endl;
         send_data[i] = data[i];
     }
-    radio.write(send_data, len);
+    std::cout << "mandando para o radio" << std::endl;
+    this->radio.stopListening();
+    this->radio.write(send_data, len);
     //radio.startListening();
     //radio_ack_thread = gpioStartThread(waitAck, this);
 }
 
 bool RadioCommunication::receiveFromRadio()
 {
-    radio.startListening();
-    if(radio.available())
+    this->radio.startListening();
+    if(this->radio.available() and this->radio.getDynamicPayloadSize() >= 1)
     {
-        std::cout <<"ok";
-        if(radio.getDynamicPayloadSize() < 1)
-        {
-            return false;
-        }
-        std::cout <<"ok"<<std::endl;
-        radio.read(received_data, sizeof(received_data));
-        ack++;
-        
+        this->radio.read(this->received_data, sizeof(this->received_data));
+        //this->ack++;
         //radio.writeAckPayload(1, &(ack), 1);
-        siz = 2;
-        std::cout << "mandei ack, pacote recebido: " <<std::endl;
-        for (int i=1; received_data[i] != consts::radio_start_byte and i < consts::radio_width_data; i++)
+        this->size_ = 2;
+        //std::cout << "mandei ack, pacote recebido: " << std::endl;
+        for (int i=1; (this->received_data[i] != consts::radio_start_byte) and (i < consts::radio_width_data); i++)
         {
-            std::cout << int(received_data[i]) << std::endl;
-            siz++;
+            //std::cout << int(received_data[i]) << std::endl;
+            this->size_++;
         }
-        if((received_data[0] == consts::radio_start_byte) && (received_data[siz - 1] == consts::radio_start_byte))
+        if((this->received_data[0] == consts::radio_start_byte)
+           && (this->received_data[this->size_ - 1] == consts::radio_start_byte))
         {
             return true;
         }
@@ -171,7 +168,7 @@ ReceivedMessage RadioCommunication::getData()
 
 int RadioCommunication::getDataSize()
 {
-    return siz;
+    return this->size_;
 }
 
 void RadioCommunication::debug()
@@ -184,41 +181,8 @@ bool RadioCommunication::isChipConnected()
     return radio.isChipConnected();
 }
 
-void* waitAck(void *obj)
+void* newMessagePoolingThread(void *arg)
 {
-    RadioCommunication *internal_radio = static_cast<RadioCommunication*>(obj);
-    uint32_t startTick = gpioTick();
-    while(!internal_radio->radio.isAckPayloadAvailable())
-    {
-        if((gpioTick() - startTick) > consts::time_out_radio_ack)
-        {
-            eventTrigger(1);
-            return nullptr;
-        }
-    }
+    static_cast<RadioCommunication*>(arg)->newMessagePooling();
     return nullptr;
-}
-
-void sendOk(int event, uint32_t tick, void* obj)
-{
-    RadioCommunication *internal_radio = static_cast<RadioCommunication*>(obj);
-    internal_radio->radio.writeAckPayload(1, &(internal_radio->ack), 1);
-    internal_radio->siz = 0;
-    internal_radio->attemps = 0;
-    gpioStopThread(internal_radio->radio_ack_thread);
-}
-
-void sendFailure(int event, uint32_t tick, void* obj)
-{
-    RadioCommunication *internal_radio = static_cast<RadioCommunication*>(obj);
-    internal_radio->attemps++;
-    gpioStopThread(internal_radio->radio_ack_thread);
-    if(internal_radio->attemps > consts::radio_retries)
-    {
-        eventTrigger(3);
-    }
-    else
-    {
-        internal_radio->sendToRadio(internal_radio->last_sended_message);
-    }
 }

@@ -21,7 +21,8 @@ using streets::StreetSection;
 
 Vision::Vision() :
     downward_cam(), forward_cam(),
-    aruco_dict(cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_250)),
+    city_aruco_dict(cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_250)),
+    app_aruco_dict(cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_250)),
     downward_img(), forward_img()
 {
     this->downward_cam.set(cv::CAP_PROP_FORMAT, CV_8UC3);
@@ -123,11 +124,21 @@ bool Vision::isTrafficLightRed()
     
 }
 
-pair<vector<int>, vector<vector<cv::Point2f>>> Vision::findARMarkers()
+pair<vector<int>, vector<vector<cv::Point2f>>> Vision::findCityARMarkers()
+{
+    return this->findARMarkers(this->city_aruco_dict);
+}
+
+pair<vector<int>, vector<vector<cv::Point2f>>> Vision::findAppARMarkers()
+{
+    return this->findARMarkers(this->app_aruco_dict);
+}
+
+pair<vector<int>, vector<vector<cv::Point2f>>> Vision::findARMarkers(cv::Ptr<cv::aruco::Dictionary> dict)
 {
     vector<int> ids;
     vector<vector<cv::Point2f>> corners;
-    cv::aruco::detectMarkers(this->forward_img, this->aruco_dict, corners, ids);
+    cv::aruco::detectMarkers(this->forward_img, dict, corners, ids);
     return pair(ids, corners);
 }
 
