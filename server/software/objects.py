@@ -1475,7 +1475,7 @@ class QRCode:
         with connect.connect() as connection:
             cursor = connection.cursor(prepared = True)
             query = "INSERT INTO QRCode(number, expiration, delivery) VALUES (%s, %s, %s)"
-            number = random.randint(32, 999)
+            number = random.randint(32, 64)
             expiration = datetime.datetime.now() + datetime.timedelta(minutes = 5)
             expiration = expiration.strftime("%Y-%m-%d %H:%M:%S")
             values = (number, expiration, delivery)

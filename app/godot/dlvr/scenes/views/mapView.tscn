@@ -214,6 +214,7 @@ id = 31
 [node name="pointer_origin" parent="." instance=ExtResource( 8 )]
 position = Vector2( 1172.17, 284.336 )
 scale = Vector2( 0.2, 0.2 )
+pointer_type = 0
 
 [node name="pointer_destination" parent="." instance=ExtResource( 8 )]
 position = Vector2( 1169.08, 469.789 )

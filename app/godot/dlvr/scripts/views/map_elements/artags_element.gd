@@ -7,7 +7,7 @@ func _ready():
 
 func _on_state_changed(val):
 	if val == parent.STATE.ARRIVED:
-		self.visible = true
 		self.id = parent.qr_id
+		self.visible = true
 	else:
 		self.visible = false
