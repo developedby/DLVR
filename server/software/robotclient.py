@@ -29,7 +29,7 @@ async def handler():
         resp = json.loads(resp)
         if resp["status_code"] == 200 and resp["message_body"] == "true":
             print("Signin done successfully")
-            data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "state": 6}
+            data = {"path": "/robot/update", "id": 0, "timestamp": datetime.datetime.now().timestamp(), "qr" : 23, "state": 6}
             data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
             await websocket.send(json.dumps(data))
             async for message in websocket:

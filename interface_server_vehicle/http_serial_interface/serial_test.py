@@ -13,7 +13,7 @@ time.sleep(2)
 #server
 #variables from server
 #route = [8, 72, 8, 26, 8, 72]
-route = [8, 60, 6, 39, 6, 57]
+route = [8, 60, 6, 45, 6, 57]
 #qr_code_destination = 0x0014
 qr_code_destination = 0x0013
 required_status = "status_robot"
