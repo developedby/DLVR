@@ -13,4 +13,4 @@ func _on_state_changed(state):
 		visible = false
 
 func _on_ok_pressed():
-	parent.current_state == parent.STATE.IDLE
+	self.parent.set_state(parent.STATE.IDLE)
