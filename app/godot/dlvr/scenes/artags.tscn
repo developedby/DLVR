@@ -2,11 +2,12 @@
 
 [ext_resource path="res://resources/theme.tres" type="Theme" id=1]
 [ext_resource path="res://scripts/artags.gd" type="Script" id=2]
-[ext_resource path="res://sprites/artags/artag0.png" type="Texture" id=3]
+[ext_resource path="res://sprites/artags/artag32.png" type="Texture" id=3]
 
 [node name="artags" type="Control"]
 theme = ExtResource( 1 )
 script = ExtResource( 2 )
+id = 32
 
 [node name="background" type="ColorRect" parent="."]
 margin_right = 700.0
@@ -14,7 +15,7 @@ margin_bottom = 450.0
 rect_min_size = Vector2( 700, 400 )
 
 [node name="tag" type="Sprite" parent="."]
-position = Vector2( 350, 270 )
+position = Vector2( 350, 261 )
 scale = Vector2( 0.8, 0.8 )
 texture = ExtResource( 3 )
 

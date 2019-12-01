@@ -15,8 +15,13 @@ RECEIVER_EMAIL_KS,Receiver email,Email do receptor
 YES_KS,Yes,Sim
 NO_KS,No,Não
 REFUSED_KS,The Receiver refused delivery!,O Receptor recusou a entrega!
-DLVR_REQ_MEM_KS,wants to deliver something to you! Accept?,quer entregar algo a você! Aceitar? 
+DLVR_REQ_MEM_KS,wants to deliver something to you! Accept?,quer entregar algo a você! Aceitar?
+IDLE_KS,Select delivery origin,Selecione a origem da entrega
+ORIGINSET_KS,Enter recipient email,Entre o email do destinatario
+WAITINGRECEIVER_KS,Waiting receiver,Aguardando receptor
 TRACKING_KS,Tracking,Rastreando
+WAITINGSEND_KS,Waiting send,Aguardando envio
+OPENED_KS,Remove item and finalize delivery,Retire o item e finalize a entrega
 SEND_KS,Send,Enviar
 FINISH_KS,Finish,Finalizar
 AR_KS,Show this AR-Tag to the robot to open the box,Mostre este AR-Tag para o robô para abrir a caixa

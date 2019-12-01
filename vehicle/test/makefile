@@ -5,7 +5,7 @@ dummy:
 clean:
 	rm ./build/*.o
 
-# Limpa a pasta ,/build	
+# Limpa a pasta ./build	
 clean_all:
 	rm ./build/*
 
@@ -18,7 +18,7 @@ wheel: ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp test_wheel.cpp
 	gcc -Wall -o ./build/test_wheel ../src/dc_motor.cpp ../src/encoder.cpp ../src/wheel.cpp test_wheel.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -I../include
 
 # Teste radio
-radio_example: test_nrf24l01.cpp
+radio_example: test_nrf24l01_example.cpp
 	gcc -Wall -o ./build/test_nrf24l01_example test_nrf24l01_example.cpp -lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm -I../include
 
 # Teste detector de item
@@ -66,8 +66,8 @@ lines: test_line_detection.cpp
 		-I../include -I/usr/local/include -I/usr/local/include/opencv4
 
 #Teste vehicle
-vehicle: ./build/vehicle_run.o ./build/movement.o ./build/dc_motor.o ./build/encoder.o ./build/wheel.o ./build/pidz.o ./build/vision.o ./build/streets.o ./build/geometry.o ./build/radio.o ./build/radio_communication.o ./build/lock.o ./build/servo.o ./build/item_detector.o ./build/intelligence.o ./build/vehicle.o ./build/delivery_box.o ./build/ultrasound.o
-	gcc -Wall -o ./build/vehicle_run ./build/vehicle_run.o ./build/movement.o ./build/dc_motor.o ./build/encoder.o ./build/wheel.o ./build/pidz.o ./build/vision.o ./build/streets.o ./build/geometry.o ./build/radio.o ./build/radio_communication.o ./build/lock.o ./build/item_detector.o ./build/intelligence.o ./build/vehicle.o ./build/delivery_box.o ./build/servo.o ./build/ultrasound.o\
+vehicle: ./build/vehicle_run.o ./build/movement.o ./build/dc_motor.o ./build/encoder.o ./build/wheel.o ./build/pidz.o ./build/vision.o ./build/streets.o ./build/geometry.o ./build/radio.o ./build/radio_communication.o ./build/lock.o ./build/servo.o ./build/item_detector.o ./build/intelligence.o ./build/vehicle.o ./build/delivery_box.o ./build/ultrasound.o ./build/street_follower.o
+	gcc -Wall -o ./build/vehicle_run ./build/vehicle_run.o ./build/movement.o ./build/dc_motor.o ./build/encoder.o ./build/wheel.o ./build/pidz.o ./build/vision.o ./build/streets.o ./build/geometry.o ./build/radio.o ./build/radio_communication.o ./build/lock.o ./build/item_detector.o ./build/intelligence.o ./build/vehicle.o ./build/delivery_box.o ./build/servo.o ./build/ultrasound.o ./build/street_follower.o\
 		-lstdc++ -std=c++17 \
 		-lpigpio -lrt -lm -lpthread -lrf24-bcm -lraspicam -lraspicam_cv\
 		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lopencv_aruco -lopencv_videoio\
@@ -91,14 +91,14 @@ test_control: ./build/move_straigth.o ./build/dc_motor.o ./build/encoder.o ./bui
 		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
 		-I../include
 
-
 # Teste semaforo
 traffic_light: test_camera_traffic_light.cpp
 	gcc -Wall -o ./build/test_camera_traffic_light test_camera_traffic_light.cpp \
 		-lstdc++ -std=c++17 \
 		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc \
 		-I../include -I/usr/local/include -I/usr/local/include/opencv4
-    
+
+
 # Compilation commands:
 ./build/test_follow_road.o: test_follow_road.cpp
 	gcc -c -Wall -o ./build/test_follow_road.o test_follow_road.cpp \
@@ -216,3 +216,8 @@ traffic_light: test_camera_traffic_light.cpp
 		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
 		-I../include
 
+./build/street_follower.o: ../src/street_follower.cpp
+	gcc -c -Wall -o ./build/street_follower.o ../src/street_follower.cpp \
+		-lpigpio -lrt -lm -lpthread -lstdc++ -std=c++17 -lrf24-bcm \
+		-lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lraspicam -lraspicam_cv -lopencv_aruco \
+		-I../include -I/usr/local/include -I/usr/local/include/opencv4

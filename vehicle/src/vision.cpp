@@ -21,7 +21,8 @@ using streets::StreetSection;
 
 Vision::Vision() :
     downward_cam(), forward_cam(),
-    aruco_dict(cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_250)),
+    city_aruco_dict(cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_250)),
+    app_aruco_dict(cv::aruco::getPredefinedDictionary(cv::aruco::DICT_5X5_1000)),
     downward_img(), forward_img()
 {
     this->downward_cam.set(cv::CAP_PROP_FORMAT, CV_8UC3);
@@ -52,7 +53,11 @@ void Vision::getDownwardCamImg()
 
 void Vision::getForwardCamImg()
 {
+    //cv::Mat first_img;
+    //this->forward_cam.read(first_img);
     this->forward_cam.read(this->forward_img);
+    //this->forward_img += first_img;
+   // this->forward_img /= 2;
 }
 
 // Looks at the image and finds the streets
@@ -110,24 +115,56 @@ cv::Mat Vision::getColorMask(const cv::Mat& img, const cv::Scalar min, const cv:
 
 bool Vision::isTrafficLightRed()
 {
-    const cv::Rect traffic_light_roi(200, 0, 240, 300);
-    const cv::Mat traffic_light_img = this->forward_img(traffic_light_roi);
-    const cv::Mat red_mask = this->getColorMask(traffic_light_img, cv::Scalar(160, 100, 40), cv::Scalar(180, 240, 140));
+    cv::Mat img;
+    cv::cvtColor(this->forward_img, img, cv::COLOR_BGR2HLS);
+    const cv::Rect traffic_light_roi(100, 0, 440, 300);
+    const cv::Mat traffic_light_img = img(traffic_light_roi);
+    //cv::imwrite("./found_traffic_ligths_roi.jpg", traffic_light_img);
+    cv::Mat red_mask;
+    cv::inRange(img, cv::Scalar(0, 100, 130), cv::Scalar(30, 230, 255), red_mask);
+    //cv::imwrite("./red_mask.jpg", red_mask);
     vector<vector<cv::Point>> contours;
     vector<cv::Vec4i> hierarchy;
     cv::findContours(red_mask, contours, hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE);
     for (const auto& contour: contours)
-        if(cv::contourArea(contour) <= consts::max_traffic_light_area)
+    {
+        //std::cout << "area: " << cv::contourArea(contour) << std::endl;
+        if((cv::contourArea(contour) <= consts::max_traffic_light_area) && (cv::contourArea(contour) >= consts::min_traffic_light_area))
             return true;
+    }
     return false;
     
 }
 
-pair<vector<int>, vector<vector<cv::Point2f>>> Vision::findARMarkers()
+pair<vector<int>, vector<vector<cv::Point2f>>> Vision::findCityARMarkers()
+{
+    cv::Mat second_img;
+    this->forward_cam.read(second_img);
+    second_img += this->forward_img;
+    second_img /= 2;
+    vector<int> ids;
+    vector<vector<cv::Point2f>> corners;
+    cv::aruco::detectMarkers(second_img, this->city_aruco_dict, corners, ids);
+    return pair(ids, corners);
+}
+
+pair<vector<int>, vector<vector<cv::Point2f>>> Vision::findAppARMarkers()
+{
+    cv::Mat second_img;
+    this->forward_cam.read(second_img);
+    second_img += this->forward_img;
+    second_img /= 2;
+    vector<int> ids;
+    vector<vector<cv::Point2f>> corners;
+    cv::aruco::detectMarkers(second_img, this->app_aruco_dict, corners, ids);
+    return pair(ids, corners);
+}
+
+pair<vector<int>, vector<vector<cv::Point2f>>> Vision::findARMarkers(cv::Ptr<cv::aruco::Dictionary> dict)
 {
     vector<int> ids;
     vector<vector<cv::Point2f>> corners;
-    cv::aruco::detectMarkers(this->forward_img, this->aruco_dict, corners, ids);
+    cv::aruco::detectMarkers(this->forward_img, dict, corners, ids);
     return pair(ids, corners);
 }
 

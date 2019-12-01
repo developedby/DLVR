@@ -25,7 +25,8 @@ namespace consts
 	int constexpr hough_max_gap = 8;
 	bool constexpr save_img = false;
 	// Traffic light finder
-	int constexpr max_traffic_light_area = 150;
+	int constexpr max_traffic_light_area = 200;
+	int constexpr min_traffic_light_area = 70;
 
 	// Radio
 	int constexpr radio_delay_transmitting = 0;
@@ -36,6 +37,7 @@ namespace consts
 	uint8_t constexpr radio_address[] = "DLVR1";
 	uint8_t constexpr coord_address[] = "DLVRC";
 	int constexpr time_out_radio_ack = 1000000;
+	int constexpr radio_pooling_period = 300000;
 
 	// Pins
 	int constexpr item_detector_pin1 = 2;

@@ -64,9 +64,13 @@ int main()
 		cv::imwrite("teste_linhas_secoes.jpg", out_img);
 		
 	}
+	std::cout << "buscando qr code" << std::endl;
+	//cv::Mat img = cv::imread("./teste_top_img.jpg", cv::IMREAD_COLOR);
+	//img.copyTo(vision.forward_img);
 	vision.getForwardCamImg();
 	cv::imwrite("teste_top_img.jpg", vision.forward_img);
-	auto [ids, corners] = vision.findARMarkers();
+	std::cout << "tem semafaro vermelho ? " << vision.isTrafficLightRed() << std::endl;
+	auto [ids, corners] = vision.findCityARMarkers();
 	for(unsigned int i=0; i < ids.size(); i++)
 	{
 		std::cout << "encontrou " << ids[i] << " " << corners[i] << std::endl;

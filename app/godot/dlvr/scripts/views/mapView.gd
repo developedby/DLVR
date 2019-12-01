@@ -47,10 +47,11 @@ func _on_packet_received(data_r):
 			if resp["path"] == "/delivery/request":
 				if current_state == STATE.IDLE:
 					last_request_id = resp["message_body"]["id"]
+					$confirm_window.email = resp["message_body"]["sender"]
 					self.current_state = STATE.DELIVERY_REQUESTED
 				else:
 					Utils.print_log("Delivery Request not accept because isnt idle")
-					data = {"path": "/delivery/response", "cookie": DLVR.cookie, "accept": false}
+					data = {"path": "/delivery/response", "cookie": DLVR.cookie, "id": last_request_id, "accept": false}
 					DLVR.client.send_data(JSON.print(data))
 			elif resp["path"] == "/delivery/response":
 				if current_state == STATE.WAITING_RECEIVER:
@@ -59,7 +60,7 @@ func _on_packet_received(data_r):
 						self.current_state = STATE.TRACKING_ORIGIN
 						self.current_client = CLIENT_TYPE.SENDER
 					else:
-						self.current_state = STATE.REFUSED
+						self.current_state = STATE.RECEIVER_REFUSED
 			elif resp["path"] == "/robot/update":
 				if ("message_body" in resp) and ("position" in resp["message_body"]):			
 					var pid = resp["message_body"]["position"]
@@ -92,9 +93,11 @@ func _on_packet_received(data_r):
 						if (pid == origin) and (current_client == CLIENT_TYPE.SENDER):
 							Utils.print_log("Robot arrive at origin")
 							self.current_state = STATE.WAITING_SEND
-					elif (current_state == STATE.ARRIVED) and \
-						 ("qr" in resp["message_body"]):
-						self.current_state = STATE.OPENED
+				elif (current_state == STATE.ARRIVED) and \
+					 ("path" in resp) and \
+					 (resp["path"] == "/robot/update") and \
+					 ("qr" in resp["message_body"]):
+					self.current_state = STATE.OPENED
 			elif resp["path"] == "/delivery/finish":
 				__finish()
 
@@ -197,10 +200,32 @@ func _on_send_button_pressed():
 	   (current_client == CLIENT_TYPE.SENDER):
 		var data = {"path": "/delivery/send", "cookie": DLVR.cookie, "id": last_request_id}
 		DLVR.client.send_data(JSON.print(data))
-		self.current_state = STATE.TRACKING
+		DLVR.client.start_receive_timer()
+		var r = yield(DLVR.client, "packet_received_or_timeout")
+		while r is GDScriptFunctionState:
+			r = yield(r, "completed")
+		if r[0] != Client.OK:
+			return
+		var jsonparser = JSON.parse(r[1])
+		if jsonparser.error == OK:
+			var resp = jsonparser.result
+			if (resp["status_code"] == 200):
+				self.current_state = STATE.TRACKING
+			else:
+				Utils.print_log("<Server> %s" % resp['reason_message'])
+		#self.current_state = STATE.TRACKING
 
 func set_state(val):
 	current_state = val
+	Utils.print_log("STATE {%s}" % str(val))
+	if val == STATE.IDLE:
+		$pointer_origin.unpop()
+		$pointer_destination.unpop()
+		$pointer_tracking.unpop()
+		#
+		$pointer_origin.position = $rest_area.position
+		$pointer_destination.position =  $rest_area.position
+		$pointer_tracking.position =  $rest_area.position
 	emit_signal("state_changed", val)
 
 func _on_finish_button_pressed():

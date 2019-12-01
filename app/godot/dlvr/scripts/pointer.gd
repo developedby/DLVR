@@ -12,7 +12,7 @@ func _draw():
 	if pointer_type == 0:
 		$sprite.texture = load("res://sprites/pin_red.png")
 	elif pointer_type == 1:
-		$sprite.texture = load("res://sprites/pin_blue.png")
+		$sprite.texture = load("res://sprites/pin_green.png")
 	else:
 		$sprite.texture = load("res://sprites/pin_black.png")
 

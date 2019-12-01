@@ -5,7 +5,7 @@ path = "./img/webcam/"
 img_in = "semaforos"
 extension = ".jpg"
 
-img = cv2.imread('teste_linhas.jpg')
+img = cv2.imread('teste_top_img.jpg')
 #img = cv2.imread(path + img_in + extension)
 if img is None:
     print("File not found")
