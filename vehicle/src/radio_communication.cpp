@@ -1,6 +1,6 @@
+#include "radio_communication.hpp"
 #include <iostream>
 #include "constants.hpp"
-#include "radio_communication.hpp"
 
 RadioCommunication::RadioCommunication():
     received_data{0}, size_(0), attempts(0), has_new_msg(false)
@@ -17,7 +17,10 @@ void RadioCommunication::newMessagePooling()
 {
     while (true)
     {
-        this->has_new_msg = this->has_new_msg or this->receiveFromRadio();
+        const bool new_msg = this->receiveFromRadio();
+        if (new_msg)
+            std::cout << "Nova mensagem recebida" << std::endl;
+        this->has_new_msg = this->has_new_msg or new_msg;
         gpioSleep(PI_TIME_RELATIVE, 0, consts::radio_pooling_period);
     }
 }
@@ -75,9 +78,9 @@ void RadioCommunication::sendToRadio(SentMessage message)
             data.push_back(ch[i]);
         }
     }
-    else if(message.status != status::NO_STATUS)
+    else if(message.status_ != status::NO_STATUS)
     {
-        data.push_back(message.status);
+        data.push_back(message.status_);
     }
     for(auto i : message.qr_codes_read)
     {

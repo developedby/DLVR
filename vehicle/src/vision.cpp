@@ -22,7 +22,7 @@ using streets::StreetSection;
 Vision::Vision() :
     downward_cam(), forward_cam(),
     city_aruco_dict(cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_250)),
-    app_aruco_dict(cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_250)),
+    app_aruco_dict(cv::aruco::getPredefinedDictionary(cv::aruco::DICT_5X5_1000)),
     downward_img(), forward_img()
 {
     this->downward_cam.set(cv::CAP_PROP_FORMAT, CV_8UC3);
@@ -119,13 +119,19 @@ bool Vision::isTrafficLightRed()
     cv::cvtColor(this->forward_img, img, cv::COLOR_BGR2HLS);
     const cv::Rect traffic_light_roi(100, 0, 440, 300);
     const cv::Mat traffic_light_img = img(traffic_light_roi);
-    const cv::Mat red_mask = this->getColorMask(traffic_light_img, cv::Scalar(0, 100, 130), cv::Scalar(30, 230, 255));
+    //cv::imwrite("./found_traffic_ligths_roi.jpg", traffic_light_img);
+    cv::Mat red_mask;
+    cv::inRange(img, cv::Scalar(0, 100, 130), cv::Scalar(30, 230, 255), red_mask);
+    //cv::imwrite("./red_mask.jpg", red_mask);
     vector<vector<cv::Point>> contours;
     vector<cv::Vec4i> hierarchy;
     cv::findContours(red_mask, contours, hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE);
     for (const auto& contour: contours)
+    {
+        //std::cout << "area: " << cv::contourArea(contour) << std::endl;
         if((cv::contourArea(contour) <= consts::max_traffic_light_area) && (cv::contourArea(contour) >= consts::min_traffic_light_area))
             return true;
+    }
     return false;
     
 }

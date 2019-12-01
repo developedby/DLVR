@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include "geometry.hpp"
+#include "message.hpp"
 
 Intelligence::Intelligence(Vehicle *_vehicle):
     vehicle(_vehicle), street_follower(_vehicle, std::vector<uint8_t>(), 0)
@@ -13,6 +14,8 @@ Intelligence::Intelligence(Vehicle *_vehicle):
 
 void Intelligence::mainLoop()
 {
+    std::cout << "main loop init" << std::endl;
+    this->current_status = status::WAITING_ROUTE;
     while(vehicle->communication.isChipConnected())
     {
         // Checa comando novo
@@ -24,8 +27,19 @@ void Intelligence::mainLoop()
             this->sendFeedback();
         }
         // Ciclo de movimento
-        if (this->street_follower.hasRoute() and not this->is_traffic_light_red)
-            this->street_follower.followPath();
+        if (this->street_follower.hasRoute())
+        {
+            //if (not this->is_traffic_light_red)
+            {
+                this->current_status = this->street_follower.current_status;
+                this->street_follower.followPath();
+            }
+            /*else
+            {
+                std::cout << "semafaro vermelho" << std::endl;
+                this->current_status = status::WAITING_SEMAPHORE;
+            }*/
+        }
         // Checa markers
         this->processForwardImg();
     }
@@ -42,11 +56,10 @@ void Intelligence::decodeMessage()
     uint8_t other_sensors_reading;
     float ultrassound_reading;
     MovementInfo movement;
-    status::Status status;
+    status::Status status_;
     this->received_message = this->vehicle->communication.getData();
     std::cout << "mensagem: " << std::endl;
     std::cout << "comando: " << this->received_message.command << " sensor para leitura: " << this->received_message.sensor_to_read << " status: " << this->received_message.required_status << std::endl;
-    this->qr_codes_read = std::vector<uint16_t>();
     switch (this->received_message.command)
     {
         case FORCE_GO_AHEAD:
@@ -88,16 +101,18 @@ void Intelligence::decodeMessage()
         case MOVEMENT:
             movement = current_movement;
             movement.read = true;
-            status = status::NO_STATUS;
+            status_ = status::NO_STATUS;
             has_feedback = true;
             break;
         case VEHICLE_STATUS:
             movement.read = false;
-            status = current_status;
+            status_ = this->current_status;
+            std::cout << "status eh: " << status_ << std::endl;
             has_feedback = true;
+            break;
         default:
             movement.read = false;
-            status = status::NO_STATUS;
+            status_ = status::NO_STATUS;
             break;
     }
 
@@ -111,7 +126,10 @@ void Intelligence::decodeMessage()
     if(has_feedback)
     {
         std::cout << "tem feedback" << std::endl;
-        this->sent_message = SentMessage(this->qr_codes_read, ultrassound_reading, other_sensors_reading, movement, status);
+        this->sent_message = SentMessage(this->qr_codes_read, ultrassound_reading, other_sensors_reading, movement, status_);
+        std::cout << " ultrassom: " <<  this->sent_message.ultrassound_reading << " others: " << this->sent_message.other_sensors_reading << " status: " << this->sent_message.status_ << std::endl;
+        std::cout << "status=" << status_ << " sent_message.status=" << this->sent_message.status_ << std::endl;
+        this->qr_codes_read = std::vector<uint16_t>();
     }
     
     if(not received_message.path.empty())
@@ -135,10 +153,35 @@ void Intelligence::sendFeedback()
 void Intelligence::processForwardImg()
 {
     this->vehicle->vision.getForwardCamImg();
-    auto [ids, positions] = vehicle->vision.findCityARMarkers();
-    for(auto id:ids)
-        this->qr_codes_read.push_back(id);
     this->is_traffic_light_red = vehicle->vision.isTrafficLightRed();
+    auto [ids, positions] = vehicle->vision.findCityARMarkers();
+    if(this->qr_codes_read.size() < ids.size())
+    {
+        for(auto id:ids)
+        {
+            std::cout << "qr encontrado: " << id << std::endl;
+            this->qr_codes_read.push_back(id);
+        }
+    }
+    else
+    {
+        std::vector<uint16_t> aux;
+        for(int i=0; i < int(ids.size()); i++)
+        {
+            for(auto id:ids)
+            {
+                if (id != qr_codes_read[int(qr_codes_read.size()) -1 + i])
+                { 
+                    std::cout << "qr encontrado: " << id << std::endl;
+                    aux.push_back(id);
+                }
+            }
+        }
+        for(auto id:aux)
+        {
+            this->qr_codes_read.push_back(id);
+        }
+    }
 }
 
 void Intelligence::searchUserQRCode()

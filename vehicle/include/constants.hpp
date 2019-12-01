@@ -25,8 +25,8 @@ namespace consts
 	int constexpr hough_max_gap = 8;
 	bool constexpr save_img = false;
 	// Traffic light finder
-	int constexpr max_traffic_light_area = 150;
-	int constexpr min_traffic_light_area = 50;
+	int constexpr max_traffic_light_area = 200;
+	int constexpr min_traffic_light_area = 70;
 
 	// Radio
 	int constexpr radio_delay_transmitting = 0;

@@ -9,7 +9,7 @@
 int main()
 {
     const std::string path =  "./img/webcam/";
-    const std::string img_in = "semaforos_longe";
+    const std::string img_in = "semaforos";
     const std::string extension = ".jpg";
 
     auto img = cv::imread(path + img_in + extension);
