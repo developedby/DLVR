@@ -19,10 +19,10 @@ void setup() {
 }
 
 void loop() {
-    digitalWrite(light0, LOW);  //Lights 0 On 
-    digitalWrite(light1, HIGH); //Lights 1 Off
-    delay(base_time);           //Delay base time
-    digitalWrite(light0, HIGH); //Lights 0 Off 
-    digitalWrite(light1, LOW);  //Lights 1 On
-    delay(base_time);           //Delay base time
+//    digitalWrite(light0, LOW);  //Lights 0 On 
+//    digitalWrite(light1, HIGH); //Lights 1 Off
+//    delay(base_time);           //Delay base time
+//    digitalWrite(light0, HIGH); //Lights 0 Off 
+//    digitalWrite(light1, LOW);  //Lights 1 On
+//    delay(base_time);           //Delay base time
 }

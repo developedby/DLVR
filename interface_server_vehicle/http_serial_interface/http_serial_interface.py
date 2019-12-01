@@ -30,15 +30,17 @@ class SerialInterface:
         self.close()
 
     def open(self):
-        self.ser = serial.Serial('/dev/ttyUSB0', 115200, timeout=10)
+        self.ser = serial.Serial('/dev/ttyUSB0', 115200, timeout=5)
         time.sleep(2)
 
     def close(self):
         self.ser.close()
     
     def write(self, packet_to_send):
+        #print("mandando para o radio")
         packet_to_send.append(self.START_BYTE)
         packet_to_send.insert(0, self.START_BYTE)
+        #print(" o pacote", packet_to_send)
         self.ser.write(packet_to_send)
 
     def read(self):
@@ -115,7 +117,7 @@ class VehicleServerInterface:
             packet_to_vehicle.append(self.vehicle_sensors_code[sensor_to_read])
         if required_status:
             packet_to_vehicle.append(self.possible_status_to_vehicle[required_status])
-        print(packet_to_vehicle)
+        #print(packet_to_vehicle)
         return packet_to_vehicle, sensor_to_read, required_status
 
     def decodeMessageFromVehicle(self, msg, sensor_to_read, required_status):

@@ -157,7 +157,12 @@ def path_to_directions(graph, path, orientation, turn_discount):
     for origin, destination in zip(path[:-1], path[1:]):
         direction = graph[origin][destination][0] - orientation
         orientation = graph[origin][destination][0]
-        ret.append((str(direction), graph[origin][destination][1] - (0 if direction == Direction.FRONT else (turn_discount + (turn_discount if direction == Direction.BACK else 0))), destination))
+        ret.append([
+            str(direction),
+            graph[origin][destination][1],
+            destination
+        ])
+    ret[0][1] -= turn_discount 
     return ret
 
 class ScriptCache:
