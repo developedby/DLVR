@@ -49,6 +49,7 @@ centered = false
 
 [node name="emailSubview" type="Control" parent="."]
 editor/display_folded = true
+visible = false
 margin_top = 435.0
 margin_right = 720.0
 margin_bottom = 635.0
@@ -223,8 +224,6 @@ rect_scale = Vector2( 0.15, 0.15 )
 icon = ExtResource( 9 )
 
 [node name="codeSubview" type="Control" parent="."]
-editor/display_folded = true
-visible = false
 margin_right = 40.0
 margin_bottom = 40.0
 theme = ExtResource( 1 )
@@ -232,14 +231,15 @@ script = ExtResource( 11 )
 id = 3
 
 [node name="code" type="LineEdit" parent="codeSubview"]
-margin_left = 60.0
+margin_left = 56.0
 margin_top = 578.0
 margin_right = 660.0
 margin_bottom = 676.0
 grow_horizontal = 2
 grow_vertical = 2
-align = 1
-placeholder_text = "CODE_KS"
+max_length = 12
+context_menu_enabled = false
+placeholder_text = "SECURE_CODE_KS"
 
 [node name="button_c" type="Button" parent="codeSubview"]
 anchor_left = 0.5

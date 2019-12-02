@@ -217,7 +217,6 @@ id = 31
 [node name="pointer_origin" parent="." instance=ExtResource( 8 )]
 position = Vector2( 1172.17, 284.336 )
 scale = Vector2( 0.2, 0.2 )
-pointer_type = 0
 
 [node name="pointer_destination" parent="." instance=ExtResource( 8 )]
 position = Vector2( 1169.08, 469.789 )
@@ -314,6 +313,7 @@ rect_min_size = Vector2( 200, 50 )
 text = "NO_KS"
 
 [node name="refused_window" type="Control" parent="."]
+visible = false
 margin_left = 20.0
 margin_top = 480.0
 margin_right = 60.0
@@ -345,6 +345,7 @@ rect_min_size = Vector2( 200, 50 )
 text = "OK"
 
 [node name="artags" parent="." instance=ExtResource( 13 )]
+visible = false
 margin_top = 480.0
 margin_bottom = 480.0
 script = ExtResource( 14 )

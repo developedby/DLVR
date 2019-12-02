@@ -28,6 +28,7 @@ var current_state = STATE.IDLE setget set_state
 var origin:int = -1
 var destination:int = -1
 var last_request_id = -1
+var last_request_origin = 0
 var qr_id = -1
 
 func _ready():
@@ -48,6 +49,11 @@ func _on_packet_received(data_r):
 			if resp["path"] == "/delivery/request":
 				if current_state == STATE.IDLE:
 					last_request_id = resp["message_body"]["id"]
+					var orig = resp["message_body"]["origin"]
+					var h = get_node("city/node%d"%orig) as House
+					if h:
+						$pointer_origin.position = h.position
+						$pointer_origin.pop(orig)
 					$confirm_window.email = resp["message_body"]["sender"]
 					self.current_state = STATE.DELIVERY_REQUESTED
 				else:
@@ -60,6 +66,12 @@ func _on_packet_received(data_r):
 						last_request_id = resp["message_body"]["id"]
 						self.current_state = STATE.TRACKING_ORIGIN
 						self.current_client = CLIENT_TYPE.SENDER
+						#
+						var dest = resp["message_body"]["destination"]
+						var h = (get_node("city/node%d"%dest) as House)
+						if h:
+							$pointer_destination.position = h.position
+							$pointer_destination.pop(dest)
 					else:
 						self.current_state = STATE.RECEIVER_REFUSED
 			elif resp["path"] == "/robot/update":
@@ -165,6 +177,7 @@ func _on_confirm_button_pressed():
 			while r is GDScriptFunctionState:
 				r = yield(r, "completed")
 			if r[0] != Client.OK:
+				show_error("ERRTOUT_KS")
 				return
 			var jsonparser = JSON.parse(r[1])
 			if jsonparser.error == OK:
@@ -201,6 +214,7 @@ func _on_confirm_button_pressed():
 				self.current_state = STATE.TRACKING
 				self.current_client = CLIENT_TYPE.RECEIVER
 			else:
+				show_error("ERRTOUT_KS")
 				self.current_state = STATE.IDLE
 
 func _on_send_button_pressed():
@@ -213,6 +227,7 @@ func _on_send_button_pressed():
 		while r is GDScriptFunctionState:
 			r = yield(r, "completed")
 		if r[0] != Client.OK:
+			show_error("ERRTOUT_KS")
 			return
 		var jsonparser = JSON.parse(r[1])
 		if jsonparser.error == OK:
@@ -220,6 +235,7 @@ func _on_send_button_pressed():
 			if (resp["status_code"] == 200):
 				self.current_state = STATE.TRACKING
 			else:
+				# show_error("ERRSERV_KS")
 				Utils.print_log("<Server> %s" % resp['reason_message'])
 		#self.current_state = STATE.TRACKING
 

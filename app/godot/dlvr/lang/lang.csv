@@ -8,7 +8,7 @@ SURNAME_KS,Surname,Sobrenome
 REPASSW_KS,Password (Again),Senha (Novamente)
 EXIT_KS,Exit,Sair
 REGEN_KS,Generate new code,Gerar novo código
-CODE_KS,Verification code,Código de verificação
+SECURE_CODE_KS,Verification code,Código de verificação
 CONFIRM_KS,Confirm,Confirmar
 CANCEL_KS,Cancel,Cancelar
 RECEIVER_EMAIL_KS,Receiver email,Email do receptor
@@ -28,6 +28,8 @@ ERRPASSW_KS,Invalid password,Senha inválida
 AUTOSEND_KS,Can't deliver something to yourself,Não é possível entregar algo para si mesmo
 ERRMAIL_KS,Invalid or unavailable recipient,Destinatário inválido ou indisponível
 ERRUNKW_KS,Unknown error,Erro desconhecido
+ERRTOUT_KS,Connection timeout,Timeout da conexão
+ERRSERV_KS,Server internal error,Erro interno do servidor
 AR_KS,Show this AR-Tag to the robot to open the box,Mostre este AR-Tag para o robô para abrir a caixa
 DEBUG_OPEN_KS,<DEBUG> OPEN BOX,<DEBUG> ABRIR CAIXA
 DEBUG_CLOSE_KS,<DEBUG> CLOSE BOX, <DEBUG> FECHAR CAIXA
