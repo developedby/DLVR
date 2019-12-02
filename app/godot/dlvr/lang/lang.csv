@@ -24,6 +24,10 @@ WAITINGSEND_KS,Waiting send,Aguardando envio
 OPENED_KS,Remove item and finalize delivery,Retire o item e finalize a entrega
 SEND_KS,Send,Enviar
 FINISH_KS,Finish,Finalizar
+ERRPASSW_KS,Invalid password,Senha inválida
+AUTOSEND_KS,Can't deliver something to yourself,Não é possível entregar algo para si mesmo
+ERRMAIL_KS,Invalid or unavailable recipient,Destinatário inválido ou indisponível
+ERRUNKW_KS,Unknown error,Erro desconhecido
 AR_KS,Show this AR-Tag to the robot to open the box,Mostre este AR-Tag para o robô para abrir a caixa
 DEBUG_OPEN_KS,<DEBUG> OPEN BOX,<DEBUG> ABRIR CAIXA
 DEBUG_CLOSE_KS,<DEBUG> CLOSE BOX, <DEBUG> FECHAR CAIXA

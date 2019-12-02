@@ -2,6 +2,7 @@ extends "res://scripts/View.gd"
 
 enum STATE {
 	IDLE,
+	ERR,
 	ORIGIN_SET,
 	WAITING_RECEIVER,
 	RECEIVER_REFUSED,
@@ -146,13 +147,16 @@ func _on_cancel_button_pressed():
 
 func _on_confirm_button_pressed():
 	var data = null
-	if current_state == STATE.ORIGIN_SET:
+	var d_email = $delivery_menu/email.text.strip_edges()
+	if d_email == DLVR.user_email:
+		show_error("AUTOSEND_KS")
+	elif current_state == STATE.ORIGIN_SET:
 		if $delivery_menu/email.valid:
 			data = {
 				"path": "/delivery/request",
 				"cookie": DLVR.cookie,
 				"origin": $pointer_origin.point_id,
-				"receiver": $delivery_menu/email.text.strip_edges(),
+				"receiver": d_email,
 			}
 			DLVR.client.send_data(JSON.print(data))
 			self.current_state = STATE.WAITING_RECEIVER
@@ -169,8 +173,12 @@ func _on_confirm_button_pressed():
 				   (resp["message_body"] is String) and \
 				   (resp["message_body"] == "true"):
 					self.current_state = STATE.WAITING_RECEIVER
+				elif (resp["status_code"] == 200) and \
+				   (resp["message_body"] is String) and \
+				   (resp["message_body"] == "false"):
+					show_error("ERRMAIL_KS")
 				else:
-					self.current_state = STATE.IDLE
+					show_error("ERRUNKW_KS")
 	elif current_state == STATE.SETTING_CURRENT_LOCATION:
 		data = {
 			"path": "/delivery/response",
@@ -256,3 +264,10 @@ func __finish():
 	$pointer_origin.position = $rest_area.position
 	$pointer_destination.position =  $rest_area.position
 	$pointer_tracking.position =  $rest_area.position
+
+func show_error(m:String = "ERRUNKW_KS"):
+	self.current_state = STATE.ERR
+	$err.popup_m(m)
+
+func _on_err_popup_hide():
+	self.current_state = STATE.IDLE
