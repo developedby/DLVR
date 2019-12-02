@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=2]
+[gd_scene load_steps=20 format=2]
 
 [ext_resource path="res://resources/theme.tres" type="Theme" id=1]
 [ext_resource path="res://scripts/views/mapView.gd" type="Script" id=2]
@@ -16,6 +16,7 @@
 [ext_resource path="res://scripts/views/map_elements/artags_element.gd" type="Script" id=14]
 [ext_resource path="res://scripts/views/map_elements/leftBar.gd" type="Script" id=15]
 [ext_resource path="res://resources/name_font.tres" type="DynamicFont" id=16]
+[ext_resource path="res://scenes/gui_elements/popupbox.tscn" type="PackedScene" id=17]
 
 [sub_resource type="Animation" id=1]
 resource_name = "hide"
@@ -312,6 +313,7 @@ rect_min_size = Vector2( 200, 50 )
 text = "NO_KS"
 
 [node name="refused_window" type="Control" parent="."]
+visible = false
 margin_left = 20.0
 margin_top = 480.0
 margin_right = 60.0
@@ -343,6 +345,7 @@ rect_min_size = Vector2( 200, 50 )
 text = "OK"
 
 [node name="artags" parent="." instance=ExtResource( 13 )]
+visible = false
 margin_top = 480.0
 margin_bottom = 480.0
 script = ExtResource( 14 )
@@ -421,6 +424,9 @@ margin_top = 990.0
 margin_right = 500.0
 margin_bottom = 1050.0
 text = "DEBUG_CLOSE_KS"
+
+[node name="err" parent="." instance=ExtResource( 17 )]
+message = "ERRMAIL_KS"
 [connection signal="pressed" from="toolBar/sideMenuButton" to="." method="_on_sideMenuButton_pressed"]
 [connection signal="pressed" from="delivery_menu/cancel_button" to="." method="_on_cancel_button_pressed"]
 [connection signal="pressed" from="delivery_menu/confirm_button" to="." method="_on_confirm_button_pressed"]
@@ -434,3 +440,4 @@ text = "DEBUG_CLOSE_KS"
 [connection signal="pressed" from="leftBar/menu/exit" to="." method="_on_exit_pressed"]
 [connection signal="pressed" from="leftBar/debug_open" to="." method="_on_debug_open_pressed"]
 [connection signal="pressed" from="leftBar/debug_close" to="." method="_on_debug_close_pressed"]
+[connection signal="popup_hide" from="err" to="." method="_on_err_popup_hide"]

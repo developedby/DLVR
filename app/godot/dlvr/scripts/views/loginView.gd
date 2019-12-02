@@ -46,6 +46,7 @@ func _on_passw_entered(email:String, passw:String):
 		get_tree().call_deferred('change_scene', "res://scenes/views/mapView.tscn")
 	else:
 		$passwSubview/passwField.set_invalid()
+		$error_password.popup()
 
 
 func _on_codeSubview_code_entered(code, email):

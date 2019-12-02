@@ -47,21 +47,28 @@ int main()
     }
     Movement movement = Movement();
     movement.stop();
-    /*movement.goStraightMm(1, 100, 200);
+    std::cout << movement.goStraightMm(1, 100, 200) << std::endl;
     gpioDelay(200000);
-    movement.goStraightMm(1, 100, 200);
+    std::cout << movement.goStraightMm(1, 100, 200) << std::endl;
     gpioDelay(200000);
-    movement.goStraightMm(1, 100, 200);
+    std::cout << movement.goStraightMm(1, 100, 200) << std::endl;
+    /*movement.turn(180);
+    gpioDelay(200000);
+    movement.turn(90);
+    gpioDelay(200000);
+    movement.turn(90);
+    gpioDelay(200000);
+    std::cout << movement.goStraightMm(1, 100, 200) << std::endl;*/
     movement.stop();
     gpioTerminate();
-    return 0;*/
+    return 0;
     Vision vision = Vision();
     bool found = false;
     while(!found)
     {
         vision.getForwardCamImg();
         gpioDelay(200000);
-        auto [ids, positions] = vision.findARMarkers();
+        auto [ids, positions] = vision.findCityARMarkers();
         unsigned int i=0;
         for(i=0; i < ids.size(); i++)
         {

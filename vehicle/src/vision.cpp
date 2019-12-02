@@ -117,11 +117,11 @@ bool Vision::isTrafficLightRed()
 {
     cv::Mat img;
     cv::cvtColor(this->forward_img, img, cv::COLOR_BGR2HLS);
-    const cv::Rect traffic_light_roi(100, 0, 440, 300);
+    const cv::Rect traffic_light_roi(300, 0, 340, 300);
     const cv::Mat traffic_light_img = img(traffic_light_roi);
     //cv::imwrite("./found_traffic_ligths_roi.jpg", traffic_light_img);
     cv::Mat red_mask;
-    cv::inRange(img, cv::Scalar(0, 100, 130), cv::Scalar(30, 230, 255), red_mask);
+    cv::inRange(traffic_light_img, cv::Scalar(0, 100, 130), cv::Scalar(30, 230, 255), red_mask);
     //cv::imwrite("./red_mask.jpg", red_mask);
     vector<vector<cv::Point>> contours;
     vector<cv::Vec4i> hierarchy;
