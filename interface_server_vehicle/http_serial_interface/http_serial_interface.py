@@ -37,10 +37,9 @@ class SerialInterface:
         self.ser.close()
     
     def write(self, packet_to_send):
-        #print("mandando para o radio")
         packet_to_send.append(self.START_BYTE)
         packet_to_send.insert(0, self.START_BYTE)
-        #print(" o pacote", packet_to_send)
+        print("mandando para o radio o pacote", packet_to_send)
         self.ser.write(packet_to_send)
 
     def read(self):
@@ -51,6 +50,10 @@ class SerialInterface:
             received_packet = self.ser.read_until(start_byte_byte, 50)
             if received_packet[-1] != self.START_BYTE:
                 received_packet = []
+        print("pacote recebido do robo")
+        for a in received_packet:
+            print(a, end = ' ')
+        print("")
         return received_packet
 
 class VehicleServerInterface:
@@ -149,14 +152,17 @@ class VehicleServerInterface:
             status = msg[current_address]
             dict_from_vehicle["state"] = int(status)
             current_address += 1
-        qr_codes_read.append(msg[current_address : -1])
-        print("qr codes: ", qr_codes_read, " tipo: ", type(qr_codes_read))
+        print(current_address)
+        qr_codes_read.extend(msg[current_address : -1])
         qr_codes_read_int = []
-        for qr in qr_codes_read:
-            if qr:
-                qr_codes_read_int.append(int.from_bytes(qr, "big"))
+        if(len(qr_codes_read) > 1):
+            for i in range(0, len(qr_codes_read), 2):
+                a = qr_codes_read[i] << 8
+                a += qr_codes_read[i + 1]
+                qr_codes_read_int.append(a)
         if qr_codes_read_int:
             dict_from_vehicle["qr"] = qr_codes_read_int[-1]
+            print("qr code eh: ", qr_codes_read_int[-1])
         return dict_from_vehicle
 
     def decodePathFromServer(self, path):
@@ -172,7 +178,6 @@ class VehicleServerInterface:
 vehicle_server = VehicleServerInterface()
 
 def updateServer():
-    print("requisitando status")
     msg = {"required_status" : "status_robot", "sensor_to_read": "item detector"}
     data = vehicle_server.handle_server_request(1, msg)
     return data
@@ -226,6 +231,10 @@ async def handler():
                             data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                             await websocket.send(json.dumps(data))
                             await asyncio.sleep(1)
+                        msg = {"command" : "open_box"}
+                        data = vehicle_server.handle_server_request(1, msg)
+                        data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
+                        await websocket.send(json.dumps(data))
                         print("Container aberto")
                     elif resp["path"] == "/delivery/send":#tem o caminho para o local de entrega
                         print("verificando item")
