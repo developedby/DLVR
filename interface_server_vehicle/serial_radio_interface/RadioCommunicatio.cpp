@@ -66,7 +66,7 @@ bool RadioCommunication::receiveFromRadio()
         }
         ack++;
         radio->read(received_data, siz);
-        radio->writeAckPayload(1, &ack, 1);
+        //radio->writeAckPayload(1, &ack, 1);
         if((received_data[0] == START_BYTE) && (received_data[siz - 1] == START_BYTE))
         {
             return true;

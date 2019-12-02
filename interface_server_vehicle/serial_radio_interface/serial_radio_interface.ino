@@ -15,24 +15,24 @@ void setup()
 
 void loop()
 {
-    if(Serial.available())
-    {
-        char buf[10];
-        digitalWrite(LED_BUILTIN, HIGH);
-        // = Serial.available();
-        int siz = Serial.readBytes(buf, 9);
-        Serial.flush();
-        if(siz > 1)
-        {
-            Serial.write(buf, 9);
-        }
-        /*for(int i=0; i<siz; i++)
-        {
-            Serial.print(buf[i]);
-        }
-        Serial.println();*/
-        
-        Serial.println();
-        digitalWrite(LED_BUILTIN, LOW);
-    }
+//    if(Serial.available())
+//    {
+//        char buf[10];
+//        digitalWrite(LED_BUILTIN, HIGH);
+//        // = Serial.available();
+//        int siz = Serial.readBytes(buf, 9);
+//        Serial.flush();
+//        if(siz > 1)
+//        {
+//            Serial.write(buf, 9);
+//        }
+//        /*for(int i=0; i<siz; i++)
+//        {
+//            Serial.print(buf[i]);
+//        }
+//        Serial.println();*/
+//        
+//        Serial.println();
+//        digitalWrite(LED_BUILTIN, LOW);
+//    }
 }
