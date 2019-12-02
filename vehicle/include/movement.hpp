@@ -24,6 +24,7 @@ class Movement {
         float required_speed;
         bool moving_left;
         bool moving_right;
+        int last_movement_dir;
     public:
         Movement();
         void tick(void);
@@ -38,5 +39,10 @@ class Movement {
         bool isTurning(void);
         void calculateSpeed();
 };
+
+inline float signum(float num)
+{
+        return (0 < num) - (num < 0);
+}
 
 #endif

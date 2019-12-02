@@ -43,7 +43,6 @@ void RadioCommunication::setAddress(uint8_t const *address)
 
 void RadioCommunication::sendToRadio(SentMessage message)
 {
-    std::cout << "sendToRadio" << std::endl;
     this->last_sended_message = message;
     std::vector<uint8_t> data;
     data.push_back(consts::radio_start_byte);
@@ -90,13 +89,13 @@ void RadioCommunication::sendToRadio(SentMessage message)
     data.push_back(consts::radio_start_byte);
     const int len = static_cast<uint8_t>(data.size());
     uint8_t send_data[len];
-    std::cout << "pacote" << std::endl;
+    std::cout << "pacote enviado: ";
     for(int i = 0; i<int(data.size()); i++)
     {
-        std::cout << int(data[i]) << std::endl;
+        std::cout << int(data[i]) << " ";
         send_data[i] = data[i];
     }
-    std::cout << "mandando para o radio" << std::endl;
+    std::cout << ". Mandando para o radio" << std::endl;
     this->radio.stopListening();
     this->radio.write(send_data, len);
     //radio.startListening();
@@ -108,19 +107,21 @@ bool RadioCommunication::receiveFromRadio()
     this->radio.startListening();
     if(this->radio.available() and this->radio.getDynamicPayloadSize() >= 1)
     {
+        //std::cout << "opa" << std::endl;
         this->radio.read(this->received_data, sizeof(this->received_data));
         //this->ack++;
         //radio.writeAckPayload(1, &(ack), 1);
         this->size_ = 2;
-        //std::cout << "mandei ack, pacote recebido: " << std::endl;
+        std::cout << "pacote recebido: ";
         for (int i=1; (this->received_data[i] != consts::radio_start_byte) and (i < consts::radio_width_data); i++)
         {
-            //std::cout << int(received_data[i]) << std::endl;
+            std::cout << int(received_data[i]) << " ";
             this->size_++;
         }
         if((this->received_data[0] == consts::radio_start_byte)
            && (this->received_data[this->size_ - 1] == consts::radio_start_byte))
         {
+            std::cout << " vou decodificar" << std::endl;
             return true;
         }
     }

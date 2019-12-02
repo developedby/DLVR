@@ -11,7 +11,6 @@ class StreetFollower
 {
 		Vehicle* vehicle;
 		std::vector<uint8_t> path_to_follow;
-		uint16_t target_qr_code;
 		uint crnt_sec;
 		std::vector<streets::StreetSection> found_tapes;
 		std::vector<streets::StreetSection> found_streets;
@@ -32,6 +31,7 @@ class StreetFollower
 		void followPath();
 		bool hasRoute();
 		status::Status current_status;
+		uint16_t target_qr_code;
 };
 
 #endif

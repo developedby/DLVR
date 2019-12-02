@@ -8,9 +8,10 @@
 #include "constants.hpp"
 #include "vehicle.hpp"
 #include "message.hpp"
+#include "movement.hpp"
 
 StreetFollower::StreetFollower(Vehicle* vehicle_, std::vector<uint8_t> path_to_follow_, uint16_t target_qr_code_):
-	vehicle(vehicle_), path_to_follow(path_to_follow_), target_qr_code(target_qr_code_), crnt_sec(0), following_road(false)
+	vehicle(vehicle_), path_to_follow(path_to_follow_), crnt_sec(0), following_road(false), current_status(status::NO_STATUS), target_qr_code(target_qr_code_)
 {
 }
 
@@ -26,7 +27,9 @@ void StreetFollower::followPath()
 				case FORWARD:
 					break;
 				case BACKWARD:
-					vehicle->movement.turn(180);
+					vehicle->movement.turn(90);
+					gpioSleep(PI_TIME_RELATIVE, 0, 200000);
+					vehicle->movement.turn(90);
 					break;
 				case TO_THE_LEFT:
 					vehicle->movement.turn(90);
@@ -40,8 +43,8 @@ void StreetFollower::followPath()
 			this->following_road = true;
 			this->followTheRoadInit();
 			this->required_dist = path_to_follow[2*this->crnt_sec + 1]*10;
+			this->current_status = status::MOVING_FORWARD;
 		}
-		this->current_status = status::MOVING_FORWARD;
 		const bool road_end = this->followTheRoad();
 		if (road_end)
 		{
@@ -51,8 +54,9 @@ void StreetFollower::followPath()
 			{
 				this->goToCityQrCode();
 				this->path_to_follow = std::vector<uint8_t>();
+				this->current_status = status::STOPPED;
+				std::cout << "terminei o caminho, status eh " << this->current_status << std::endl;;
 			}
-			this->current_status = status::STOPPED;
 		}
 	}
 }
@@ -162,11 +166,8 @@ bool StreetFollower::followTheRoad()
 	{
 		// Turn towards the chosen point
 		//std::cout << required_dist - total_ran_dist_mm << "eh maior que " << consts::dist_to_look_perpendicular_street << std::endl;
-		if((this->required_dist - this->total_ran_dist_mm) > consts::dist_to_look_perpendicular_street)
-		{
-			dist_to_move_mm = consts::step_size_mm;
-		}
-		else
+		dist_to_move_mm = consts::step_size_mm;
+		if((this->required_dist - this->total_ran_dist_mm) < consts::dist_to_look_perpendicular_street)
 		{
 			const float remaining_distace = this->required_dist - this->total_ran_dist_mm;
 			float difference_point_to_stop = 100;
@@ -176,14 +177,19 @@ bool StreetFollower::followTheRoad()
 				if(diff < difference_point_to_stop)
 				{                        
 					dist_to_move_mm = (std::min(street.seg[1], street.seg[3])  * 1000);
+					std::cout << "uma rua oferece uma distancia de " << dist_to_move_mm << std::endl;
 					difference_point_to_stop = diff;
 				}
 			}
-			if(dist_to_move_mm > (this->required_dist - this->total_ran_dist_mm)*1.1)
+			if((dist_to_move_mm == consts::step_size_mm) || (dist_to_move_mm > (this->required_dist - this->total_ran_dist_mm)))
+			{
+				dist_to_move_mm = (this->required_dist - this->total_ran_dist_mm)*0.75;
+			}
+			/*if((dist_to_move_mm > (this->required_dist - this->total_ran_dist_mm)*1.2) || (dist_to_move_mm < (this->required_dist - this->total_ran_dist_mm)*0.8))
 			{
 				dist_to_move_mm = (this->required_dist - this->total_ran_dist_mm);
-			}
-			//std::cout << "rua perpendicular, vou andar " << dist_to_move_mm << std::endl;
+			}*/
+			std::cout << "rua perpendicular, vou andar " << dist_to_move_mm << std::endl;
 			this->stop = true;
 		}
 		
@@ -220,12 +226,12 @@ bool StreetFollower::followTheRoad()
 		// Correct the error on move forward
 		if (move_diff > 0)
 		{
-			vehicle->movement.turnOneWheel(consts::WheelType::right, 1, std::abs(move_diff));
+			vehicle->movement.turnOneWheel(consts::WheelType::right, 2, std::abs(move_diff));
 			this->turn_direction = 1;
 		}
 		else if(move_diff < 0)
 		{
-			vehicle->movement.turnOneWheel(consts::WheelType::left, 1, std::abs(move_diff));
+			vehicle->movement.turnOneWheel(consts::WheelType::left, 2, std::abs(move_diff));
 			this->turn_direction = -1;
 		}
 		gpioDelay(100000);
@@ -325,7 +331,7 @@ bool StreetFollower::followTheRoad()
 	}
 	// If no tapes were found, assume the vehicle moved the correct amount
 	// TODO: Algo melhor, verificar se o carro andou ou não, etc
-	else if ((num_tapes_found == 0) || ran_dist_step_mm < (dist_to_move_mm*0.7))
+	else if ((num_tapes_found == 0) || ran_dist_step_mm < (dist_to_move_mm*0.8) || ran_dist_step_mm > (dist_to_move_mm*1.2))
 	{
 		ran_dist_step_mm = dist_to_move_mm;
 	}
@@ -385,7 +391,7 @@ void StreetFollower::goToCityQrCode()
         for(i=0; i < ids.size(); i++)
         {
             std::cout << "encontrou " << ids[i] << " " << positions[i] << std::endl;
-            if(ids[i] == target_qr_code)
+            if(ids[i] == this->target_qr_code)
             {
                 found = true;
                 break;
@@ -411,9 +417,9 @@ void StreetFollower::goToCityQrCode()
 			gpioSleep(PI_TIME_RELATIVE, 0, 200000);
 			this->vehicle->movement.goStraightMm(1, distance_to_move*10, 200);
 			gpioSleep(PI_TIME_RELATIVE, 0, 200000);
-			this->vehicle->movement.turn(-angle);
+			this->vehicle->movement.turn(-angle/2);
 			gpioSleep(PI_TIME_RELATIVE, 0, 200000);
-			distance_to_move = (vehicle->vision.distanceFromObstacle() - consts::dist_to_avoid_distance_cm);
+			distance_to_move = std::clamp((vehicle->vision.distanceFromObstacle() - consts::dist_to_avoid_distance_cm), 0.0f, distance_to_move/2);
 			if(distance_to_move > 0)
 			{
 				vehicle->movement.goStraightMm(1, distance_to_move*10, 200);

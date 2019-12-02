@@ -25,8 +25,8 @@ namespace consts
 	int constexpr hough_max_gap = 8;
 	bool constexpr save_img = false;
 	// Traffic light finder
-	int constexpr max_traffic_light_area = 200;
-	int constexpr min_traffic_light_area = 70;
+	int constexpr max_traffic_light_area = 250;
+	int constexpr min_traffic_light_area = 50;
 
 	// Radio
 	int constexpr radio_delay_transmitting = 0;
@@ -55,7 +55,7 @@ namespace consts
 	int constexpr ultrasound_echo_pin = 22;
 	
 	// Movement
-	float constexpr turn_speed = 0.9;
+	float constexpr turn_speed = 1.0;
 	
 	enum class WheelType {left, right};
 	
@@ -82,7 +82,7 @@ namespace consts
 	// Intelligence
 	float constexpr turn_angle_threshold = 5.0;
 	float constexpr step_size_mm = 100;
-	float constexpr dist_to_look_perpendicular_street = 200;
+	float constexpr dist_to_look_perpendicular_street = 160;
 	float constexpr dist_to_avoid_distance_cm = 6;
 }
 

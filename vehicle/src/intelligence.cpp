@@ -10,12 +10,12 @@ Intelligence::Intelligence(Vehicle *_vehicle):
 {
     this->has_feedback = false;
     this->is_traffic_light_red = false;
+    this->current_status = status::WAITING_ROUTE;
 }
 
 void Intelligence::mainLoop()
 {
     std::cout << "main loop init" << std::endl;
-    this->current_status = status::WAITING_ROUTE;
     while(vehicle->communication.isChipConnected())
     {
         // Checa comando novo
@@ -24,21 +24,26 @@ void Intelligence::mainLoop()
             // Decodifica e age se necessario
             this->decodeMessage();
             // Manda update pro server
-            this->sendFeedback();
+            if(this->has_feedback)
+                this->sendFeedback();
         }
         // Ciclo de movimento
         if (this->street_follower.hasRoute())
         {
-            //if (not this->is_traffic_light_red)
+            if (not this->is_traffic_light_red)
             {
                 this->current_status = this->street_follower.current_status;
                 this->street_follower.followPath();
+                this->current_status = this->street_follower.current_status;
+                std::cout << "qr encontrado: " << this->street_follower.target_qr_code << std::endl;
+                this->qr_codes_read.push_back(this->street_follower.target_qr_code);
+                
             }
-            /*else
+            else
             {
                 std::cout << "semafaro vermelho" << std::endl;
                 this->current_status = status::WAITING_SEMAPHORE;
-            }*/
+            }
         }
         // Checa markers
         this->processForwardImg();
@@ -52,14 +57,14 @@ void Intelligence::avoidObstacle()
 
 void Intelligence::decodeMessage()
 {
-    bool has_feedback = false;
-    uint8_t other_sensors_reading;
-    float ultrassound_reading;
+    this->has_feedback = false;
+    uint8_t other_sensors_reading = NO_SENSOR_READ;
+    float ultrassound_reading = 0;
     MovementInfo movement;
-    status::Status status_;
+    movement.read = false;
+    status::Status status_ = status::NO_STATUS;
     this->received_message = this->vehicle->communication.getData();
-    std::cout << "mensagem: " << std::endl;
-    std::cout << "comando: " << this->received_message.command << " sensor para leitura: " << this->received_message.sensor_to_read << " status: " << this->received_message.required_status << std::endl;
+    std::cout << "pacote recebido: comando: " << this->received_message.command << " sensor para leitura: " << this->received_message.sensor_to_read << " status: " << this->received_message.required_status << std::endl;
     switch (this->received_message.command)
     {
         case FORCE_GO_AHEAD:
@@ -72,7 +77,8 @@ void Intelligence::decodeMessage()
             this->vehicle->box.lock();
             break;
         case GET_QR_CODE:
-            has_feedback = true;
+            this->has_feedback = true;
+            break;
         default:
             break;
     }
@@ -81,16 +87,18 @@ void Intelligence::decodeMessage()
         case ULTRASOUND:
             ultrassound_reading = vehicle->vision.distanceFromObstacle();
             other_sensors_reading = NO_SENSOR_READ;
-            has_feedback = true;
+            this->has_feedback = true;
             break;
         case ITEM_DETECTOR:
             ultrassound_reading = 0;
             other_sensors_reading = uint8_t(vehicle->box.hasItem());
-            has_feedback = true;
+            this->has_feedback = true;
+            break;
         case LOCK:
             ultrassound_reading = 0;
             other_sensors_reading = uint8_t(vehicle->box.isBoxClose());
-            has_feedback = true;
+            this->has_feedback = true;
+            break;
         default:
             ultrassound_reading = 0;
             other_sensors_reading = NO_SENSOR_READ;
@@ -102,13 +110,12 @@ void Intelligence::decodeMessage()
             movement = current_movement;
             movement.read = true;
             status_ = status::NO_STATUS;
-            has_feedback = true;
+            this->has_feedback = true;
             break;
         case VEHICLE_STATUS:
             movement.read = false;
             status_ = this->current_status;
-            std::cout << "status eh: " << status_ << std::endl;
-            has_feedback = true;
+            this->has_feedback = true;
             break;
         default:
             movement.read = false;
@@ -116,19 +123,18 @@ void Intelligence::decodeMessage()
             break;
     }
 
-    std::cout << "caminho recebido: " << std::endl;
+    /*std::cout << "caminho recebido: " << std::endl;
     for (const auto step: received_message.path)
     {
         std::cout << int(step) << " ";
     }
-    std::cout << std::endl << "qr code: " << received_message.qr_code << std::endl;
+    std::cout << std::endl << "qr code: " << received_message.qr_code << std::endl;*/
 
-    if(has_feedback)
+    if(this->has_feedback)
     {
         std::cout << "tem feedback" << std::endl;
         this->sent_message = SentMessage(this->qr_codes_read, ultrassound_reading, other_sensors_reading, movement, status_);
         std::cout << " ultrassom: " <<  this->sent_message.ultrassound_reading << " others: " << this->sent_message.other_sensors_reading << " status: " << this->sent_message.status_ << std::endl;
-        std::cout << "status=" << status_ << " sent_message.status=" << this->sent_message.status_ << std::endl;
         this->qr_codes_read = std::vector<uint16_t>();
     }
     
