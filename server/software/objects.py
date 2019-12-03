@@ -162,7 +162,7 @@ def path_to_directions(graph, path, orientation, turn_discount):
             graph[origin][destination][1],
             destination
         ])
-    ret[0][1] -= turn_discount 
+    ret[0][1] -= turn_discount
     return ret
 
 class ScriptCache:
@@ -545,7 +545,7 @@ class Robot:
         ret = []
         with connect.connect() as connection:
             cursor = connection.cursor(prepared = True)
-            query = "SELECT id FROM Robot WHERE alive = true AND state = 6"
+            query = "SELECT id FROM Robot WHERE alive = true AND state = 1"
             try:
                 cursor.execute(query)
                 result = cursor.fetchall()
