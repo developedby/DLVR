@@ -57,7 +57,7 @@ void Intelligence::avoidObstacle()
 
 void Intelligence::decodeMessage()
 {
-    this->has_feedback = false;
+    this->has_feedback = true;
     uint8_t other_sensors_reading = NO_SENSOR_READ;
     float ultrassound_reading = 0;
     MovementInfo movement;
@@ -71,9 +71,11 @@ void Intelligence::decodeMessage()
             this->street_follower.followPath();
             break;
         case OPEN_BOX:
+            std::cout << "abrindo caixa" << std::endl;
             this->vehicle->box.unlock();
             break;
         case CLOSE_BOX:
+            std::cout << "fechando caixa" << std::endl;
             this->vehicle->box.lock();
             break;
         case GET_QR_CODE:
@@ -142,7 +144,7 @@ void Intelligence::decodeMessage()
     {
         this->street_follower = StreetFollower(this->vehicle, received_message.path, received_message.qr_code);
     }
-    else
+    else if(received_message.qr_code > 0)
     {
         this->target_user_qr_code = received_message.qr_code;
         this->searchUserQRCode();
@@ -195,6 +197,12 @@ void Intelligence::searchUserQRCode()
     this->vehicle->vision.getForwardCamImg();
     auto [ids, corners] = this->vehicle->vision.findAppARMarkers();
     for (auto id: ids)
+    {
         if (id == this->target_user_qr_code)
+        {
+            std::cout << "achou!" << std::endl;
+            this->qr_codes_read.push_back(id);
             this->vehicle->box.unlock();
+        }
+    }
 }
