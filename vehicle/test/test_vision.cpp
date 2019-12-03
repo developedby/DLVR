@@ -77,4 +77,12 @@ int main()
 		cv::rectangle(vision.forward_img, corners[i][0], corners[i][2], cv::Scalar(0,255,0),  3, cv::LINE_8, 0); 
 	}
 	cv::imwrite("results.jpg", vision.forward_img);
+	vision.getForwardCamImg();
+	cv::imwrite("teste_top_img_qr_user.jpg", vision.forward_img);
+	std::tie(ids, corners) = vision.findAppARMarkers();
+	for(unsigned int i=0; i < ids.size(); i++)
+	{
+		std::cout << "encontrou " << ids[i] << " " << corners[i] << std::endl;
+	}
+	
 }

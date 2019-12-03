@@ -54,7 +54,7 @@ void StreetFollower::followPath()
 			{
 				this->goToCityQrCode();
 				this->path_to_follow = std::vector<uint8_t>();
-				this->current_status = status::STOPPED;
+				this->current_status = status::WAITING_ROUTE;
 				std::cout << "terminei o caminho, status eh " << this->current_status << std::endl;;
 			}
 		}
@@ -162,7 +162,7 @@ bool StreetFollower::followTheRoad()
 	
 	/* Go to the chosen point, adjusting the angle to be parallel with the street in the end */
 	float dist_to_move_mm;
-	if(num_pts)
+	if((num_pts) or ((this->required_dist - this->total_ran_dist_mm) < consts::dist_to_look_perpendicular_street))//or ((this->total_ran_dist_mm == 0) and ((this->required_dist - this->total_ran_dist_mm) < consts::dist_to_look_perpendicular_street)))
 	{
 		// Turn towards the chosen point
 		//std::cout << required_dist - total_ran_dist_mm << "eh maior que " << consts::dist_to_look_perpendicular_street << std::endl;
@@ -181,7 +181,7 @@ bool StreetFollower::followTheRoad()
 					difference_point_to_stop = diff;
 				}
 			}
-			if((dist_to_move_mm == consts::step_size_mm) || (dist_to_move_mm > (this->required_dist - this->total_ran_dist_mm)))
+			if((dist_to_move_mm == consts::step_size_mm) || (dist_to_move_mm > (this->required_dist - this->total_ran_dist_mm)) || (dist_to_move_mm < (this->required_dist - this->total_ran_dist_mm)*0.7))
 			{
 				dist_to_move_mm = (this->required_dist - this->total_ran_dist_mm)*0.75;
 			}

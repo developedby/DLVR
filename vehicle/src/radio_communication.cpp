@@ -19,7 +19,10 @@ void RadioCommunication::newMessagePooling()
     {
         const bool new_msg = this->receiveFromRadio();
         if (new_msg)
+        {
+            this->has_new_msg = true;
             std::cout << "Nova mensagem recebida" << std::endl;
+        }
         this->has_new_msg = this->has_new_msg or new_msg;
         gpioSleep(PI_TIME_RELATIVE, 0, consts::radio_pooling_period);
     }

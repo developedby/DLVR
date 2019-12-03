@@ -33,12 +33,11 @@ enum PossibleStatus{
 namespace status {
     enum Status{
         NO_STATUS = 0,
-        STOPPED, 
+        WAITING_ROUTE, 
         MOVING_FORWARD, 
         MOVING_BACKWARD, 
         AVOIDING_OBSTACLE, 
-        WAITING_SEMAPHORE, 
-        WAITING_ROUTE
+        WAITING_SEMAPHORE
     };
 }
 
