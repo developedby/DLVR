@@ -116,7 +116,9 @@ cv::Mat Vision::getColorMask(const cv::Mat& img, const cv::Scalar min, const cv:
 bool Vision::isTrafficLightRed()
 {
     cv::Mat img;
-    cv::cvtColor(this->forward_img, img, cv::COLOR_BGR2HLS);
+    cv::GaussianBlur(this->forward_img, img, cv::Size(0,0), 3);
+    //cv::imwrite("./borrado.jpg", img);
+    cv::cvtColor(img, img, cv::COLOR_BGR2HLS);
     const cv::Rect traffic_light_roi(300, 0, 340, 300);
     const cv::Mat traffic_light_img = img(traffic_light_roi);
     //cv::imwrite("./found_traffic_ligths_roi.jpg", traffic_light_img);
