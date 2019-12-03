@@ -29,14 +29,9 @@ async def main(websocket, path, open_sockets, script_cache, data = None):
                                 robot.orientation = -objects.city[robot.position][robot_path[1]][0]
                                 robot_path = objects.path_to_directions(objects.city, robot_path, robot.orientation, robot.TURN_DISCOUNT)
                                 if delivery.response(robot.position, data["destination"], robot.id):
-                                    print("robotid: ", robot.id)
                                     for login in logins:
                                         data2 = {"status_code": 200, "reason_message": "OK", "path": "/delivery/response", "message_body": {"id": delivery.id, "accept": True, "destination": data["destination"], "path": robot_path}}
-                                        print("login.cookie 1: ", login.cookie)
-                                        try:
-                                            await open_sockets["users"][login.cookie].send(json.dumps(data2))
-                                        except:
-                                            print("Erro no cookie")
+                                        await open_sockets["users"][login.cookie].send(json.dumps(data2))
                                     data3 = {"status_code": 200, "reason_message": "OK", "path": "/delivery/response", "message_body": {"path": robot_path}}
                                     await open_sockets["robots"][robot.id].send(json.dumps(data3))
                                     resp["message_body"] = {"path": robot_path}
@@ -53,7 +48,6 @@ async def main(websocket, path, open_sockets, script_cache, data = None):
                     else:
                         for login in logins:
                             data2 = {"status_code": 200, "reason_message": "OK", "path": "/delivery/response", "message_body": {"id": delivery.id, "accept": False}}
-                            print("login.cookie 2: ", login.cookie)
                             await open_sockets["users"][login.cookie].send(json.dumps(data2))
                         if delivery.delete():
                             resp["message_body"] = "true"
