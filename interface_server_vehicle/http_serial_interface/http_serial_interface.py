@@ -30,17 +30,16 @@ class SerialInterface:
         self.close()
 
     def open(self):
-        self.ser = serial.Serial('/dev/ttyUSB0', 115200, timeout=5)
+        self.ser = serial.Serial('/dev/ttyUSB0', 115200, timeout=20)
         time.sleep(2)
 
     def close(self):
         self.ser.close()
     
     def write(self, packet_to_send):
-        #print("mandando para o radio")
         packet_to_send.append(self.START_BYTE)
         packet_to_send.insert(0, self.START_BYTE)
-        #print(" o pacote", packet_to_send)
+        print("mandando para o radio o pacote", packet_to_send)
         self.ser.write(packet_to_send)
 
     def read(self):
@@ -51,6 +50,10 @@ class SerialInterface:
             received_packet = self.ser.read_until(start_byte_byte, 50)
             if received_packet[-1] != self.START_BYTE:
                 received_packet = []
+        print("pacote recebido do robo")
+        for a in received_packet:
+            print(a, end = ' ')
+        print("")
         return received_packet
 
 class VehicleServerInterface:
@@ -89,11 +92,14 @@ class VehicleServerInterface:
         required_status = ""
         qr_code_destination = 0
         if("route" in msg):
-            route, qr_code_destination = self.decodePathFromServer(msg["route"])
+            remove_last_step = not ("add_last_path" in msg)
+            route, qr_code_destination = self.decodePathFromServer(msg["route"], remove_last_step)
         if("command" in msg):
             command = msg["command"]
+            print("comando eh: ", command)
             if(command == "get qr_code"):
                 qr_code_destination = msg["qr"]
+                print("vou achar o qr code ", qr_code_destination)
         if("sensor_to_read" in msg):
             sensor_to_read = msg["sensor_to_read"]
         if("required_status" in msg):
@@ -149,30 +155,35 @@ class VehicleServerInterface:
             status = msg[current_address]
             dict_from_vehicle["state"] = int(status)
             current_address += 1
-        qr_codes_read.append(msg[current_address : -1])
-        print("qr codes: ", qr_codes_read, " tipo: ", type(qr_codes_read))
+        print(current_address)
+        qr_codes_read.extend(msg[current_address : -1])
         qr_codes_read_int = []
-        for qr in qr_codes_read:
-            if qr:
-                qr_codes_read_int.append(int.from_bytes(qr, "big"))
+        if((len(qr_codes_read) > 1) and (len(qr_codes_read) % 2 == 0)):
+            for i in range(0, len(qr_codes_read), 2):
+                a = qr_codes_read[i] << 8
+                a += qr_codes_read[i + 1]
+                qr_codes_read_int.append(a)
         if qr_codes_read_int:
             dict_from_vehicle["qr"] = qr_codes_read_int[-1]
+            print("qr code eh: ", qr_codes_read_int[-1])
         return dict_from_vehicle
 
-    def decodePathFromServer(self, path):
+    def decodePathFromServer(self, path, remove_last_step=True):
         decoded_path = []
         qr_code_destination = 0
-        for i in range(0, len(path) - 1):
+        last_position = len(path) - 1 if remove_last_step else len(path)
+        for i in range(0, last_position):
             decoded_path.append(self.directions_to_vehicle[path[i][0]])
             decoded_path.append(int(path[i][1] * 100))
-        qr_code_destination = path[len(path) - 1][2]
+        if not remove_last_step:
+            decoded_path[-1] -= 140
+        qr_code_destination = path[-1][2]
         return decoded_path, qr_code_destination
 
 
 vehicle_server = VehicleServerInterface()
 
 def updateServer():
-    print("requisitando status")
     msg = {"required_status" : "status_robot", "sensor_to_read": "item detector"}
     data = vehicle_server.handle_server_request(1, msg)
     return data
@@ -200,6 +211,7 @@ async def handler():
             data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
             await websocket.send(json.dumps(data))
             while(not "qr" in data):
+                print("robo nao esta reconhecendo o qr code da cidade")
                 data = await loop.run_in_executor(None, updateServer)
                 data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                 await websocket.send(json.dumps(data))
@@ -216,16 +228,25 @@ async def handler():
                             route = resp["message_body"]["path"]
                             msg["route"] = route
                             print("tem uma rota")
-                        msg["command"] : "close_box"
+                        msg["command"] = "close_box"
                         msg["required_status"] = "status_robot"
                         data = vehicle_server.handle_server_request(1, msg)
                         data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                         await websocket.send(json.dumps(data))
+                        while(data["state"] != 2):
+                            data = await loop.run_in_executor(None, updateServer)
+                            data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
+                            await websocket.send(json.dumps(data))
+                            await asyncio.sleep(1)
                         while(data["state"] != 1):
                             data = await loop.run_in_executor(None, updateServer)
                             data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                             await websocket.send(json.dumps(data))
                             await asyncio.sleep(1)
+                        msg = {"command" : "open_box"}
+                        data = vehicle_server.handle_server_request(1, msg)
+                        data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
+                        await websocket.send(json.dumps(data))
                         print("Container aberto")
                     elif resp["path"] == "/delivery/send":#tem o caminho para o local de entrega
                         print("verificando item")
@@ -234,6 +255,7 @@ async def handler():
                         data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                         await websocket.send(json.dumps(data))
                         while(data["item"] != 1):
+                            print("esperando colocar item")
                             data = await loop.run_in_executor(None, updateServer)
                             data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                             await websocket.send(json.dumps(data))
@@ -244,11 +266,16 @@ async def handler():
                             route = resp["message_body"]["path"]
                             msg["route"] = route
                             print("tem uma rota")
-                        msg["command"] : "close_box"
+                        msg["command"] = "close_box"
                         msg["required_status"] = "status_robot"
                         data = vehicle_server.handle_server_request(1, msg)
                         data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                         await websocket.send(json.dumps(data))
+                        while(data["state"] != 2):
+                            data = await loop.run_in_executor(None, updateServer)
+                            data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
+                            await websocket.send(json.dumps(data))
+                            await asyncio.sleep(1)
                         while(data["state"] != 1):
                             data = await loop.run_in_executor(None, updateServer)
                             data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
@@ -262,12 +289,19 @@ async def handler():
                         data = vehicle_server.handle_server_request(1, msg)
                         data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                         await websocket.send(json.dumps(data))
-                        while(not msg["qr"] in data["qr"]):
+                        stop = False
+                        if "qr" in data and data["qr"] == msg["qr"]:
+                            stop = True
+                        while(not stop):
                             print("esperando reconhecer qr code usuario")
-                            data = await loop.run_in_executor(None, updateServer)
+                            msg = {"command" : "get qr_code"}
+                            msg["qr"] = resp["message_body"]
+                            msg["required_status"] = "status_robot"
+                            data = vehicle_server.handle_server_request(1, msg)
                             data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                             await websocket.send(json.dumps(data))
-                            await asyncio.sleep(1)
+                            if "qr" in data and data["qr"] == msg["qr"]:
+                                stop = True
                         print("Container opened")
 
                     elif resp["path"] == "/delivery/finish": #tem o caminho para a garagem
@@ -288,12 +322,18 @@ async def handler():
                         if("path" in resp["message_body"]):
                             route = resp["message_body"]["path"]
                             msg["route"] = route
-                            print("tem uma rota")
-                        msg["command"] : "close_box"
+                            print("tem uma rota com um cara a menos")
+                            msg["add_last_path"] = True
+                        msg["command"] = "close_box"
                         msg["required_status"] = "status_robot"
                         data = vehicle_server.handle_server_request(1, msg)
                         data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
                         await websocket.send(json.dumps(data))
+                        while(data["state"] != 2):
+                            data = await loop.run_in_executor(None, updateServer)
+                            data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
+                            await websocket.send(json.dumps(data))
+                            await asyncio.sleep(1)
                         while(data["state"] != 1):
                             data = await loop.run_in_executor(None, updateServer)
                             data["signature"] = private_key.sign(hashlib.sha256(json.dumps(data, sort_keys = True).encode("utf-8")).hexdigest().encode("utf-8"), '')[0]
