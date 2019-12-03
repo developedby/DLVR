@@ -217,6 +217,7 @@ id = 31
 [node name="pointer_origin" parent="." instance=ExtResource( 8 )]
 position = Vector2( 1172.17, 284.336 )
 scale = Vector2( 0.2, 0.2 )
+pointer_type = 0
 
 [node name="pointer_destination" parent="." instance=ExtResource( 8 )]
 position = Vector2( 1169.08, 469.789 )
@@ -229,9 +230,10 @@ scale = Vector2( 0.2, 0.2 )
 pointer_type = 2
 
 [node name="rest_area" type="Position2D" parent="."]
-position = Vector2( 1174.95, 806.28 )
+position = Vector2( 1174.95, 863.082 )
 
 [node name="delivery_menu" type="Control" parent="."]
+editor/display_folded = true
 margin_right = 40.0
 margin_bottom = 40.0
 script = ExtResource( 9 )
@@ -274,6 +276,7 @@ margin_bottom = 1215.0
 text = "FINISH_KS"
 
 [node name="confirm_window" type="Control" parent="."]
+editor/display_folded = true
 margin_left = 20.0
 margin_top = 480.0
 margin_right = 60.0
@@ -313,6 +316,7 @@ rect_min_size = Vector2( 200, 50 )
 text = "NO_KS"
 
 [node name="refused_window" type="Control" parent="."]
+editor/display_folded = true
 visible = false
 margin_left = 20.0
 margin_top = 480.0
@@ -351,6 +355,7 @@ margin_bottom = 480.0
 script = ExtResource( 14 )
 
 [node name="leftBar" type="Control" parent="."]
+editor/display_folded = true
 margin_left = -721.0
 margin_right = -1.0
 margin_bottom = 1280.0

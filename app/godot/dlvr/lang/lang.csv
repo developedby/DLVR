@@ -30,6 +30,7 @@ ERRMAIL_KS,Invalid or unavailable recipient,Destinatário inválido ou indispon�
 ERRUNKW_KS,Unknown error,Erro desconhecido
 ERRTOUT_KS,Connection timeout,Timeout da conexão
 ERRSERV_KS,Server internal error,Erro interno do servidor
+ERRDISC_KS,Lost connection with server,Conexão com o servidor perdida
 AR_KS,Show this AR-Tag to the robot to open the box,Mostre este AR-Tag para o robô para abrir a caixa
 DEBUG_OPEN_KS,<DEBUG> OPEN BOX,<DEBUG> ABRIR CAIXA
 DEBUG_CLOSE_KS,<DEBUG> CLOSE BOX, <DEBUG> FECHAR CAIXA
