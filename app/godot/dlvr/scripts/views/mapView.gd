@@ -37,7 +37,14 @@ func _ready():
 		if h is House:
 			h.connect('house_pressed', self, '_on_house_pressed')
 	DLVR.client.connect("packet_received", self, "_on_packet_received")
+	DLVR.client.connect("server_disconnected", self, "_on_server_disconnected")
 	self.current_state = STATE.IDLE
+
+func _on_server_disconnected():
+	$err.popup_m("ERRDISC_KS")
+	yield($err, "popup_hide")
+	DLVR.logout()
+	get_tree().change_scene("res://scenes/views/loginView.tscn")
 
 func _on_packet_received(data_r):
 	var json_parser = JSON.parse(data_r)
@@ -103,7 +110,9 @@ func _on_packet_received(data_r):
 						if n:
 							$pointer_tracking.position = n.position
 							$pointer_tracking.pop(pid)
-						if (pid == origin) and (current_client == CLIENT_TYPE.SENDER):
+						if (pid == origin) and \
+						(current_client == CLIENT_TYPE.SENDER) and \
+						(resp["message_body"]["state"] == 1):
 							Utils.print_log("Robot arrive at origin")
 							self.current_state = STATE.WAITING_SEND
 				elif (current_state == STATE.ARRIVED) and \
