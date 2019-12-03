@@ -10,8 +10,8 @@
 #include "message.hpp"
 #include "movement.hpp"
 
-StreetFollower::StreetFollower(Vehicle* vehicle_, std::vector<uint8_t> path_to_follow_, uint16_t target_qr_code_):
-	vehicle(vehicle_), path_to_follow(path_to_follow_), crnt_sec(0), following_road(false), current_status(status::NO_STATUS), target_qr_code(target_qr_code_)
+StreetFollower::StreetFollower(Vehicle* vehicle_, std::vector<uint8_t> path_to_follow_, int8_t finnal_qr_code_direction_, uint16_t target_qr_code_):
+	vehicle(vehicle_), path_to_follow(path_to_follow_), crnt_sec(0), finnal_qr_code_direction(finnal_qr_code_direction_), following_road(false), current_status(status::NO_STATUS), target_qr_code(target_qr_code_)
 {
 }
 
@@ -30,16 +30,20 @@ void StreetFollower::followPath()
 					vehicle->movement.turn(90);
 					gpioSleep(PI_TIME_RELATIVE, 0, 200000);
 					vehicle->movement.turn(90);
+					this->turn_direction = 1;
 					break;
 				case TO_THE_LEFT:
 					vehicle->movement.turn(90);
+					this->turn_direction = 1;
 					break;
 				case TO_THE_RIGHT:
 					vehicle->movement.turn(-90);
+					this->turn_direction = -1;
 					break;
 				default:
 					break;
 			}
+			std::cout << "inicializou com sentido: " << int(this->turn_direction) << std::endl;
 			this->following_road = true;
 			this->followTheRoadInit();
 			this->required_dist = path_to_follow[2*this->crnt_sec + 1]*10;
@@ -171,7 +175,8 @@ bool StreetFollower::followTheRoad()
 		{
 			const float remaining_distace = this->required_dist - this->total_ran_dist_mm;
 			float difference_point_to_stop = 100;
-			for (const auto& street: perpendicular_streets)
+			auto perpendicular_segs = (num_pts) ? perpendicular_streets : perpendicular_tapes;
+			for (const auto& street: perpendicular_segs)
 			{
 				float diff = std::abs((std::max(street.seg[1], street.seg[3])  * 1000) - remaining_distace);
 				if(diff < difference_point_to_stop)
@@ -181,9 +186,9 @@ bool StreetFollower::followTheRoad()
 					difference_point_to_stop = diff;
 				}
 			}
-			if((dist_to_move_mm == consts::step_size_mm) || (dist_to_move_mm > (this->required_dist - this->total_ran_dist_mm)) || (dist_to_move_mm < (this->required_dist - this->total_ran_dist_mm)*0.7))
+			if((dist_to_move_mm == consts::step_size_mm) || (dist_to_move_mm > (this->required_dist - this->total_ran_dist_mm)) || (dist_to_move_mm < (this->required_dist - this->total_ran_dist_mm)*0.8))
 			{
-				dist_to_move_mm = (this->required_dist - this->total_ran_dist_mm)*0.75;
+				dist_to_move_mm = (this->required_dist - this->total_ran_dist_mm) * 0.8;
 			}
 			/*if((dist_to_move_mm > (this->required_dist - this->total_ran_dist_mm)*1.2) || (dist_to_move_mm < (this->required_dist - this->total_ran_dist_mm)*0.8))
 			{
@@ -213,7 +218,7 @@ bool StreetFollower::followTheRoad()
 			dist_to_move_mm = 0;
 		}*/
 		//std::cout << "Angulo ate o ponto: " << angle/2 << " deg" << std::endl;
-		if (std::abs(angle/2) > consts::turn_angle_threshold)
+		if (num_pts and (std::abs(angle/2) > consts::turn_angle_threshold))
 		{
 			this->vehicle->movement.turn(angle/2);
 			this->turn_direction = angle > 0 ? 1 : -1;
@@ -249,7 +254,7 @@ bool StreetFollower::followTheRoad()
 	{
 		// TODO: Corrigir
 		dist_to_move_mm = 0;
-		//std::cout << "Girando pra ver se encontra uma linha" << std::endl;
+		std::cout << "Girando pra ver se encontra uma linha sentido: " << int(this->turn_direction) << std::endl;
 		if(this->turn_direction > 0)
 			this->vehicle->movement.turn(-5);
 		else
@@ -265,6 +270,7 @@ bool StreetFollower::followTheRoad()
 	// Separate the tapes to the left from the tapes to the right of the vehicle
 	this->left_tapes = std::vector<streets::StreetSection>();
 	this->right_tapes = std::vector<streets::StreetSection>();
+	this->perpendicular_tapes = std::vector<streets::StreetSection>();
 	//std::cout << "Fitas encontradas:" << std::endl;
 	for (const auto& tape: found_tapes)
 	{
@@ -276,6 +282,10 @@ bool StreetFollower::followTheRoad()
 				this->left_tapes.push_back(tape);
 			else
 				this->right_tapes.push_back(tape);
+		}
+		else
+        {
+			this->perpendicular_tapes.push_back(tape);
 		}
 	}
 	// Sort the tapes by their closest point
@@ -364,6 +374,10 @@ void StreetFollower::followTheRoadInit()
             else
                 this->right_tapes.push_back(tape);
         }
+        else
+        {
+			this->perpendicular_tapes.push_back(tape);
+		}
     }
     // Sort the tapes by their closest point
     streets::orderCollinearSections(this->left_tapes, 1);
@@ -399,7 +413,10 @@ void StreetFollower::goToCityQrCode()
         }
         if (not found)
         {
-            vehicle->movement.turn(20);
+			if(this->finnal_qr_code_direction == -1)
+				this->vehicle->movement.turn(-20);
+			else
+				this->vehicle->movement.turn(20);
             gpioSleep(PI_TIME_RELATIVE, 0, 400000);
 		}
         else

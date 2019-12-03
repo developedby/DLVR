@@ -16,10 +16,12 @@ class StreetFollower
 		std::vector<streets::StreetSection> found_streets;
 		std::vector<streets::StreetSection> left_tapes;
 		std::vector<streets::StreetSection> right_tapes;
+		std::vector<streets::StreetSection> perpendicular_tapes;
 		float required_dist;
 		float total_ran_dist_mm;
 		bool stop;
 		int turn_direction;
+		int8_t finnal_qr_code_direction;
 		bool following_road;
 		bool followTheRoad();
 		void followTheRoadInit();
@@ -27,7 +29,7 @@ class StreetFollower
 		float setAngleInRange(const float angle, const float precision);
 		
 	public:
-		StreetFollower(Vehicle* vehicle_, std::vector<uint8_t> path_to_follow_, uint16_t target_qr_code_);
+		StreetFollower(Vehicle* vehicle_, std::vector<uint8_t> path_to_follow_, int8_t finnal_qr_code_direction, uint16_t target_qr_code_);
 		void followPath();
 		bool hasRoute();
 		status::Status current_status;

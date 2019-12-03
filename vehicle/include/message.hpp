@@ -51,12 +51,13 @@ enum Directions{
 class ReceivedMessage{
     public:
         std::vector<uint8_t> path;
+        int8_t finnal_qr_code_direction;
         uint16_t qr_code;
         Commands command; 
         PossibleSensors sensor_to_read;
         PossibleStatus required_status;
-        ReceivedMessage(std::vector<uint8_t> _path, uint16_t _qr_code, Commands _command, PossibleSensors _sensor_to_read, PossibleStatus _required_status):
-            path(_path), qr_code(_qr_code), command(_command), sensor_to_read(_sensor_to_read), required_status(_required_status) {}
+        ReceivedMessage(std::vector<uint8_t> _path, int8_t _finnal_qr_code_direction, uint16_t _qr_code, Commands _command, PossibleSensors _sensor_to_read, PossibleStatus _required_status):
+            path(_path), finnal_qr_code_direction(_finnal_qr_code_direction), qr_code(_qr_code), command(_command), sensor_to_read(_sensor_to_read), required_status(_required_status) {}
         ReceivedMessage(){}
 };
 

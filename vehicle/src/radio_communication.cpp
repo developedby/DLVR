@@ -138,6 +138,7 @@ ReceivedMessage RadioCommunication::getData()
     Commands command = NO_COMMAND; 
     PossibleSensors sensor_to_read = NO_SENSORS;
     PossibleStatus required_status = NO_STATUS;
+    int8_t finnal_qr_code_direction = 0;
     int i = 3;
     if((received_data[2] & 0x8) == 0x8)
     {
@@ -146,6 +147,22 @@ ReceivedMessage RadioCommunication::getData()
             path.push_back(received_data[4+i]);
         }
         i+=4;
+        switch(Directions(received_data[i]))
+        {
+            case TO_THE_LEFT:
+                finnal_qr_code_direction = 1;
+                break;
+            case TO_THE_RIGHT:
+                finnal_qr_code_direction = -1;
+                break;
+            case FORWARD:
+                finnal_qr_code_direction = 0;
+                break;
+            default:
+                finnal_qr_code_direction = 0;
+                break;
+        }
+        i++;
         qr_code = (received_data[i] << 8) + received_data[i+1];
         i+=2;
     }
@@ -158,7 +175,6 @@ ReceivedMessage RadioCommunication::getData()
              qr_code = (received_data[i] << 8) + received_data[i+1];
              i += 2;
         }
-            
     }
     if((received_data[2] & 0x2) == 0x2)
     {
@@ -170,7 +186,7 @@ ReceivedMessage RadioCommunication::getData()
         required_status = (PossibleStatus)received_data[i];
         i++;
     }
-    return ReceivedMessage(path, qr_code, command, sensor_to_read, required_status);
+    return ReceivedMessage(path, finnal_qr_code_direction, qr_code, command, sensor_to_read, required_status);
 }
 
 int RadioCommunication::getDataSize()

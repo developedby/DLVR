@@ -6,7 +6,7 @@
 #include "message.hpp"
 
 Intelligence::Intelligence(Vehicle *_vehicle):
-    vehicle(_vehicle), street_follower(_vehicle, std::vector<uint8_t>(), 0)
+    vehicle(_vehicle), street_follower(_vehicle, std::vector<uint8_t>(), 0, 0)
 {
     this->has_feedback = false;
     this->is_traffic_light_red = false;
@@ -30,13 +30,17 @@ void Intelligence::mainLoop()
         // Ciclo de movimento
         if (this->street_follower.hasRoute())
         {
+            std::cout << "seguindo a rua" << std::endl;
             if (not this->is_traffic_light_red)
             {
                 this->current_status = this->street_follower.current_status;
                 this->street_follower.followPath();
                 this->current_status = this->street_follower.current_status;
-                std::cout << "qr encontrado: " << this->street_follower.target_qr_code << std::endl;
-                this->qr_codes_read.push_back(this->street_follower.target_qr_code);
+                if (not this->street_follower.hasRoute())
+                {
+                    this->qr_codes_read.push_back(this->street_follower.target_qr_code);
+                    std::cout << "qr encontrado quando terminei o caminho: " << this->street_follower.target_qr_code << std::endl;
+                }
                 
             }
             else
@@ -142,7 +146,8 @@ void Intelligence::decodeMessage()
     
     if(not received_message.path.empty())
     {
-        this->street_follower = StreetFollower(this->vehicle, received_message.path, received_message.qr_code);
+        std::cout << "criando novo caminho, direcao final eh " << int(received_message.finnal_qr_code_direction) << std::endl;
+        this->street_follower = StreetFollower(this->vehicle, received_message.path, received_message.finnal_qr_code_direction, received_message.qr_code);
     }
     else if(received_message.qr_code > 0)
     {

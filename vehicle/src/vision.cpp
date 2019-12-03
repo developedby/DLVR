@@ -117,24 +117,43 @@ bool Vision::isTrafficLightRed()
 {
     cv::Mat img;
     cv::GaussianBlur(this->forward_img, img, cv::Size(0,0), 3);
-    //cv::imwrite("./borrado.jpg", img);
     cv::cvtColor(img, img, cv::COLOR_BGR2HLS);
     const cv::Rect traffic_light_roi(300, 0, 340, 300);
     const cv::Mat traffic_light_img = img(traffic_light_roi);
-    //cv::imwrite("./found_traffic_ligths_roi.jpg", traffic_light_img);
     cv::Mat red_mask;
     cv::inRange(traffic_light_img, cv::Scalar(0, 100, 130), cv::Scalar(30, 230, 255), red_mask);
-    //cv::imwrite("./red_mask.jpg", red_mask);
+    cv::Mat green_mask;
+    cv::inRange(traffic_light_img, cv::Scalar(70, 160, 90), cv::Scalar(100, 225, 255), green_mask);
+    
+    if (consts::save_img)
+    {
+        cv::imwrite("./borrado.jpg", img);
+        cv::imwrite("./found_traffic_ligths_roi.jpg", traffic_light_img);
+        cv::imwrite("./red_mask.jpg", red_mask);
+        cv::imwrite("./gren_mask.jpg", green_mask);
+    }
+    
     vector<vector<cv::Point>> contours;
     vector<cv::Vec4i> hierarchy;
+    float biggest_possible_red_area = 0;
     cv::findContours(red_mask, contours, hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE);
     for (const auto& contour: contours)
     {
         //std::cout << "area: " << cv::contourArea(contour) << std::endl;
-        if((cv::contourArea(contour) <= consts::max_traffic_light_area) && (cv::contourArea(contour) >= consts::min_traffic_light_area))
-            return true;
+        float area = cv::contourArea(contour);
+        if((area <= consts::max_traffic_light_area) and (area >= consts::min_traffic_light_area) and (area > biggest_possible_red_area))
+            biggest_possible_red_area = area; 
     }
-    return false;
+    float biggest_possible_green_area = 0;
+    cv::findContours(green_mask, contours, hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE);
+    for (const auto& contour: contours)
+    {
+        //std::cout << "area: " << cv::contourArea(contour) << std::endl;
+        float area = cv::contourArea(contour);
+        if((area <= consts::max_traffic_light_area) and (area >= consts::min_traffic_light_area) and (area > biggest_possible_red_area))
+            biggest_possible_green_area = area; 
+    }
+    return (biggest_possible_red_area > biggest_possible_green_area);
     
 }
 
