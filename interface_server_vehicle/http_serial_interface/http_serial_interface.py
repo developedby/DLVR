@@ -63,7 +63,7 @@ class VehicleServerInterface:
     possible_status_to_vehicle = {"movement" : 1, "status_robot" : 2}
     directions_to_vehicle = {"back" : 2, "right": 6, "left": 4, "front" : 8}
     #dictionaries from vehicle
-    possible_status_from_vehicle = {1 : "stopped", 2 : "moving forward", 3 :"moving backway", 4 : "avoiding obstacle", 5 : "waiting semaphore", 6 : "waiting route"}
+    possible_status_from_vehicle = {1 : "waiting route", 2 : "moving forward", 3 :"moving backway", 4 : "avoiding obstacle", 5 : "waiting semaphore"}
     
     def __init__(self):
         self.serial_interface = SerialInterface()
@@ -175,8 +175,8 @@ class VehicleServerInterface:
         for i in range(0, last_position):
             decoded_path.append(self.directions_to_vehicle[path[i][0]])
             decoded_path.append(int(path[i][1] * 100))
-        if not remove_last_step:
-            decoded_path[-1] -= 140
+        if (not remove_last_step) and (decoded_path[-1] > 14):
+            decoded_path[-1] -= 14
         qr_code_destination = path[-1][2]
         return decoded_path, qr_code_destination
 

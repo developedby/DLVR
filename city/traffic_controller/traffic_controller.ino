@@ -8,21 +8,23 @@
 const int light0 = 6;
 const int light1 = 5;
 const int base_time = 15000;
+const int low = 0;
+const int high = 255;
 
 void setup() {
     // Lights 0
     pinMode(light0, OUTPUT);    //Set mode to output
-    digitalWrite(light0, HIGH); //Output to high, leds off
+    analogWrite(light0, low); //Output to high, leds off
     // Lights 1
     pinMode(light1, OUTPUT);    //Set mode to output
-    digitalWrite(light1, HIGH); //Output to high, leds off
+    analogWrite(light1, high); //Output to high, leds off
 }
 
 void loop() {
-//    digitalWrite(light0, LOW);  //Lights 0 On 
-//    digitalWrite(light1, HIGH); //Lights 1 Off
-//    delay(base_time);           //Delay base time
-//    digitalWrite(light0, HIGH); //Lights 0 Off 
-//    digitalWrite(light1, LOW);  //Lights 1 On
-//    delay(base_time);           //Delay base time
+    analogWrite(light0, low);  //Lights 0 On 
+    analogWrite(light1, high); //Lights 1 Off
+    delay(base_time);           //Delay base time
+    analogWrite(light0, high); //Lights 0 Off 
+    analogWrite(light1, low);  //Lights 1 On
+    delay(base_time);           //Delay base time
 }
