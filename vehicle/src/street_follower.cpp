@@ -43,7 +43,7 @@ void StreetFollower::followPath()
 				default:
 					break;
 			}
-			std::cout << "inicializou com sentido: " << int(this->turn_direction) << std::endl;
+			//std::cout << "inicializou com sentido: " << int(this->turn_direction) << std::endl;
 			this->following_road = true;
 			this->followTheRoadInit();
 			this->required_dist = path_to_follow[2*this->crnt_sec + 1]*10;
@@ -59,7 +59,7 @@ void StreetFollower::followPath()
 				this->goToCityQrCode();
 				this->path_to_follow = std::vector<uint8_t>();
 				this->current_status = status::WAITING_ROUTE;
-				std::cout << "terminei o caminho, status eh " << this->current_status << std::endl;;
+				//std::cout << "terminei o caminho, status eh " << this->current_status << std::endl;;
 			}
 		}
 	}
@@ -186,6 +186,10 @@ bool StreetFollower::followTheRoad()
 					difference_point_to_stop = diff;
 				}
 			}
+			if (not num_pts)
+			{
+				dist_to_move_mm *= 0.8;
+			}
 			if((dist_to_move_mm == consts::step_size_mm) || (dist_to_move_mm > (this->required_dist - this->total_ran_dist_mm)) || (dist_to_move_mm < (this->required_dist - this->total_ran_dist_mm)*0.8))
 			{
 				dist_to_move_mm = (this->required_dist - this->total_ran_dist_mm) * 0.8;
@@ -254,7 +258,7 @@ bool StreetFollower::followTheRoad()
 	{
 		// TODO: Corrigir
 		dist_to_move_mm = 0;
-		std::cout << "Girando pra ver se encontra uma linha sentido: " << int(this->turn_direction) << std::endl;
+		//std::cout << "Girando pra ver se encontra uma linha sentido: " << int(this->turn_direction) << std::endl;
 		if(this->turn_direction > 0)
 			this->vehicle->movement.turn(-5);
 		else
@@ -345,6 +349,7 @@ bool StreetFollower::followTheRoad()
 	{
 		ran_dist_step_mm = dist_to_move_mm;
 	}
+	ran_dist_step_mm = dist_to_move_mm;
 	std::cout << "Acha que andou: " << ran_dist_step_mm << std::endl;
 	this->total_ran_dist_mm += ran_dist_step_mm ;
 

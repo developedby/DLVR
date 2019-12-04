@@ -47,12 +47,12 @@ int main()
     }
     Movement movement = Movement();
     movement.stop();
+    std::cout << movement.goStraightMm(1, 800, 200) << std::endl;
+    /*gpioDelay(200000);
     std::cout << movement.goStraightMm(1, 100, 200) << std::endl;
     gpioDelay(200000);
     std::cout << movement.goStraightMm(1, 100, 200) << std::endl;
-    gpioDelay(200000);
-    std::cout << movement.goStraightMm(1, 100, 200) << std::endl;
-    /*movement.turn(180);
+    movement.turn(180);
     gpioDelay(200000);
     movement.turn(90);
     gpioDelay(200000);

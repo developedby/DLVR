@@ -121,7 +121,14 @@ bool Vision::isTrafficLightRed()
     const cv::Rect traffic_light_roi(300, 0, 340, 300);
     const cv::Mat traffic_light_img = img(traffic_light_roi);
     cv::Mat red_mask;
-    cv::inRange(traffic_light_img, cv::Scalar(0, 100, 130), cv::Scalar(30, 230, 255), red_mask);
+    if(not consts::save_img)
+    {
+        cv::inRange(traffic_light_img, cv::Scalar(0, 100, 130), cv::Scalar(30, 230, 255), red_mask);
+    }
+    else
+    {
+        cv::inRange(img, cv::Scalar(0, 100, 130), cv::Scalar(30, 230, 255), red_mask);
+    }
     cv::Mat green_mask;
     cv::inRange(traffic_light_img, cv::Scalar(70, 160, 90), cv::Scalar(100, 225, 255), green_mask);
     
@@ -137,12 +144,19 @@ bool Vision::isTrafficLightRed()
     vector<cv::Vec4i> hierarchy;
     float biggest_possible_red_area = 0;
     cv::findContours(red_mask, contours, hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE);
+    int j = 0;
     for (const auto& contour: contours)
     {
-        //std::cout << "area: " << cv::contourArea(contour) << std::endl;
+        std::cout << "area: " << cv::contourArea(contour) << std::endl;
         float area = cv::contourArea(contour);
+        if(consts::save_img and (area <= consts::max_traffic_light_area) and (area >= consts::min_traffic_light_area))
+        {
+            std::cout << "achou semafaro" << std::endl;
+            cv::drawContours(this->forward_img, contours, j, cv::Scalar(0, 255, 0), 2, cv::LINE_8);
+        }
         if((area <= consts::max_traffic_light_area) and (area >= consts::min_traffic_light_area) and (area > biggest_possible_red_area))
-            biggest_possible_red_area = area; 
+            biggest_possible_red_area = area;
+        j++;
     }
     float biggest_possible_green_area = 0;
     cv::findContours(green_mask, contours, hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE);

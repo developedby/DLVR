@@ -30,7 +30,7 @@ void Intelligence::mainLoop()
         // Ciclo de movimento
         if (this->street_follower.hasRoute())
         {
-            std::cout << "seguindo a rua" << std::endl;
+            //std::cout << "seguindo a rua" << std::endl;
             if (not this->is_traffic_light_red)
             {
                 this->current_status = this->street_follower.current_status;
@@ -45,7 +45,7 @@ void Intelligence::mainLoop()
             }
             else
             {
-                std::cout << "semafaro vermelho" << std::endl;
+                //std::cout << "semafaro vermelho" << std::endl;
                 this->current_status = status::WAITING_SEMAPHORE;
             }
         }
@@ -68,18 +68,18 @@ void Intelligence::decodeMessage()
     movement.read = false;
     status::Status status_ = status::NO_STATUS;
     this->received_message = this->vehicle->communication.getData();
-    std::cout << "pacote recebido: comando: " << this->received_message.command << " sensor para leitura: " << this->received_message.sensor_to_read << " status: " << this->received_message.required_status << std::endl;
+    //std::cout << "pacote recebido: comando: " << this->received_message.command << " sensor para leitura: " << this->received_message.sensor_to_read << " status: " << this->received_message.required_status << std::endl;
     switch (this->received_message.command)
     {
         case FORCE_GO_AHEAD:
             this->street_follower.followPath();
             break;
         case OPEN_BOX:
-            std::cout << "abrindo caixa" << std::endl;
+            //std::cout << "abrindo caixa" << std::endl;
             this->vehicle->box.unlock();
             break;
         case CLOSE_BOX:
-            std::cout << "fechando caixa" << std::endl;
+            //std::cout << "fechando caixa" << std::endl;
             this->vehicle->box.lock();
             break;
         case GET_QR_CODE:
@@ -138,15 +138,15 @@ void Intelligence::decodeMessage()
 
     if(this->has_feedback)
     {
-        std::cout << "tem feedback" << std::endl;
+        //std::cout << "tem feedback" << std::endl;
         this->sent_message = SentMessage(this->qr_codes_read, ultrassound_reading, other_sensors_reading, movement, status_);
-        std::cout << " ultrassom: " <<  this->sent_message.ultrassound_reading << " others: " << this->sent_message.other_sensors_reading << " status: " << this->sent_message.status_ << std::endl;
+        //std::cout << " ultrassom: " <<  this->sent_message.ultrassound_reading << " others: " << this->sent_message.other_sensors_reading << " status: " << this->sent_message.status_ << std::endl;
         this->qr_codes_read = std::vector<uint16_t>();
     }
     
     if(not received_message.path.empty())
     {
-        std::cout << "criando novo caminho, direcao final eh " << int(received_message.finnal_qr_code_direction) << std::endl;
+        //std::cout << "criando novo caminho, direcao final eh " << int(received_message.finnal_qr_code_direction) << std::endl;
         this->street_follower = StreetFollower(this->vehicle, received_message.path, received_message.finnal_qr_code_direction, received_message.qr_code);
     }
     else if(received_message.qr_code > 0)
@@ -159,7 +159,7 @@ void Intelligence::decodeMessage()
 
 void Intelligence::sendFeedback()
 {
-    std::cout << "mandando feedback" << std::endl;
+    //std::cout << "mandando feedback" << std::endl;
     this->vehicle->communication.sendToRadio(this->sent_message);
 }
 
