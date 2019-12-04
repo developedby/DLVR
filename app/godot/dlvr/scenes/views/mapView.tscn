@@ -73,6 +73,8 @@ margin_bottom = 229.0
 text = "TRACKING_KS"
 align = 1
 valign = 1
+autowrap = true
+clip_text = true
 script = ExtResource( 4 )
 
 [node name="toolBar" type="Control" parent="."]
@@ -233,7 +235,6 @@ pointer_type = 2
 position = Vector2( 1174.95, 863.082 )
 
 [node name="delivery_menu" type="Control" parent="."]
-editor/display_folded = true
 margin_right = 40.0
 margin_bottom = 40.0
 script = ExtResource( 9 )
@@ -245,6 +246,7 @@ margin_right = 685.0
 margin_bottom = 1063.16
 clear_button_enabled = true
 placeholder_text = "RECEIVER_EMAIL_KS"
+caret_blink = true
 script = ExtResource( 10 )
 
 [node name="cancel_button" type="Button" parent="delivery_menu"]

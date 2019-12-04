@@ -89,6 +89,7 @@ pointing/emulate_touch_from_mouse=true
 
 [locale]
 
+test="en"
 translations=PoolStringArray( "res://lang/lang.en.translation", "res://lang/lang.pt.translation" )
 
 [network]
