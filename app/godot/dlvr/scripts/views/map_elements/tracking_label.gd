@@ -20,4 +20,3 @@ func _on_state_changed(val):
 		self.text = "OPENED_KS"
 	else:
 		self.text = ""
-		
