@@ -81,11 +81,21 @@ pair<vector<StreetSection>, vector<StreetSection>> Vision::findStreets()
 
     // Find all the possible street sections
     const vector<StreetSection> possible_sections = streets::findPossibleStreetSections(tape_sections);
+    if (consts::save_img)
+    {
+        auto possible_secs_img = streets::drawStreetsAndTapes(tape_sections, possible_sections, true, true);
+        cv::imwrite("teste_linhas_possible_secs.jpg", possible_secs_img);
+    }
     //cout << "Calculou todas as mini seções. Encontradas: " << possible_sections.size() << endl;
     //std::for_each(possible_sections.begin(), possible_sections.end(), [](const auto& sec){sec.print();});
 
     // Transforms overlapping sections into a single long section
     const vector<StreetSection> long_sections = streets::groupIntoLongSections(possible_sections);
+    if (consts::save_img)
+    {
+        auto long_secs_img = streets::drawStreetsAndTapes(tape_sections, long_sections, true, true);
+        cv::imwrite("teste_linhas_long_secs.jpg", long_secs_img);
+    }
     //cout << "Calculou todas as seções longas. Encontradas: " << long_sections.size() << endl;
     //std::for_each(long_sections.begin(), long_sections.end(), [](const auto& sec){sec.print();});
 
@@ -152,7 +162,7 @@ bool Vision::isTrafficLightRed()
         if(consts::save_img and (area <= consts::max_traffic_light_area) and (area >= consts::min_traffic_light_area))
         {
             std::cout << "achou semafaro" << std::endl;
-            cv::drawContours(this->forward_img, contours, j, cv::Scalar(0, 255, 0), 2, cv::LINE_8);
+            cv::drawContours(this->forward_img, contours, j, cv::Scalar(0, 255, 0), 1, cv::LINE_8);
         }
         if((area <= consts::max_traffic_light_area) and (area >= consts::min_traffic_light_area) and (area > biggest_possible_red_area))
             biggest_possible_red_area = area;

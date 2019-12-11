@@ -18,51 +18,27 @@ int main()
 	Vision vision = Vision();
 	//cv::Mat img = cv::imread("./teste_linhas.jpg", cv::IMREAD_COLOR);
 	//cv::cvtColor(img, vision.downward_img, cv::COLOR_BGR2HLS);
-	for(int i = 0; i< 1; i++)
+	for(int i = 0; i<1; i++)
 	{
 		vision.getDownwardCamImg();
 		cv::Mat img;
 		cv::cvtColor(vision.downward_img, img, cv::COLOR_HLS2BGR);
 		cv::imwrite("teste_linhas.jpg", img);
-		//std::cout << "Tirou a foto." << std::endl;
+		std::cout << "Tirou a foto." << std::endl;
 		auto initial_tick = cv::getTickCount();
 		auto [tape_secs, street_secs] = vision.findStreets();
 		auto time_to_process = (cv::getTickCount() - initial_tick) / cv::getTickFrequency();
 		std::cout << "Tempo para processar: " << time_to_process << std::endl;
 		
-		cv::Mat out_img = cv::Mat::zeros(500, 500, CV_8UC3);
-		for (const auto& sec: street_secs)
-		{
-			cv::Vec4f line = sec.seg;
-			line[0] = 250 + line[0]*500;
-			line[1] = 500 - line[1]*1000;
-			line[2] = 250 + line[2]*500;
-			line[3] = 500 - line[3]*1000;
-			cv::line(out_img, cv::Point(line[0], line[1]), cv::Point(line[2], line[3]), cv::Scalar(255, 255, 255), 5, cv::LINE_AA);
-			sec.print();
-		}
-		for (const auto& sec: tape_secs)
-		{
-			cv::Vec4f line = sec.seg;
-			line[0] = 250 + line[0]*500;
-			line[1] = 500 - line[1]*1000;
-			line[2] = 250 + line[2]*500;
-			line[3] = 500 - line[3]*1000;
-			cv::Scalar color;
-			if (sec.color == streets::Color::blue)
-				color = cv::Scalar(255, 200, 65);
-			else if (sec.color == streets::Color::green)
-				color = cv::Scalar(0, 255, 0);
-			else if (sec.color == streets::Color::yellow)
-				color = cv::Scalar(0, 255, 255);
-			else
-				color = cv::Scalar(0, 0, 255);
-			cv::line(out_img, cv::Point(line[0], line[1]), cv::Point(line[2], line[3]), color, 5, cv::LINE_AA);
-			sec.print();
-		}
+		auto tapes_img = streets::drawStreetsAndTapes(tape_secs, street_secs, true, false);
+		cv::imwrite("teste_linhas_so_fita.jpg", tapes_img);
+		auto tapes_streets_img = streets::drawStreetsAndTapes(tape_secs, street_secs, true, true);
+		cv::imwrite("teste_linhas_secoes.jpg", tapes_streets_img);
 		
-		cv::imwrite("teste_linhas_secoes.jpg", out_img);
-		
+		std::cout << "Ruas:" << std::endl;
+		std::for_each(street_secs.begin(), street_secs.end(), [](const auto& sec){sec.print();});
+		std::cout << "Fitas:" << std::endl;
+		std::for_each(tape_secs.begin(), tape_secs.end(), [](const auto& sec){sec.print();});
 	}
 	std::cout << "buscando qr code" << std::endl;
 	//cv::Mat img = cv::imread("./teste_top_img.jpg", cv::IMREAD_COLOR);
@@ -84,5 +60,4 @@ int main()
 	{
 		std::cout << "encontrou " << ids[i] << " " << corners[i] << std::endl;
 	}
-	
 }

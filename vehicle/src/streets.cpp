@@ -67,16 +67,16 @@ namespace streets
         lines.insert(lines.end(), lines_aux.begin(), lines_aux.end());
         line_colors.insert(line_colors.end(), lines_aux.size(), Color::yellow);
         //std::cout << "Achou linhas amarelas." << std::endl;
-        
-        lines_aux = getStreetLines(green_mask);
-        lines.insert(lines.end(), lines_aux.begin(), lines_aux.end());
-        line_colors.insert(line_colors.end(), lines_aux.size(), Color::green);
-        //std::cout << "Achou linhas verdes." << std::endl;
 
         lines_aux = getStreetLines(blue_mask);
         lines.insert(lines.end(), lines_aux.begin(), lines_aux.end());
         line_colors.insert(line_colors.end(), lines_aux.size(), Color::blue);
         //std::cout << "Achou linhas azuis." << std::endl;
+        
+        lines_aux = getStreetLines(green_mask);
+        lines.insert(lines.end(), lines_aux.begin(), lines_aux.end());
+        line_colors.insert(line_colors.end(), lines_aux.size(), Color::green);
+        //std::cout << "Achou linhas verdes." << std::endl;
 
         if (consts::save_img)
         {
@@ -661,7 +661,7 @@ namespace streets
     Mat getGreenTapeMask(const Mat& img)
     {
         //std::cout << "Pegando mascara verde" << std::endl;
-        return getTapeMask(img, cv::Scalar(40, 100, 60), cv::Scalar(60, 250, 255));
+        return getTapeMask(img, cv::Scalar(40, 100, 40), cv::Scalar(65, 230, 255));
     }
 
     Mat getYellowTapeMask(const Mat& img)
@@ -789,5 +789,41 @@ namespace streets
             }
         }
         cv::imwrite("blobs.jpg", dst);
+    }
+
+    cv::Mat drawStreetsAndTapes(std::vector<streets::StreetSection> tapes, std::vector<streets::StreetSection> streets_, bool draw_tapes, bool draw_streets)
+    {
+        cv::Mat out_img = cv::Mat::zeros(500, 500, CV_8UC3);
+        cv::circle(out_img, cv::Point(250, 500), 10, cv::Scalar(0, 0, 255), -1);
+        if (draw_streets)
+            for (const auto& sec: streets_)
+            {
+                cv::Vec4f line = sec.seg;
+                line[0] = 250 + line[0]*500;
+                line[1] = 500 - line[1]*1000;
+                line[2] = 250 + line[2]*500;
+                line[3] = 500 - line[3]*1000;
+                cv::line(out_img, cv::Point(line[0], line[1]), cv::Point(line[2], line[3]), cv::Scalar(255, 255, 255), 5, cv::LINE_AA);
+            }
+        if (draw_tapes)
+            for (const auto& sec: tapes)
+            {
+                cv::Vec4f line = sec.seg;
+                line[0] = 250 + line[0]*500;
+                line[1] = 500 - line[1]*1000;
+                line[2] = 250 + line[2]*500;
+                line[3] = 500 - line[3]*1000;
+                cv::Scalar color;
+                if (sec.color == streets::Color::blue)
+                    color = cv::Scalar(255, 200, 65);
+                else if (sec.color == streets::Color::green)
+                    color = cv::Scalar(0, 255, 0);
+                else if (sec.color == streets::Color::yellow)
+                    color = cv::Scalar(0, 255, 255);
+                else
+                    color = cv::Scalar(0, 0, 255);
+                cv::line(out_img, cv::Point(line[0], line[1]), cv::Point(line[2], line[3]), color, 5, cv::LINE_AA);
+            }
+        return out_img;
     }
 }

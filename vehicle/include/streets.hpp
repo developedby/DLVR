@@ -64,6 +64,7 @@ namespace streets
     cv::Mat drawSegments(const std::vector<cv::Vec4i>& lines, const cv::Mat& img, const bool cvt_color=true);
     void drawLine(const cv::Vec2f& line, const cv::Mat& img);
     void drawLabelImage(const cv::Mat& labelImage, int nLabels);
+    cv::Mat drawStreetsAndTapes(std::vector<streets::StreetSection> tapes, std::vector<streets::StreetSection> streets_, bool draw_tapes, bool draw_streets);
 }
 
 #endif
