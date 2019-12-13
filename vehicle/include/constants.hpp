@@ -20,12 +20,12 @@ namespace consts
 	float constexpr max_theta_diff = 20 * M_PI/180;
 	float constexpr hough_precision_px = 1;
 	float constexpr hough_precision_rad = 5 * M_PI/180;
-	int constexpr hough_thresh = 100;
-	int constexpr hough_min_len = 100;
+	int constexpr hough_thresh = 90;
+	int constexpr hough_min_len = 90;
 	int constexpr hough_max_gap = 8;
-	bool constexpr save_img = false;
+	bool constexpr save_img = true;
 	// Traffic light finder
-	int constexpr max_traffic_light_area = 140;
+	int constexpr max_traffic_light_area = 250;
 	int constexpr min_traffic_light_area = 30;
 
 	// Radio

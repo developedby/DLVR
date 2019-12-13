@@ -81,11 +81,21 @@ pair<vector<StreetSection>, vector<StreetSection>> Vision::findStreets()
 
     // Find all the possible street sections
     const vector<StreetSection> possible_sections = streets::findPossibleStreetSections(tape_sections);
+    if (consts::save_img)
+    {
+        auto possible_secs_img = streets::drawStreetsAndTapes(tape_sections, possible_sections, true, true);
+        cv::imwrite("teste_linhas_possible_secs.jpg", possible_secs_img);
+    }
     //cout << "Calculou todas as mini seções. Encontradas: " << possible_sections.size() << endl;
     //std::for_each(possible_sections.begin(), possible_sections.end(), [](const auto& sec){sec.print();});
 
     // Transforms overlapping sections into a single long section
     const vector<StreetSection> long_sections = streets::groupIntoLongSections(possible_sections);
+    if (consts::save_img)
+    {
+        auto long_secs_img = streets::drawStreetsAndTapes(tape_sections, long_sections, true, true);
+        cv::imwrite("teste_linhas_long_secs.jpg", long_secs_img);
+    }
     //cout << "Calculou todas as seções longas. Encontradas: " << long_sections.size() << endl;
     //std::for_each(long_sections.begin(), long_sections.end(), [](const auto& sec){sec.print();});
 
@@ -121,7 +131,14 @@ bool Vision::isTrafficLightRed()
     const cv::Rect traffic_light_roi(300, 0, 340, 300);
     const cv::Mat traffic_light_img = img(traffic_light_roi);
     cv::Mat red_mask;
-    cv::inRange(traffic_light_img, cv::Scalar(0, 100, 130), cv::Scalar(30, 230, 255), red_mask);
+    if(not consts::save_img)
+    {
+        cv::inRange(traffic_light_img, cv::Scalar(0, 100, 130), cv::Scalar(30, 230, 255), red_mask);
+    }
+    else
+    {
+        cv::inRange(img, cv::Scalar(0, 100, 130), cv::Scalar(30, 230, 255), red_mask);
+    }
     cv::Mat green_mask;
     cv::inRange(traffic_light_img, cv::Scalar(70, 160, 90), cv::Scalar(100, 225, 255), green_mask);
     
@@ -137,12 +154,19 @@ bool Vision::isTrafficLightRed()
     vector<cv::Vec4i> hierarchy;
     float biggest_possible_red_area = 0;
     cv::findContours(red_mask, contours, hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE);
+    int j = 0;
     for (const auto& contour: contours)
     {
-        //std::cout << "area: " << cv::contourArea(contour) << std::endl;
+        std::cout << "area: " << cv::contourArea(contour) << std::endl;
         float area = cv::contourArea(contour);
+        if(consts::save_img and (area <= consts::max_traffic_light_area) and (area >= consts::min_traffic_light_area))
+        {
+            std::cout << "achou semafaro" << std::endl;
+            cv::drawContours(this->forward_img, contours, j, cv::Scalar(0, 255, 0), 1, cv::LINE_8);
+        }
         if((area <= consts::max_traffic_light_area) and (area >= consts::min_traffic_light_area) and (area > biggest_possible_red_area))
-            biggest_possible_red_area = area; 
+            biggest_possible_red_area = area;
+        j++;
     }
     float biggest_possible_green_area = 0;
     cv::findContours(green_mask, contours, hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE);
