@@ -17,7 +17,7 @@ onready var client:Client = CLIENT_SCENE.instance()
 
 
 func _ready():
-	set_debug(true)
+	set_debug(debug)
 	client.received_timeout = 2.0
 	client.connection_timeout = 3.0
 	add_child(client)

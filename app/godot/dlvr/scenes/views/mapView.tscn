@@ -357,7 +357,6 @@ margin_bottom = 480.0
 script = ExtResource( 14 )
 
 [node name="leftBar" type="Control" parent="."]
-editor/display_folded = true
 margin_left = -721.0
 margin_right = -1.0
 margin_bottom = 1280.0
@@ -383,6 +382,7 @@ rect_min_size = Vector2( 100, 0 )
 shortcut_in_tooltip = false
 
 [node name="header" type="ColorRect" parent="leftBar"]
+editor/display_folded = true
 margin_right = 600.0
 margin_bottom = 213.0
 color = Color( 0.14902, 0.203922, 0.270588, 1 )
@@ -402,7 +402,7 @@ margin_right = 331.2
 margin_bottom = 163.0
 custom_fonts/font = ExtResource( 16 )
 custom_colors/font_color = Color( 1, 1, 1, 1 )
-text = "<Nome Sobrenome>"
+text = "DL VR"
 
 [node name="menu" type="VBoxContainer" parent="leftBar"]
 editor/display_folded = true
